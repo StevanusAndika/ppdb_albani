@@ -10,7 +10,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Exception;
 use Illuminate\Support\Str;
 
-class SocialiteController extends Controller
+class AuthController extends Controller
 {
     public function redirectToProvider($provider)
     {

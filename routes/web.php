@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dashboard\DashboardController;
 
 // Public Routes
@@ -21,9 +21,9 @@ Route::middleware('guest')->group(function () {
 });
 
 // Socialite Routes
-Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirectToProvider'])
+Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])
     ->name('socialite.redirect');
-Route::get('/auth/{provider}/callback', [SocialiteController::class, 'handleProvideCallback'])
+Route::get('/auth/{provider}/callback', [AuthController::class, 'handleProvideCallback'])
     ->name('socialite.callback');
 
 // ==================== MIDDLEWARE GROUP ====================
@@ -31,7 +31,7 @@ Route::get('/auth/{provider}/callback', [SocialiteController::class, 'handleProv
 // Admin Group - menggunakan middleware group 'admin'
 Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
-   
+
 });
 
 // Santri Group - menggunakan middleware group 'santri'

@@ -131,4 +131,10 @@ class User extends Authenticatable
     {
         $this->update(['role' => 'calon_santri']);
     }
+
+    // Tambahkan method ini di User model
+    public function registrations()
+    {
+        return $this->hasMany(Registration::class);
+    }
 }
