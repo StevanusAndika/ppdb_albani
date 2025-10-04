@@ -16,15 +16,15 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // ID pengguna
             $table->foreignId('program_id')->constrained()->onDelete('cascade'); // ID program
             $table->string('nomor_pendaftaran')->unique(); // Nomor pendaftaran unik
-            $table->enum('status', [
-                'draft',
-                'submitted',
-                'verified',
-                'rejected',
-                'accepted',
-                'passed',
-                'failed'
-            ])->default('draft'); // Status pendaftaran
+            // $table->enum('status', [
+            //     'draft',
+            //     'submitted',
+            //     'verified',
+            //     'rejected',
+            //     'accepted',
+            //     'passed',
+            //     'failed'
+            // ])->default('draft'); // Status pendaftaran
             $table->date('tanggal_pendaftaran'); // Tanggal pendaftaran
             $table->timestamps(); // Stempel waktu
 
