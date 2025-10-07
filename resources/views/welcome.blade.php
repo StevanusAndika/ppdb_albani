@@ -1,177 +1,266 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPDB Pesantren AI-Our'an Bani Syahid 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#057572',
+                        'secondary': '#5B5B5B',
+                        'accent': '#9D9D9D',
+                        'white': '#FFFFFF'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .icon-bg {
+            background-color: rgba(5, 117, 114, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md py-4 px-6 rounded-full mx-4 mt-4 sticky top-4 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-xl font-bold text-primary">PPDB 2025</div>
 
-@section('title', 'PPDB PESANTREN AL-GURAN BANI SYAHID 2025')
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-primary focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
 
-@section('content')
-<div class="max-w-7xl mx-auto">
-    <!-- Hero Section -->
-    <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">
-                PPDB PESANTREN AL-GURAN BANI SYAHID 2025
-            </h1>
-            <p class="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                Sistem Presentation: Person Login, Buy login money, manual, also experience<br>
-                panda gama google phone apps and call calls
+            <!-- Desktop menu -->
+            <div class="hidden md:flex space-x-8">
+                <a href="#" class="text-primary hover:text-secondary font-medium">Beranda</a>
+                <a href="#statistik" class="text-primary hover:text-secondary font-medium">Statistik</a>
+                <a href="#biaya" class="text-primary hover:text-secondary font-medium">Biaya</a>
+                <a href="#" class="text-primary hover:text-secondary font-medium">Biaya</a>
+                <a href="#" class="text-primary hover:text-secondary font-medium">Kontak</a>
+            </div>
+
+            <div class="hidden md:block">
+               <a href="{{ route('login') }}">
+            <button class="bg-primary text-white px-6 py-2 rounded-full hover:bg-secondary transition duration-300">
+                Login
+            </button>
+            </a>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+            <a href="#" class="block py-2 text-primary hover:text-secondary">Beranda</a>
+            <a href="#statistik" class="block py-2 text-primary hover:text-secondary">Statistik</a>
+            <a href="#biaya" class="block py-2 text-primary hover:text-secondary">Biaya</a>
+            <a href="#biaya" class="block py-2 text-primary hover:text-secondary">Biaya</a>
+            <a href="#" class="block py-2 text-primary hover:text-secondary">Kontak</a>
+            <a href="{{ route('login') }}">
+            <button class="bg-primary text-white px-6 py-2 rounded-full hover:bg-secondary transition duration-300">
+                Login
+            </button>
+            </a>
+
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="py-12 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">PPDB</h1>
+        <h2 class="text-2xl md:text-3xl font-semibold text-primary mb-8">Pesantren AI-Our'an Bani Syahid 2025</h2>
+
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
+            <p class="text-secondary text-lg mb-4">
+               Sistem Penerimaan Peserta Didik Baru yang modern, mudah, dan terpercaya.
+                <br>Untuk Masa Depan Yang Lebih Baik
             </p>
-        </div>
+            <p class="text-accent italic">
 
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button class="bg-green-500 text-white px-8 py-4 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center gap-3">
-                <i class="fas fa-mobile-alt"></i>
-                Save Smartphone
-            </button>
-            <button class="bg-blue-500 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center gap-3">
-                <i class="fas fa-key"></i>
-                Create Password
-            </button>
-        </div>
-    </div>
-
-    <!-- Statistics Section -->
-    <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Statistik PPDB 2025</h2>
-                <p class="text-gray-600">In the final presentation format click icon</p>
-            </div>
-            <div class="flex gap-3 mt-4 lg:mt-0">
-                <button class="bg-blue-100 text-blue-600 p-3 rounded-xl hover:bg-blue-200 transition-colors">
-                    <i class="fas fa-chart-bar text-lg"></i>
-                </button>
-                <button class="bg-green-100 text-green-600 p-3 rounded-xl hover:bg-green-200 transition-colors">
-                    <i class="fas fa-download text-lg"></i>
-                </button>
-                <button class="bg-purple-100 text-purple-600 p-3 rounded-xl hover:bg-purple-200 transition-colors">
-                    <i class="fas fa-share-alt text-lg"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Statistic 1 -->
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl text-center">
-                <div class="text-4xl font-bold mb-2">150+</div>
-                <div class="text-blue-100 font-medium">Santri Terdaftar</div>
-                <div class="mt-3 text-blue-200 text-sm">Select Textiles</div>
-            </div>
-
-            <!-- Statistic 2 -->
-            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl text-center">
-                <div class="text-4xl font-bold mb-2">1200</div>
-                <div class="text-green-100 font-medium">Santri Texts</div>
-                <div class="mt-3 text-green-200 text-sm">Sorts Textiles</div>
-            </div>
-
-            <!-- Statistic 3 -->
-            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl text-center">
-                <div class="text-4xl font-bold mb-2">95.5%</div>
-                <div class="text-purple-100 font-medium">Tingkat Retensi</div>
-                <div class="mt-3 text-purple-200 text-sm">Type of retention</div>
-            </div>
-
-            <!-- Statistic 4 -->
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-2xl text-center">
-                <div class="text-4xl font-bold mb-2">99.9%</div>
-                <div class="text-orange-100 font-medium">Permintaan</div>
-                <div class="mt-3 text-orange-200 text-sm">Requested request</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Why Choose Section -->
-    <div class="bg-white rounded-2xl shadow-lg p-8">
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">
-                MENGAPA MEMILIH PPDB PESANTREN AL-GURAN BANI SYAHID?
-            </h2>
-            <p class="text-gray-600 text-lg">BETEXT VARI DERAPEARS UNTIL YESTERDAY (DAT TERRIFYERS)</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Feature 1 -->
-            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                    <i class="fas fa-users text-blue-600 text-xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">Person Count</h3>
-                <p class="text-gray-600 leading-relaxed">
-                    Investigations, not only are new systems implemented but also comprehensive analysis.
-                </p>
-            </div>
-
-            <!-- Feature 2 -->
-            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                    <i class="fas fa-exchange-alt text-green-600 text-xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">Transition</h3>
-                <p class="text-gray-600 leading-relaxed">
-                    Show each user's income progression and financial growth tracking with detailed analytics.
-                </p>
-            </div>
-
-            <!-- Feature 3 -->
-            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                    <i class="fas fa-utensils text-purple-600 text-xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">Restaurant</h3>
-                <p class="text-gray-600 leading-relaxed">
-                    Get a personal account with customized meal plans and nutritional guidance for optimal health.
-                </p>
-            </div>
-
-            <!-- Feature 4 -->
-            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
-                    <i class="fas fa-clipboard-list text-orange-600 text-xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">Plans/Instructions</h3>
-                <p class="text-gray-600 leading-relaxed">
-                    Comprehensive educational plans and detailed instructions for academic and personal development.
-                </p>
-            </div>
-        </div>
-
-        <!-- Additional CTA -->
-        <div class="text-center mt-8 pt-8 border-t border-gray-200">
-            <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105">
-                <i class="fas fa-file-alt mr-3"></i>
+            </p>
+                <a href="{{ route('register') }}">
+            <button class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3">
                 Daftar Sekarang
             </button>
+        </a>
         </div>
-    </div>
-</div>
-@endsection
 
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Animasi untuk statistik
-        const stats = document.querySelectorAll('.bg-gradient-to-br');
-        stats.forEach((stat, index) => {
-            stat.style.opacity = '0';
-            stat.style.transform = 'translateY(20px)';
 
-            setTimeout(() => {
-                stat.style.transition = 'all 0.6s ease';
-                stat.style.opacity = '1';
-                stat.style.transform = 'translateY(0)';
-            }, index * 200);
+    </header>
+
+    <!-- Statistik Section -->
+    <section class="py-12 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-12">Statistik PPDB 2025</h2>
+            <p class="text-center text-secondary mb-10">Data  terkini penerimaan peserta didik baru</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Stat 1 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
+                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-school text-2xl text-primary"></i>
+                    </div>
+                    <div class="text-5xl font-bold text-primary mb-2">150 +</div>
+                    <div class="text-xl font-medium text-secondary">Sekolah Terdaftar</div>
+                </div>
+
+                <!-- Stat 2 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
+                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-graduate text-2xl text-primary"></i>
+                    </div>
+                    <div class="text-5xl font-bold text-primary mb-2">1,200</div>
+                    <div class="text-xl font-medium text-secondary">Santri Terdaftar</div>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
+                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-2xl text-primary"></i>
+                    </div>
+                    <div class="text-5xl font-bold text-primary mb-2">95.5 %</div>
+                    <div class="text-xl font-medium text-secondary">Tingkat Penerimaan</div>
+                </div>
+
+                <!-- Stat 4 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
+                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-smile text-2xl text-primary"></i>
+                    </div>
+                    <div class="text-5xl font-bold text-primary mb-2">99.9%</div>
+                    <div class="text-xl font-medium text-secondary">Kepuasan Pengguna</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Informasi Biaya Section -->
+    <section class="py-16 px-4">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Informasi Biaya</h2>
+            <p class="text-center text-secondary mb-12">Informasi terkini penerimaan peserta didik baru</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-money-bill-wave text-2xl mr-3"></i>
+                        <div class="text-4xl font-bold">150 +</div>
+                    </div>
+                    <div class="text-lg font-medium">Becken Tonszino</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-gradient-to-br from-secondary to-secondary/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-graduation-cap text-2xl mr-3"></i>
+                        <div class="text-4xl font-bold">1,200</div>
+                    </div>
+                    <div class="text-lg font-medium">Smart Tonszins</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-gradient-to-br from-accent to-accent/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-percentage text-2xl mr-3"></i>
+                        <div class="text-4xl font-bold">95.5 %</div>
+                    </div>
+                    <div class="text-lg font-medium">Tropical Presum</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chart-line text-2xl mr-3"></i>
+                        <div class="text-4xl font-bold">99.9%</div>
+                    </div>
+                    <div class="text-lg font-medium">Kipsoosa Prospyxis</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white py-12 px-4">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Menu 1 -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Tentang Kami</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-accent transition duration-300">Sejarah</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Visi & Misi</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Struktur Organisasi</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Fasilitas</a></li>
+                    </ul>
+                </div>
+
+                <!-- Menu 2 -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Program</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-accent transition duration-300">Tahfidz AI-Our'an</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Pendidikan Formal</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Keterampilan Digital</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Ekstrakurikuler</a></li>
+                    </ul>
+                </div>
+
+                <!-- Menu 3 -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Informasi</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-accent transition duration-300">Berita & Acara</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Pengumuman</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Galeri</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Menu 4 -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Kontak</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-accent transition duration-300">Alamat</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Telepon</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Email</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Sosial Media</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-white/20 mt-8 pt-8 text-center">
+                <p>&copy; 2025 PPDB Pesantren AI-Our'an Bani Syahid. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
         });
-
-        // Hover effect untuk feature cards
-        const featureCards = document.querySelectorAll('.bg-gradient-to-br.from-gray-50');
-        featureCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-            });
-
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-    });
-</script>
-@endsection
+    </script>
+</body>
+</html>
