@@ -24,13 +24,26 @@
         .icon-bg {
             background-color: rgba(5, 117, 114, 0.1);
         }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #057572;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <!-- Navbar -->
     <nav class="bg-white shadow-md py-4 px-6 rounded-full mx-4 mt-4 sticky top-4 z-50">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="text-xl font-bold text-primary">PPDB 2025</div>
+            <div class="text-xl font-bold text-primary">PPDB Ponpes Al Bani</div>
 
             <!-- Mobile menu button -->
             <div class="md:hidden">
@@ -42,9 +55,11 @@
             <!-- Desktop menu -->
             <div class="hidden md:flex space-x-8">
                 <a href="#" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="#statistik" class="text-primary hover:text-secondary font-medium">Statistik</a>
+                <a href="#visi-misi" class="text-primary hover:text-secondary font-medium">Visi & Misi</a>
+                <a href="#program" class="text-primary hover:text-secondary font-medium">Program</a>
+                <a href="#alur-pendaftaran" class="text-primary hover:text-secondary font-medium">Alur Pendaftaran</a>
                 <a href="#biaya" class="text-primary hover:text-secondary font-medium">Biaya</a>
-                <a href="#" class="text-primary hover:text-secondary font-medium">Biaya</a>
+                <a href="#persyaratan" class="text-primary hover:text-secondary font-medium">Persyaratan</a>
                 <a href="#" class="text-primary hover:text-secondary font-medium">Kontak</a>
             </div>
 
@@ -60,16 +75,17 @@
         <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
             <a href="#" class="block py-2 text-primary hover:text-secondary">Beranda</a>
-            <a href="#statistik" class="block py-2 text-primary hover:text-secondary">Statistik</a>
+            <a href="#visi-misi" class="block py-2 text-primary hover:text-secondary">Visi & Misi</a>
+            <a href="#program" class="block py-2 text-primary hover:text-secondary">Program</a>
+            <a href="#alur-pendaftaran" class="block py-2 text-primary hover:text-secondary">Alur Pendaftaran</a>
             <a href="#biaya" class="block py-2 text-primary hover:text-secondary">Biaya</a>
-            <a href="#biaya" class="block py-2 text-primary hover:text-secondary">Biaya</a>
+            <a href="#persyaratan" class="block py-2 text-primary hover:text-secondary">Persyaratan</a>
             <a href="#" class="block py-2 text-primary hover:text-secondary">Kontak</a>
             <a href="{{ route('login') }}">
             <button class="bg-primary text-white px-6 py-2 rounded-full hover:bg-secondary transition duration-300">
                 Login
             </button>
             </a>
-
         </div>
     </nav>
 
@@ -83,81 +99,227 @@
                Sistem Penerimaan Peserta Didik Baru yang modern, mudah, dan terpercaya.
                 <br>Untuk Masa Depan Yang Lebih Baik
             </p>
-            <p class="text-accent italic">
-
-            </p>
+            <p class="text-accent italic"></p>
                 <a href="{{ route('register') }}">
             <button class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3">
                 Daftar Sekarang
             </button>
         </a>
         </div>
-
-
     </header>
 
-    <!-- Statistik Section -->
-    <section class="py-12 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
+    <!-- Visi & Misi Section -->
+    <section id="visi-misi" class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
         <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-12">Statistik PPDB 2025</h2>
-            <p class="text-center text-secondary mb-10">Data  terkini penerimaan peserta didik baru</p>
+            <h2 class="text-3xl font-bold text-center text-primary mb-12">Visi & Misi</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Stat 1 -->
-                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
-                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-school text-2xl text-primary"></i>
+            <div class="max-w-4xl mx-auto">
+                <!-- Visi -->
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-8 transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-6">
+                        <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-eye text-2xl text-primary"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-primary">Visi</h3>
                     </div>
-                    <div class="text-5xl font-bold text-primary mb-2">150 +</div>
-                    <div class="text-xl font-medium text-secondary">Sekolah Terdaftar</div>
+                    <p class="text-lg text-secondary leading-relaxed">
+                        Menjadi pusat pendidikan Al-Qur'an yang unggul dalam pembacaan, penghafalan, dan pemahaman Al-Qur'an,
+                        dengan tetap istiqamah di atas manhaj dan warisan kelimuan para guru kami.
+                    </p>
                 </div>
 
-                <!-- Stat 2 -->
-                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
-                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-user-graduate text-2xl text-primary"></i>
+                <!-- Misi -->
+                <div class="bg-white rounded-xl shadow-lg p-8 transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-6">
+                        <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-bullseye text-2xl text-primary"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-primary">Misi</h3>
                     </div>
-                    <div class="text-5xl font-bold text-primary mb-2">1,200</div>
-                    <div class="text-xl font-medium text-secondary">Santri Terdaftar</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-check text-primary mt-1 mr-3"></i>
+                            <p class="text-secondary">Menanamkan keointaan terhadap Al-Qur'an sejak dini melalui pembelajaran yang menyeturuh: tilawah, tahtida, dan tafsir.</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check text-primary mt-1 mr-3"></i>
+                            <p class="text-secondary">Membina santri menjadi haftar dan haftarah yang mutqin (kokoh hafalamya) dan berakhlak Qur'ani.</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check text-primary mt-1 mr-3"></i>
+                            <p class="text-secondary">Mengajarkan metode pembacaan Al-Qur'an yang sesuai dengan tapivid dan qira'at yang mu'tabarah.</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check text-primary mt-1 mr-3"></i>
+                            <p class="text-secondary">Mengembangkan sistem pendidikan yang berlandaskan pada nilai-nilai warisan guru dan ulama terdanulu.</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check text-primary mt-1 mr-3"></i>
+                            <p class="text-secondary">Menumbuhkan semangat dakwah dan pengabdian di tengah masyarakat melalui nilai-nilai Al-Qur'an.</p>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check text-primary mt-1 mr-3"></i>
+                            <p class="text-secondary">Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur'an dan ilmu-ilmu keislaman lainnya.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Program Unggulan Section -->
+    <section id="program" class="py-16 px-4">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Program Unggulan</h2>
+            <p class="text-center text-secondary mb-12">Program-program unggulan yang ditawarkan oleh Pesantren AI-Our'an Bani Syahid</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Program 1 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-quran text-2xl text-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary">Tahfıdzul Qur'an</h3>
+                    </div>
+                    <p class="text-secondary mb-4">Program Hafalan Al-Qur'an</p>
+                    <ul class="text-secondary space-y-2">
+                        <li><span class="font-semibold">Target:</span> Hafal 30 Juz dalam waktu 3-5 tahun</li>
+                        <li><span class="font-semibold">Metode:</span> Talagd dan murajash harian bersama muayil/ah</li>
+                        <li><span class="font-semibold">Sistem evaluasi:</span> Setora harian, tasmî mingguan, dan ujian tahunan</li>
+                    </ul>
                 </div>
 
-                <!-- Stat 3 -->
-                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
-                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-chart-line text-2xl text-primary"></i>
+                <!-- Program 2 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-book-open text-2xl text-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary">Qiraat Sab'ah</h3>
                     </div>
-                    <div class="text-5xl font-bold text-primary mb-2">95.5 %</div>
-                    <div class="text-xl font-medium text-secondary">Tingkat Penerimaan</div>
+                    <p class="text-secondary mb-4">Program Qiraat Sab'ah </p>
+                    <ul class="text-secondary space-y-2">
+                        <li><span class="font-semibold">Target:</span> Menguasai tujuh dira'at mutawati sesuai rivayat yang sahih</li>
+                        <li><span class="font-semibold">Materi:</span> Teori dan praktik dira'at berdasarkan matan "Aay-Syatibiyyah"</li>
+                        <li><span class="font-semibold">Output:</span> Santri memahami perbedaan qiraat dan mampu membacanya dengan tepat</li>
+                    </ul>
                 </div>
 
-                <!-- Stat 4 -->
-                <div class="bg-white rounded-xl shadow-lg p-6 text-center transform transition duration-300 hover:scale-105">
-                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-smile text-2xl text-primary"></i>
+                <!-- Program 3 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-music text-2xl text-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary">Nagham</h3>
                     </div>
-                    <div class="text-5xl font-bold text-primary mb-2">99.9%</div>
-                    <div class="text-xl font-medium text-secondary">Kepuasan Pengguna</div>
+                    <p class="text-secondary mb-4">Program Irama Tilawah Al-Qur'an</p>
+                    <ul class="text-secondary space-y-2">
+                        <li><span class="font-semibold">Tujuan:</span> Meninşkatkan kualltas bacaan santri dengan irama yang sesuai kaidah tajwid dan nagham</li>
+                        <li><span class="font-semibold">Jenis Nagham:</span> Bayati, Shoba, Hijaz, Mahawan, Bast, Sika, Jiranka</li>
+                        <li><span class="font-semibold">Keglator:</span> Lathan rutin, lomba internal, dan pembinaan untuk Musabaqah Tilawati! Qur'an (MTQ)</li>
+                    </ul>
+                </div>
+
+                <!-- Program 4 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-graduation-cap text-2xl text-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary">Kajlan Kitab Ulama Klasik (Turats)</h3>
+                    </div>
+                    <p class="text-secondary mb-4">Pengajian Kitab Kuning</p>
+                    <ul class="text-secondary space-y-2">
+                        <li><span class="font-semibold">Sistem:</span> Talaqqi (pengajian langsung) dan diskusi kitab kuning</li>
+                        <li><span class="font-semibold">Target:</span> Santri memahami dasar-dasar limu Islam dari sumber klasik</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alur Pendaftaran Section -->
+    <section id="alur-pendaftaran" class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Alur Pendaftaran</h2>
+            <p class="text-center text-secondary mb-12">Tahapan pendaftaran PPDB Pesantren AI-Our'an Bani Syahid</p>
+
+            <div class="max-w-4xl mx-auto">
+                <!-- Step 1 -->
+                <div class="flex items-start mb-8">
+                    <div class="step-number">1</div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-2">Membuat Akun</h3>
+                        <p class="text-secondary">Membuat akun pada website PPDB Pondok Pesantren Al Bani Syahid</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex items-start mb-8">
+                    <div class="step-number">2</div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-2">Isi Biodata</h3>
+                        <p class="text-secondary">Login kembali pada website PPDB Al Bani Syahid, kemudian melengkapi biodata pendaftar dan kirim berkas</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex items-start mb-8">
+                    <div class="step-number">3</div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-2">Pembayaran</h3>
+                        <p class="text-secondary">Melakukan pembayaran dengan berbagai metode pembayaran yang disediakan atau datang langsung ke pesantren</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex items-start mb-8">
+                    <div class="step-number">4</div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-2">Cetak Kartu Peserta</h3>
+                        <p class="text-secondary">Mencetak kartu peserta yang berisi barcode, informasi peserta dan keterangan lainnya</p>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="flex items-start mb-8">
+                    <div class="step-number">5</div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-2">Pelaksanaan Tes dan Wawancara</h3>
+                        <p class="text-secondary">Calon santri akan dipanggil langsung pihak pesantren</p>
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="flex items-start">
+                    <div class="step-number">6</div>
+                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
+                        <h3 class="text-xl font-bold text-primary mb-2">Pengumuman Kelulusan</h3>
+                        <p class="text-secondary">Calon Santri Melihat pengumuman kelulusan pada website PPDB Pondok Pesantren Al Bani Syahid</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Informasi Biaya Section -->
-    <section class="py-16 px-4">
+    <section id="biaya" class="py-16 px-4">
         <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-4">Informasi Biaya</h2>
-            <p class="text-center text-secondary mb-12">Informasi terkini penerimaan peserta didik baru</p>
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Informasi Biaya Takhossus Pesantren</h2>
+            <p class="text-center text-secondary mb-12">Informasi Biaya Pondok Pesantren Al Bani</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Card 1 -->
                 <div class="bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
                     <div class="flex items-center mb-4">
                         <i class="fas fa-money-bill-wave text-2xl mr-3"></i>
-                        <div class="text-4xl font-bold">150 +</div>
+                        <div class="text-2xl font-bold">Pendaftaran</div>
                     </div>
-                    <div class="text-lg font-medium">Becken Tonszino</div>
+                    <div class="text-lg font-medium">Rp.300.000</div>
                     <div class="mt-4 pt-4 border-t border-white/30">
-                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                        <p class="text-sm">💰 Biaya awal pendaftaran</p>
                     </div>
                 </div>
 
@@ -165,11 +327,11 @@
                 <div class="bg-gradient-to-br from-secondary to-secondary/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
                     <div class="flex items-center mb-4">
                         <i class="fas fa-graduation-cap text-2xl mr-3"></i>
-                        <div class="text-4xl font-bold">1,200</div>
+                        <div class="text-2xl font-bold">Bangunan</div>
                     </div>
-                    <div class="text-lg font-medium">Smart Tonszins</div>
+                    <div class="text-lg font-medium">Rp.300.000</div>
                     <div class="mt-4 pt-4 border-t border-white/30">
-                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                        <p class="text-sm">🏫 Untuk fasilitas pesantren</p>
                     </div>
                 </div>
 
@@ -177,11 +339,11 @@
                 <div class="bg-gradient-to-br from-accent to-accent/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
                     <div class="flex items-center mb-4">
                         <i class="fas fa-percentage text-2xl mr-3"></i>
-                        <div class="text-4xl font-bold">95.5 %</div>
+                        <div class="text-2xl font-bold">Kitab</div>
                     </div>
-                    <div class="text-lg font-medium">Tropical Presum</div>
+                    <div class="text-lg font-medium">Rp.400.000</div>
                     <div class="mt-4 pt-4 border-t border-white/30">
-                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                        <p class="text-sm">📚 Buku pelajaran dan kitab</p>
                     </div>
                 </div>
 
@@ -189,11 +351,158 @@
                 <div class="bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
                     <div class="flex items-center mb-4">
                         <i class="fas fa-chart-line text-2xl mr-3"></i>
-                        <div class="text-4xl font-bold">99.9%</div>
+                        <div class="text-2xl font-bold">Perlengkapan</div>
                     </div>
-                    <div class="text-lg font-medium">Kipsoosa Prospyxis</div>
+                    <div class="text-lg font-medium">Rp.1.000.000</div>
                     <div class="mt-4 pt-4 border-t border-white/30">
-                        <p class="text-sm">Detail informasi biaya untuk program ini.</p>
+                        <p class="text-sm">🛏️ Untuk Lemari, Kasur Dan Bantal</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Informasi Biaya Takhossus Pesantren Plus Sekolah Section -->
+    <section class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Informasi Biaya Takhossus Pesantren Plus Sekolah</h2>
+            <p class="text-center text-secondary mb-12">Informasi Biaya Pondok Pesantren Al Bani</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-money-bill-wave text-2xl mr-3"></i>
+                        <div class="text-2xl font-bold">Pendaftaran</div>
+                    </div>
+                    <div class="text-lg font-medium">Rp.500.000</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">💰 Biaya awal pendaftaran</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-gradient-to-br from-secondary to-secondary/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-graduation-cap text-2xl mr-3"></i>
+                        <div class="text-2xl font-bold">Bangunan</div>
+                    </div>
+                    <div class="text-lg font-medium">Rp.300.000</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">🏫 Untuk fasilitas pesantren</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-gradient-to-br from-accent to-accent/80 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-percentage text-2xl mr-3"></i>
+                        <div class="text-2xl font-bold">Kitab</div>
+                    </div>
+                    <div class="text-lg font-medium">Rp.400.000</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">📚 Buku pelajaran dan kitab</p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chart-line text-2xl mr-3"></i>
+                        <div class="text-2xl font-bold">Perlengkapan</div>
+                    </div>
+                    <div class="text-lg font-medium">Rp.1.000.000</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">🛏️ Untuk Lemari, Kasur Dan Bantal</p>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="bg-gradient-to-br from-green-500 to-green-400 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-book text-2xl mr-3"></i>
+                        <div class="text-2xl font-bold">Syahriyah</div>
+                    </div>
+                    <div class="text-lg font-medium">Rp.400.000</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="bg-gradient-to-br from-purple-500 to-purple-400 rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-tshirt text-2xl mr-3"></i>
+                        <div class="text-2xl font-bold">Sekolah</div>
+                    </div>
+                    <div class="text-lg font-medium">Rp.100.000</div>
+                    <div class="mt-4 pt-4 border-t border-white/30">
+                        <p class="text-sm">🏫 Biaya sekolah per bulan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Persyaratan Dokumen Section -->
+    <section id="persyaratan" class="py-16 px-4">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Persyaratan Dokumen</h2>
+            <p class="text-center text-secondary mb-12">Dokumen-dokumen yang diperlukan untuk pendaftaran</p>
+
+            <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8">
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
+                            <span class="font-bold">1</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-primary mb-1">Formulir Pendaftaran</h3>
+                            <p class="text-secondary">Formulir yang disediakan oleh pesantren atau mengisinya lewat website ini </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
+                            <span class="font-bold">2</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-primary mb-1">Pas Foto 3x4</h3>
+                            <p class="text-secondary">Sebanyak 4 Lembar </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
+                            <span class="font-bold">3</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-primary mb-1">Akte Kelahiran</h3>
+                            <p class="text-secondary">Dalam bentuk fotokopi  </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
+                            <span class="font-bold">4</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-primary mb-1">Kartu Keluarga</h3>
+                            <p class="text-secondary">Fotokopi Kartu Keluarga</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
+                            <span class="font-bold">5</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-primary mb-1">SKL atau Ijazah</h3>
+                            <p class="text-secondary">
+                                SKL atau Ijazah SD/Sederajat untuk SMP dan SMP/Sederajat untuk SMA atau
+                                Rapor terakhir untuk yang belum lulus
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -208,8 +517,8 @@
                 <div>
                     <h3 class="text-xl font-bold mb-4">Tentang Kami</h3>
                     <ul class="space-y-2">
+                        <li><a href="#visi-misi" class="hover:text-accent transition duration-300">Visi & Misi</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Sejarah</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Visi & Misi</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Struktur Organisasi</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Fasilitas</a></li>
                     </ul>
@@ -219,10 +528,10 @@
                 <div>
                     <h3 class="text-xl font-bold mb-4">Program</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-accent transition duration-300">Tahfidz AI-Our'an</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Pendidikan Formal</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Keterampilan Digital</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Ekstrakurikuler</a></li>
+                        <li><a href="#program" class="hover:text-accent transition duration-300">Tahfidz AI-Our'an</a></li>
+                        <li><a href="#program" class="hover:text-accent transition duration-300">Pendidikan Formal</a></li>
+                        <li><a href="#program" class="hover:text-accent transition duration-300">Keterampilan Digital</a></li>
+                        <li><a href="#program" class="hover:text-accent transition duration-300">Ekstrakurikuler</a></li>
                     </ul>
                 </div>
 
@@ -230,10 +539,10 @@
                 <div>
                     <h3 class="text-xl font-bold mb-4">Informasi</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-accent transition duration-300">Berita & Acara</a></li>
+                        <li><a href="#alur-pendaftaran" class="hover:text-accent transition duration-300">Alur Pendaftaran</a></li>
+                        <li><a href="#biaya" class="hover:text-accent transition duration-300">Biaya Pendidikan</a></li>
+                        <li><a href="#persyaratan" class="hover:text-accent transition duration-300">Persyaratan</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Pengumuman</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Galeri</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Blog</a></li>
                     </ul>
                 </div>
 

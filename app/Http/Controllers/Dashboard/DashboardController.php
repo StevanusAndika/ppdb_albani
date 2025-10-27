@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Dashboard;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,11 +12,27 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Redirect berdasarkan rolex
+        // Redirect berdasarkan role
         if ($user->role === 'admin') {
-            return view('dashboard.admin');
+            return redirect()->route('admin.dashboard');
         } else {
-            return view('dashboard.santri');
+            return redirect()->route('santri.dashboard');
         }
+    }
+
+    /**
+     * Admin Dashboard
+     */
+    public function adminDashboard()
+    {
+        return view('dashboard.admin');
+    }
+
+    /**
+     * Santri Dashboard
+     */
+    public function santriDashboard()
+    {
+        return view('dashboard.santri');
     }
 }
