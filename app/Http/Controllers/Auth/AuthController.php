@@ -16,10 +16,32 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
     /**
+     * Check if user is already authenticated
+     */
+    private function redirectIfAuthenticated()
+    {
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            } else {
+                return redirect()->route('santri.dashboard');
+            }
+        }
+        return null;
+    }
+
+    /**
      * Show login form
      */
     public function showLoginForm()
     {
+        // Check if already logged in
+        $redirect = $this->redirectIfAuthenticated();
+        if ($redirect) {
+            return $redirect;
+        }
+
         return view('auth.login');
     }
 
@@ -28,6 +50,12 @@ class AuthController extends Controller
      */
     public function showRegisterForm()
     {
+        // Check if already logged in
+        $redirect = $this->redirectIfAuthenticated();
+        if ($redirect) {
+            return $redirect;
+        }
+
         return view('auth.register');
     }
 
@@ -36,10 +64,25 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        // Check if already logged in
+        $redirect = $this->redirectIfAuthenticated();
+        if ($redirect) {
+            return $redirect;
+        }
+
+        // Validasi input
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $credentials = $request->only('email', 'password');
 
         // Cek apakah user ada
         $user = User::where('email', $credentials['email'])->first();
@@ -47,7 +90,7 @@ class AuthController extends Controller
         if (!$user) {
             return back()->withErrors([
                 'email' => 'Email tidak ditemukan.',
-            ])->withInput();
+            ])->withInput()->with('redirect_to_register', true);
         }
 
         // Cek apakah user aktif
@@ -68,7 +111,12 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('dashboard'));
+            // Redirect berdasarkan role dengan notifikasi
+            if (Auth::user()->isAdmin()) {
+                return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang Admin.');
+            } else {
+                return redirect()->route('santri.dashboard')->with('success', 'Login berhasil! Selamat datang.');
+            }
         }
 
         return back()->withErrors([
@@ -81,6 +129,12 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        // Check if already logged in
+        $redirect = $this->redirectIfAuthenticated();
+        if ($redirect) {
+            return $redirect;
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -102,19 +156,17 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'phone_number' => $request->phone_number,
-                'role' => 'calon_santri', // Default role untuk registrasi manual
+                'role' => 'calon_santri',
                 'is_active' => true,
                 'provider_id' => null,
                 'provider_name' => null,
-                'email_verified_at' => null, // Email belum terverifikasi untuk registrasi manual
+                'email_verified_at' => null,
             ]);
 
             DB::commit();
 
-            // Auto login setelah registrasi
-            Auth::login($user);
-
-            return redirect()->route('dashboard')->with('success', 'Registrasi berhasil! Selamat datang.');
+            // Redirect ke login dengan pesan sukses
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -135,7 +187,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('success', 'Logout berhasil!');
     }
 
     /**
@@ -143,13 +195,17 @@ class AuthController extends Controller
      */
     public function redirectToProvider($provider)
     {
-        $allowedProviders = ['google', 'facebook', 'github']; // Tambahkan provider lain jika needed
+        $allowedProviders = ['google'];
 
         if (!in_array($provider, $allowedProviders)) {
             abort(404, 'Provider tidak didukung.');
         }
 
-        return Socialite::driver($provider)->redirect();
+        try {
+            return Socialite::driver($provider)->redirect();
+        } catch (Exception $e) {
+            return redirect()->route('login')->with('error', 'Terjadi kesalahan dengan provider ' . $provider);
+        }
     }
 
     /**
@@ -160,58 +216,96 @@ class AuthController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->stateless()->user();
         } catch (Exception $e) {
-            return redirect()->route('login')->with('error', 'Terjadi kesalahan saat login dengan ' . $provider . ': ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Terjadi kesalahan saat login dengan ' . $provider . '. Silakan coba lagi.');
         }
 
-        // find or create user and send params user get from socialite and provider
-        $authUser = $this->findOrCreateUser($socialUser, $provider);
+        // Cari user berdasarkan email
+        $user = User::where('email', $socialUser->getEmail())->first();
+
+        // Jika user tidak ditemukan, redirect ke register dengan data socialite
+        if (!$user) {
+            return redirect()->route('register')->with([
+                'socialite_data' => [
+                    'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? explode('@', $socialUser->getEmail())[0],
+                    'email' => $socialUser->getEmail(),
+                    'provider' => $provider,
+                    'provider_id' => $socialUser->getId(),
+                ],
+                'info' => 'Email tidak ditemukan. Silakan lengkapi pendaftaran dengan ' . ucfirst($provider) . '.'
+            ]);
+        }
 
         // Cek apakah user aktif
-        if (!$authUser->is_active) {
+        if (!$user->is_active) {
             return redirect()->route('login')->with('error', 'Akun Anda tidak aktif. Silakan hubungi administrator.');
         }
 
-        // login user
-        Auth::login($authUser, true);
+        // Login user
+        Auth::login($user, true);
 
-        // redirect ke dashboard
-        return redirect()->intended(route('dashboard'));
+        // Redirect berdasarkan role
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang Admin.');
+        } else {
+            return redirect()->route('santri.dashboard')->with('success', 'Login berhasil! Selamat datang.');
+        }
     }
 
     /**
-     * Find or create user for socialite login
+     * Handle socialite registration
      */
-    public function findOrCreateUser($socialUser, $provider)
+    public function handleSocialiteRegistration(Request $request)
     {
-        // Cari user berdasarkan email dari socialite
-        $user = User::where('email', $socialUser->getEmail())->first();
-
-        // Jika user sudah ada
-        if ($user) {
-            // Jika user sudah ada dengan provider yang sama, update provider info jika perlu
-            if ($user->provider_name !== $provider || $user->provider_id !== $socialUser->getId()) {
-                $user->update([
-                    'provider_id' => $socialUser->getId(),
-                    'provider_name' => $provider
-                ]);
-            }
-
-            return $user;
+        // Check if already logged in
+        $redirect = $this->redirectIfAuthenticated();
+        if ($redirect) {
+            return $redirect;
         }
 
-        // Jika user belum ada, create user baru
-        $user = User::create([
-            'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'User',
-            'email' => $socialUser->getEmail(),
-            'password' => Hash::make(Str::random(16)), // Password random karena login via socialite
-            'provider_id' => $socialUser->getId(),
-            'provider_name' => $provider,
-            'email_verified_at' => now(), // Verifikasi email otomatis karena dari provider terpercaya
-            'role' => 'calon_santri', // Default role untuk user socialite
-            'is_active' => true,
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone_number' => 'nullable|string|max:15',
+            'provider' => 'required|string',
+            'provider_id' => 'required|string',
         ]);
 
-        return $user;
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make(Str::random(16)),
+                'phone_number' => $request->phone_number,
+                'role' => 'calon_santri',
+                'is_active' => true,
+                'provider_id' => $request->provider_id,
+                'provider_name' => $request->provider,
+                'email_verified_at' => now(),
+            ]);
+
+            DB::commit();
+
+            // Login user setelah registrasi socialite
+            Auth::login($user, true);
+
+            // Redirect ke dashboard
+            return redirect()->route('santri.dashboard')->with('success', 'Registrasi dengan ' . ucfirst($request->provider) . ' berhasil! Selamat datang.');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors(['error' => 'Terjadi kesalahan saat registrasi. Silakan coba lagi.'])
+                ->withInput();
+        }
     }
 
     /**
@@ -219,6 +313,17 @@ class AuthController extends Controller
      */
     public function checkEmail(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'exists' => false,
+                'message' => 'Format email tidak valid.'
+            ], 400);
+        }
+
         $exists = User::where('email', $request->email)->exists();
 
         return response()->json([

@@ -12,11 +12,11 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Redirect berdasarkan role
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
+        // Redirect berdasarkan role dengan notifikasi
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard')->with('success', 'Selamat datang di Dashboard Admin!');
         } else {
-            return redirect()->route('santri.dashboard');
+            return redirect()->route('santri.dashboard')->with('success', 'Selamat datang di Dashboard Santri!');
         }
     }
 
@@ -25,7 +25,14 @@ class DashboardController extends Controller
      */
     public function adminDashboard()
     {
-        return view('dashboard.admin');
+        $user = Auth::user();
+
+        // Pastikan hanya admin yang bisa akses
+        if (!$user->isAdmin()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        return view('dashboard.admin', compact('user'));
     }
 
     /**
@@ -33,6 +40,13 @@ class DashboardController extends Controller
      */
     public function santriDashboard()
     {
-        return view('dashboard.santri');
+        $user = Auth::user();
+
+        // Pastikan hanya calon_santri yang bisa akses
+        if (!$user->isCalonSantri()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        return view('dashboard.santri', compact('user'));
     }
 }

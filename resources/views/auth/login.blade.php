@@ -7,7 +7,7 @@
     <!-- Header dengan Logo PFDB -->
     <div class="p-6 text-center border-b border-white/20">
         <div class="logo-container">
-            <div class="logo-text">PFDB</div>
+            <div class="logo-text">PPDB</div>
         </div>
         <h1 class="text-2xl font-bold mt-2">Login PPDB</h1>
         <p class="text-white-90 text-sm mt-1">Pondok Pesantren Bani Syahid</p>
@@ -101,3 +101,25 @@
     </div>
 </div>
 @endsection
+
+<script>
+// Auto show register suggestion
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('redirect_to_register'))
+        const registerSuggestion = document.createElement('div');
+        registerSuggestion.className = 'mt-4 p-3 bg-yellow-500/20 rounded-lg border border-yellow-300/30 text-center';
+        registerSuggestion.innerHTML = `
+            <p class="text-sm text-yellow-100 mb-2">
+                <i class="fas fa-exclamation-circle mr-1"></i>
+                Email tidak ditemukan. Belum punya akun?
+            </p>
+            <a href="{{ route('register') }}" class="text-white font-medium hover:underline bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg transition duration-200">
+                Daftar Sekarang
+            </a>
+        `;
+
+        const form = document.querySelector('form');
+        form.parentNode.insertBefore(registerSuggestion, form.nextSibling);
+    @endif
+});
+</script>

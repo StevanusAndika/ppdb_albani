@@ -37,55 +37,77 @@
             margin-right: 15px;
             flex-shrink: 0;
         }
+        /* Perbaikan untuk navbar mobile */
+        @media (max-width: 767px) {
+            .nav-container {
+                padding: 0.75rem 1rem;
+            }
+            .nav-logo {
+                font-size: 1.1rem;
+            }
+            .mobile-menu-button {
+                padding: 0.5rem;
+            }
+            .mobile-menu {
+                border-radius: 1rem;
+                margin-top: 0.75rem;
+                padding: 1rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            }
+            .mobile-menu-item {
+                padding: 0.75rem 1rem;
+                border-radius: 0.75rem;
+                margin-bottom: 0.25rem;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <!-- Navbar -->
-    <nav class="bg-white shadow-md py-4 px-6 rounded-full mx-4 mt-4 sticky top-4 z-50">
+    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="text-xl font-bold text-primary">PPDB Ponpes Al Bani</div>
-
-            <!-- Mobile menu button -->
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-primary focus:outline-none">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-            </div>
+            <div class="text-lg md:text-xl font-bold text-primary nav-logo">PPDB Ponpes Al Bani</div>
 
             <!-- Desktop menu -->
-            <div class="hidden md:flex space-x-8">
-                <a href="#" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="#visi-misi" class="text-primary hover:text-secondary font-medium">Visi & Misi</a>
-                <a href="#program" class="text-primary hover:text-secondary font-medium">Program</a>
-                <a href="#alur-pendaftaran" class="text-primary hover:text-secondary font-medium">Alur Pendaftaran</a>
-                <a href="#biaya" class="text-primary hover:text-secondary font-medium">Biaya</a>
-                <a href="#persyaratan" class="text-primary hover:text-secondary font-medium">Persyaratan</a>
-                <a href="#" class="text-primary hover:text-secondary font-medium">Kontak</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="#" class="text-primary hover:text-secondary font-medium transition duration-300">Beranda</a>
+                <a href="#visi-misi" class="text-primary hover:text-secondary font-medium transition duration-300">Visi & Misi</a>
+                <a href="#program" class="text-primary hover:text-secondary font-medium transition duration-300">Program</a>
+                <a href="#alur-pendaftaran" class="text-primary hover:text-secondary font-medium transition duration-300">Alur Pendaftaran</a>
+                <a href="#biaya" class="text-primary hover:text-secondary font-medium transition duration-300">Biaya</a>
+                <a href="#persyaratan" class="text-primary hover:text-secondary font-medium transition duration-300">Persyaratan</a>
+                <a href="#" class="text-primary hover:text-secondary font-medium transition duration-300">Kontak</a>
+                <a href="{{ route('login') }}">
+                    <button class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300 ml-2">
+                        Login
+                    </button>
+                </a>
             </div>
 
-            <div class="hidden md:block">
-               <a href="{{ route('login') }}">
-            <button class="bg-primary text-white px-6 py-2 rounded-full hover:bg-secondary transition duration-300">
-                Login
-            </button>
-            </a>
+            <!-- Mobile menu button -->
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-button" class="text-primary focus:outline-none mobile-menu-button">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
             </div>
         </div>
 
         <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
-            <a href="#" class="block py-2 text-primary hover:text-secondary">Beranda</a>
-            <a href="#visi-misi" class="block py-2 text-primary hover:text-secondary">Visi & Misi</a>
-            <a href="#program" class="block py-2 text-primary hover:text-secondary">Program</a>
-            <a href="#alur-pendaftaran" class="block py-2 text-primary hover:text-secondary">Alur Pendaftaran</a>
-            <a href="#biaya" class="block py-2 text-primary hover:text-secondary">Biaya</a>
-            <a href="#persyaratan" class="block py-2 text-primary hover:text-secondary">Persyaratan</a>
-            <a href="#" class="block py-2 text-primary hover:text-secondary">Kontak</a>
-            <a href="{{ route('login') }}">
-            <button class="bg-primary text-white px-6 py-2 rounded-full hover:bg-secondary transition duration-300">
-                Login
-            </button>
-            </a>
+        <div id="mobile-menu" class="hidden md:hidden mt-2 mobile-menu bg-white">
+            <div class="flex flex-col space-y-1">
+                <a href="#" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Beranda</a>
+                <a href="#visi-misi" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Visi & Misi</a>
+                <a href="#program" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Program</a>
+                <a href="#alur-pendaftaran" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Alur Pendaftaran</a>
+                <a href="#biaya" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Biaya</a>
+                <a href="#persyaratan" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Persyaratan</a>
+                <a href="#" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Kontak</a>
+                <a href="{{ route('login') }}" class="mobile-menu-item">
+                    <button class="w-full bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
+                        Login
+                    </button>
+                </a>
+            </div>
         </div>
     </nav>
 
@@ -480,72 +502,59 @@
     </section>
 
     <!-- Persyaratan Dokumen Section -->
-  <section id="persyaratan" class="py-20 bg-gradient-to-b from-[#f7fafc] to-[#e6f0ea]">
-  <div class="container mx-auto px-6 text-center">
-    <h2 class="text-4xl font-extrabold text-emerald-800 mb-3 tracking-wide">
-      Persyaratan Dokumen
-    </h2>
-    <p class="text-gray-600 mb-16">
-      Dokumen-dokumen yang diperlukan untuk pendaftaran santri baru
-    </p>
+    <section id="persyaratan" class="py-16 bg-gradient-to-b from-[#f7fafc] to-[#e6f0ea]">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-primary mb-4">Persyaratan Dokumen</h2>
+            <p class="text-center text-secondary mb-8 md:mb-12">Dokumen-dokumen yang diperlukan untuk pendaftaran santri baru</p>
 
-    <div class="flex flex-col md:flex-row items-stretch justify-center gap-6 md:gap-10 flex-wrap">
+            <div class="flex flex-wrap justify-center gap-4 md:gap-6 lg:gap-8">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
+                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                        <img src="{{ asset('image/formulir.png') }}" alt="Formulir" class="w-12 h-12 object-contain">
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Formulir</h3>
+                    <p class="text-secondary text-sm text-center">Bisa melalui offline atau website.</p>
+                </div>
 
-      <!-- TEMPLATE CARD -->
-      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
-        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
-          <img src="{{ asset('image/formulir.png') }}" alt="Formulir" class="w-50 h-50 object-contain">
+                <!-- Card 2 -->
+                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
+                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                        <img src="{{ asset('image/pasfoto.png') }}" alt="Pas Foto" class="w-12 h-12 object-contain">
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Pas Foto 3x4</h3>
+                    <p class="text-secondary text-sm text-center">Sebanyak 4 lembar.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
+                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                        <img src="{{ asset('image/akte.png') }}" alt="Akte Kelahiran" class="w-12 h-12 object-contain">
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Akte Kelahiran</h3>
+                    <p class="text-secondary text-sm text-center">Dalam bentuk fotokopi.</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
+                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                        <img src="{{ asset('image/kk.png') }}" alt="Kartu Keluarga" class="w-12 h-12 object-contain">
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Kartu Keluarga</h3>
+                    <p class="text-secondary text-sm text-center">Fotokopi Kartu Keluarga.</p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
+                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                        <img src="{{ asset('image/ijazah.png') }}" alt="Ijazah" class="w-12 h-12 object-contain">
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">SKL atau Ijazah</h3>
+                    <p class="text-secondary text-sm text-center">SKL/Ijazah SD,SMP dan SMA, atau rapor terakhir bagi yang belum lulus.</p>
+                </div>
+            </div>
         </div>
-        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Formulir </h3>
-        <p class="text-gray-600 text-sm leading-snug">Bisa melalui offline atau website.</p>
-      </div>
-
-      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
-
-      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
-        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
-          <img src="{{ asset('image/pasfoto.png') }}" alt="Pas Foto" class="w-50 h-50 object-contain">
-        </div>
-        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Pas Foto 3x4</h3>
-        <p class="text-gray-600 text-sm leading-snug">Sebanyak 4 lembar.</p>
-      </div>
-
-      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
-
-      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
-        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
-          <img src="{{ asset('image/akte.png') }}" alt="Akte Kelahiran" class="w-50 h-50 object-contain">
-        </div>
-        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Akte Kelahiran</h3>
-        <p class="text-gray-600 text-sm leading-snug">Dalam bentuk fotokopi.</p>
-      </div>
-
-      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
-
-      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
-        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
-          <img src="{{ asset('image/kk.png') }}" alt="Kartu Keluarga" class="w-50 h-50 object-contain">
-        </div>
-        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Kartu Keluarga</h3>
-        <p class="text-gray-600 text-sm leading-snug">Fotokopi Kartu Keluarga.</p>
-      </div>
-
-      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
-
-      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
-        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
-          <img src="{{ asset('image/ijazah.png') }}" alt="Ijazah" class="w-50 h-50 object-contain">
-        </div>
-        <h3 class="text-lg font-semibold text-emerald-800 mb-1">SKL atau Ijazah</h3>
-        <p class="text-gray-600 text-sm leading-snug">SKL/Ijazah SD,SMP dan SMA, atau rapor terakhir bagi yang belum lulus.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-
+    </section>
 
     <!-- Footer -->
     <footer class="bg-primary text-white py-12 px-4">
@@ -588,9 +597,9 @@
                 <div>
                     <h3 class="text-xl font-bold mb-4">Kontak</h3>
                     <ul class="space-y-2">
-                      <a href="https://www.google.com/maps/place/Pondok+Pesantren+Al-Qur'an+Bani+Syahid/@-6.3676771,106.8696904,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69ed654ce6786b:0x1019880ca4f9403b!8m2!3d-6.3676824!4d106.8722707!16s%2Fg%2F11f6m9qmmr?hl=id" 
-   target="_blank" 
-   rel="noopener noreferrer" 
+                      <a href="https://www.google.com/maps/place/Pondok+Pesantren+Al-Qur'an+Bani+Syahid/@-6.3676771,106.8696904,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69ed654ce6786b:0x1019880ca4f9403b!8m2!3d-6.3676824!4d106.8722707!16s%2Fg%2F11f6m9qmmr?hl=id"
+   target="_blank"
+   rel="noopener noreferrer"
    class="hover:text-accent transition duration-300">
    Alamat
 </a>

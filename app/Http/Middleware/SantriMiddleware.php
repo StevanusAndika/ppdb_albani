@@ -11,12 +11,13 @@ class SantriMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Cek apakah user sudah login dan memiliki role santri
+        // Cek apakah user sudah login
         if (!Auth::check()) {
-            return redirect()->route('login');
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        if (Auth::user()->role !== 'santri') {
+        // Cek apakah user memiliki role calon_santri
+        if (Auth::user()->role !== 'calon_santri') {
             abort(403, 'Unauthorized access for santri area.');
         }
 

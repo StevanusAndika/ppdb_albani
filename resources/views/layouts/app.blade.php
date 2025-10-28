@@ -10,10 +10,11 @@
 
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Load CSS langsung di layout -->
     <style>
-        /* Auth Styles */
         .auth-container {
             box-shadow: 0 15px 35px rgba(5, 117, 114, 0.3);
             background: linear-gradient(145deg, #057572, #04615f);
@@ -129,7 +130,6 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- JavaScript untuk toggle password -->
     <script>
         // Password toggle functionality
         function initPasswordToggle() {
@@ -177,6 +177,18 @@
                 showConfirmButton: true,
                 background: '#fef2f2',
                 color: '#dc2626'
+            });
+        @endif
+
+        @if(session('info'))
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi',
+                text: '{{ session('info') }}',
+                timer: 4000,
+                showConfirmButton: true,
+                background: '#eff6ff',
+                color: '#1e40af'
             });
         @endif
 

@@ -11,11 +11,12 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Cek apakah user sudah login dan memiliki role admin
+        // Cek apakah user sudah login
         if (!Auth::check()) {
-            return redirect()->route('login');
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        // Cek apakah user memiliki role admin
         if (Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized access for admin area.');
         }
