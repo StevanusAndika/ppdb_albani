@@ -241,68 +241,103 @@
     </section>
 
     <!-- Alur Pendaftaran Section -->
-    <section id="alur-pendaftaran" class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
-        <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-4">Alur Pendaftaran</h2>
-            <p class="text-center text-secondary mb-12">Tahapan pendaftaran PPDB Pesantren AI-Our'an Bani Syahid</p>
+   <section id="alur-pendaftaran" class="py-20 px-6 bg-gradient-to-b from-primary/10 via-white to-primary/5">
+  <div class="container mx-auto">
+    <h2 class="text-4xl font-extrabold text-center text-primary mb-4 tracking-wide">
+      Alur Pendaftaran
+    </h2>
+    <p class="text-center text-gray-600 mb-16">
+      Tahapan pendaftaran PPDB Pesantren Al-Qur'an Bani Syahid
+    </p>
 
-            <div class="max-w-4xl mx-auto">
-                <!-- Step 1 -->
-                <div class="flex items-start mb-8">
-                    <div class="step-number">1</div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
-                        <h3 class="text-xl font-bold text-primary mb-2">Membuat Akun</h3>
-                        <p class="text-secondary">Membuat akun pada website PPDB Pondok Pesantren Al Bani Syahid</p>
-                    </div>
-                </div>
+    <div class="relative max-w-5xl mx-auto">
+      <!-- Garis penghubung vertikal -->
+      <div class="absolute left-8 top-0 h-full w-1 bg-gradient-to-b from-primary/50 to-secondary/50 rounded-full"></div>
 
-                <!-- Step 2 -->
-                <div class="flex items-start mb-8">
-                    <div class="step-number">2</div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
-                        <h3 class="text-xl font-bold text-primary mb-2">Isi Biodata</h3>
-                        <p class="text-secondary">Login kembali pada website PPDB Al Bani Syahid, kemudian melengkapi biodata pendaftar dan kirim berkas</p>
-                    </div>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="flex items-start mb-8">
-                    <div class="step-number">3</div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
-                        <h3 class="text-xl font-bold text-primary mb-2">Pembayaran</h3>
-                        <p class="text-secondary">Melakukan pembayaran dengan berbagai metode pembayaran yang disediakan atau datang langsung ke pesantren</p>
-                    </div>
-                </div>
-
-                <!-- Step 4 -->
-                <div class="flex items-start mb-8">
-                    <div class="step-number">4</div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
-                        <h3 class="text-xl font-bold text-primary mb-2">Cetak Kartu Peserta</h3>
-                        <p class="text-secondary">Mencetak kartu peserta yang berisi barcode, informasi peserta dan keterangan lainnya</p>
-                    </div>
-                </div>
-
-                <!-- Step 5 -->
-                <div class="flex items-start mb-8">
-                    <div class="step-number">5</div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
-                        <h3 class="text-xl font-bold text-primary mb-2">Pelaksanaan Tes dan Wawancara</h3>
-                        <p class="text-secondary">Calon santri akan dipanggil langsung pihak pesantren</p>
-                    </div>
-                </div>
-
-                <!-- Step 6 -->
-                <div class="flex items-start">
-                    <div class="step-number">6</div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 flex-1">
-                        <h3 class="text-xl font-bold text-primary mb-2">Pengumuman Kelulusan</h3>
-                        <p class="text-secondary">Calon Santri Melihat pengumuman kelulusan pada website PPDB Pondok Pesantren Al Bani Syahid</p>
-                    </div>
-                </div>
-            </div>
+      <!-- Step Template -->
+      <div class="space-y-12">
+        <!-- Step 1 -->
+        <div class="relative flex items-start gap-6 group">
+          <div class="z-10 flex items-center justify-center w-14 h-14 bg-primary text-white font-bold rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110">
+            1
+          </div>
+          <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex-1 border border-primary/10">
+            <h3 class="text-2xl font-semibold text-primary mb-2 group-hover:text-primary/90">Membuat Akun</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Membuat akun pada website PPDB Pondok Pesantren Al Bani Syahid.
+            </p>
+          </div>
         </div>
-    </section>
+
+        <!-- Step 2 -->
+        <div class="relative flex items-start gap-6 group">
+          <div class="z-10 flex items-center justify-center w-14 h-14 bg-primary text-white font-bold rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110">
+            2
+          </div>
+          <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex-1 border border-primary/10">
+            <h3 class="text-2xl font-semibold text-primary mb-2 group-hover:text-primary/90">Isi Biodata</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Login kembali ke website PPDB Al Bani Syahid, lengkapi biodata dan kirim berkas.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative flex items-start gap-6 group">
+          <div class="z-10 flex items-center justify-center w-14 h-14 bg-primary text-white font-bold rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110">
+            3
+          </div>
+          <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex-1 border border-primary/10">
+            <h3 class="text-2xl font-semibold text-primary mb-2 group-hover:text-primary/90">Pembayaran</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Lakukan pembayaran melalui metode yang disediakan atau langsung ke pesantren.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="relative flex items-start gap-6 group">
+          <div class="z-10 flex items-center justify-center w-14 h-14 bg-primary text-white font-bold rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110">
+            4
+          </div>
+          <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex-1 border border-primary/10">
+            <h3 class="text-2xl font-semibold text-primary mb-2 group-hover:text-primary/90">Cetak Kartu Peserta</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Cetak kartu peserta yang berisi barcode dan informasi peserta.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="relative flex items-start gap-6 group">
+          <div class="z-10 flex items-center justify-center w-14 h-14 bg-primary text-white font-bold rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110">
+            5
+          </div>
+          <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex-1 border border-primary/10">
+            <h3 class="text-2xl font-semibold text-primary mb-2 group-hover:text-primary/90">Tes dan Wawancara</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Calon santri akan dipanggil oleh pihak pesantren untuk tes dan wawancara.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="relative flex items-start gap-6 group">
+          <div class="z-10 flex items-center justify-center w-14 h-14 bg-primary text-white font-bold rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110">
+            6
+          </div>
+          <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex-1 border border-primary/10">
+            <h3 class="text-2xl font-semibold text-primary mb-2 group-hover:text-primary/90">Pengumuman Kelulusan</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Calon santri dapat melihat hasil kelulusan di website PPDB Pondok Pesantren Al Bani Syahid.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
     <!-- Informasi Biaya Section -->
     <section id="biaya" class="py-16 px-4">
@@ -445,69 +480,72 @@
     </section>
 
     <!-- Persyaratan Dokumen Section -->
-    <section id="persyaratan" class="py-16 px-4">
-        <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-4">Persyaratan Dokumen</h2>
-            <p class="text-center text-secondary mb-12">Dokumen-dokumen yang diperlukan untuk pendaftaran</p>
+  <section id="persyaratan" class="py-20 bg-gradient-to-b from-[#f7fafc] to-[#e6f0ea]">
+  <div class="container mx-auto px-6 text-center">
+    <h2 class="text-4xl font-extrabold text-emerald-800 mb-3 tracking-wide">
+      Persyaratan Dokumen
+    </h2>
+    <p class="text-gray-600 mb-16">
+      Dokumen-dokumen yang diperlukan untuk pendaftaran santri baru
+    </p>
 
-            <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8">
-                <div class="space-y-6">
-                    <div class="flex items-start">
-                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
-                            <span class="font-bold">1</span>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary mb-1">Formulir Pendaftaran</h3>
-                            <p class="text-secondary">Formulir yang disediakan oleh pesantren atau mengisinya lewat website ini </p>
-                        </div>
-                    </div>
+    <div class="flex flex-col md:flex-row items-stretch justify-center gap-6 md:gap-10 flex-wrap">
 
-                    <div class="flex items-start">
-                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
-                            <span class="font-bold">2</span>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary mb-1">Pas Foto 3x4</h3>
-                            <p class="text-secondary">Sebanyak 4 Lembar </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
-                            <span class="font-bold">3</span>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary mb-1">Akte Kelahiran</h3>
-                            <p class="text-secondary">Dalam bentuk fotokopi  </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
-                            <span class="font-bold">4</span>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary mb-1">Kartu Keluarga</h3>
-                            <p class="text-secondary">Fotokopi Kartu Keluarga</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1 mr-4">
-                            <span class="font-bold">5</span>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary mb-1">SKL atau Ijazah</h3>
-                            <p class="text-secondary">
-                                SKL atau Ijazah SD/Sederajat untuk SMP dan SMP/Sederajat untuk SMA atau
-                                Rapor terakhir untuk yang belum lulus
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- TEMPLATE CARD -->
+      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
+        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
+          <img src="{{ asset('image/formulir.png') }}" alt="Formulir" class="w-50 h-50 object-contain">
         </div>
-    </section>
+        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Formulir </h3>
+        <p class="text-gray-600 text-sm leading-snug">Bisa melalui offline atau website.</p>
+      </div>
+
+      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
+
+      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
+        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
+          <img src="{{ asset('image/pasfoto.png') }}" alt="Pas Foto" class="w-50 h-50 object-contain">
+        </div>
+        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Pas Foto 3x4</h3>
+        <p class="text-gray-600 text-sm leading-snug">Sebanyak 4 lembar.</p>
+      </div>
+
+      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
+
+      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
+        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
+          <img src="{{ asset('image/akte.png') }}" alt="Akte Kelahiran" class="w-50 h-50 object-contain">
+        </div>
+        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Akte Kelahiran</h3>
+        <p class="text-gray-600 text-sm leading-snug">Dalam bentuk fotokopi.</p>
+      </div>
+
+      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
+
+      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
+        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
+          <img src="{{ asset('image/kk.png') }}" alt="Kartu Keluarga" class="w-50 h-50 object-contain">
+        </div>
+        <h3 class="text-lg font-semibold text-emerald-800 mb-1">Kartu Keluarga</h3>
+        <p class="text-gray-600 text-sm leading-snug">Fotokopi Kartu Keluarga.</p>
+      </div>
+
+      <div class="hidden md:flex text-3xl text-emerald-600 items-center">➜</div>
+
+      <div class="group bg-white rounded-2xl shadow-md border border-emerald-200 hover:border-emerald-400 hover:shadow-xl transition-all duration-300 w-48 h-[240px] flex flex-col items-center justify-start p-6">
+        <div class="bg-emerald-100 rounded-full w-20 h-20 flex items-center justify-center overflow-hidden mb-4">
+          <img src="{{ asset('image/ijazah.png') }}" alt="Ijazah" class="w-50 h-50 object-contain">
+        </div>
+        <h3 class="text-lg font-semibold text-emerald-800 mb-1">SKL atau Ijazah</h3>
+        <p class="text-gray-600 text-sm leading-snug">SKL/Ijazah SD,SMP dan SMA, atau rapor terakhir bagi yang belum lulus.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
 
     <!-- Footer -->
     <footer class="bg-primary text-white py-12 px-4">
@@ -550,7 +588,14 @@
                 <div>
                     <h3 class="text-xl font-bold mb-4">Kontak</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-accent transition duration-300">Alamat</a></li>
+                      <a href="https://www.google.com/maps/place/Pondok+Pesantren+Al-Qur'an+Bani+Syahid/@-6.3676771,106.8696904,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69ed654ce6786b:0x1019880ca4f9403b!8m2!3d-6.3676824!4d106.8722707!16s%2Fg%2F11f6m9qmmr?hl=id" 
+   target="_blank" 
+   rel="noopener noreferrer" 
+   class="hover:text-accent transition duration-300">
+   Alamat
+</a>
+
+
                         <li><a href="#" class="hover:text-accent transition duration-300">Telepon</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Email</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Sosial Media</a></li>
