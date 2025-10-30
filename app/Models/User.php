@@ -50,6 +50,19 @@ class User extends Authenticatable
         return !is_null($this->provider_id) && !is_null($this->provider_name);
     }
 
+    public function hasManualPassword(): bool
+    {
+        return !is_null($this->password) && $this->password !== '';
+    }
+
+    public function canLoginManually(): bool
+    {
+        // User bisa login manual jika:
+        // 1. Memiliki password manual, ATAU
+        // 2. Socialite user yang sudah set password melalui reset password
+        return $this->hasManualPassword();
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

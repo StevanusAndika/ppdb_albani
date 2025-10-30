@@ -2,6 +2,11 @@
 .auth-container {
     box-shadow: 0 15px 35px rgba(5, 117, 114, 0.3);
     background: linear-gradient(145deg, #057572, #04615f);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
 }
 
 .btn-primary {
@@ -9,12 +14,18 @@
     color: white;
     transition: all 0.3s ease;
     font-weight: 600;
+    border: none;
+    cursor: pointer;
 }
 
 .btn-primary:hover {
     background: #001f1e;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 47, 45, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
 }
 
 .btn-google {
@@ -40,19 +51,30 @@
 }
 
 .input-field {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
+    color: #1f2937;
+    font-size: 16px; /* Prevent zoom on iOS */
 }
 
 .input-field:focus {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
     border-color: white;
     background: white;
+    outline: none;
+}
+
+.input-field::placeholder {
+    color: #6b7280;
 }
 
 .text-white-90 {
     color: rgba(255, 255, 255, 0.9);
+}
+
+.text-white {
+    color: white;
 }
 
 .divider {
@@ -79,24 +101,11 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.password-toggle {
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.password-toggle:hover {
-    color: #002F2D;
-}
-
-.form-group {
-    position: relative;
-}
-
 .password-input-wrapper {
     position: relative;
 }
 
-.password-toggle {
+.password-toggle-btn {
     position: absolute;
     right: 12px;
     top: 50%;
@@ -105,5 +114,290 @@
     border: none;
     color: #666;
     cursor: pointer;
-    padding: 4px;
+    padding: 8px;
+    z-index: 10;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle-btn:hover {
+    background: rgba(0, 47, 45, 0.1);
+    color: #002F2D;
+}
+
+.password-toggle-btn:focus {
+    outline: 2px solid rgba(0, 47, 45, 0.5);
+    outline-offset: 2px;
+}
+
+.password-toggle-btn i {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.password-toggle-btn:hover i {
+    transform: scale(1.1);
+}
+
+/* ===== RESPONSIVE DESIGN TANPA SCROLL ===== */
+
+/* Mobile Small (320px - 480px) */
+@media (max-width: 480px) {
+    .auth-container {
+        max-width: 100%;
+        margin: 0;
+        border-radius: 8px;
+        /* Tidak ada max-height dan overflow */
+    }
+
+    .p-6 {
+        padding: 0.75rem !important;
+    }
+
+    .logo-container {
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+
+    .logo-text {
+        font-size: 1.3rem;
+    }
+
+    h1 {
+        font-size: 1.2rem !important;
+        margin-top: 0.25rem !important;
+    }
+
+    .text-2xl {
+        font-size: 1.2rem !important;
+    }
+
+    .input-field {
+        padding: 0.6rem !important;
+        font-size: 14px;
+    }
+
+    .btn-primary,
+    .btn-google {
+        padding: 0.6rem !important;
+        font-size: 14px;
+    }
+
+    .password-toggle-btn {
+        width: 32px;
+        height: 32px;
+        padding: 4px;
+    }
+
+    .password-toggle-btn i {
+        font-size: 12px;
+    }
+
+    /* Ultra compact spacing for mobile */
+    .space-y-5 > * + * {
+        margin-top: 0.5rem !important;
+    }
+
+    .my-6 {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .mt-6 {
+        margin-top: 0.75rem !important;
+    }
+
+    .mt-4 {
+        margin-top: 0.5rem !important;
+    }
+
+    .mb-4 {
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Reduce font sizes for mobile */
+    .text-sm {
+        font-size: 0.75rem;
+    }
+
+    .text-xs {
+        font-size: 0.65rem;
+    }
+}
+
+/* Mobile Medium (481px - 640px) */
+@media (min-width: 481px) and (max-width: 640px) {
+    .auth-container {
+        max-width: 380px;
+        border-radius: 10px;
+        /* Tidak ada max-height dan overflow */
+    }
+
+    .p-6 {
+        padding: 1rem !important;
+    }
+
+    .logo-text {
+        font-size: 1.4rem;
+    }
+
+    h1 {
+        font-size: 1.3rem !important;
+    }
+
+    .space-y-5 > * + * {
+        margin-top: 0.75rem !important;
+    }
+
+    .input-field {
+        padding: 0.7rem !important;
+    }
+
+    .btn-primary,
+    .btn-google {
+        padding: 0.7rem !important;
+    }
+}
+
+/* Tablet (641px - 768px) */
+@media (min-width: 641px) and (max-width: 768px) {
+    .auth-container {
+        max-width: 400px;
+        border-radius: 12px;
+        /* Tidak ada max-height dan overflow */
+    }
+
+    .p-6 {
+        padding: 1.25rem !important;
+    }
+}
+
+/* Desktop Small (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .auth-container {
+        max-width: 420px;
+        border-radius: 16px;
+        /* Tidak ada max-height dan overflow */
+    }
+
+    .p-6 {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Desktop Large (1025px and above) */
+@media (min-width: 1025px) {
+    .auth-container {
+        max-width: 450px;
+        border-radius: 20px;
+        /* Tidak ada max-height dan overflow */
+    }
+
+    .p-6 {
+        padding: 2rem !important;
+    }
+}
+
+/* Password strength styles - Ultra compact for mobile */
+.password-strength {
+    margin-top: 4px;
+}
+
+.strength-bars {
+    margin-bottom: 4px;
+}
+
+.strength-bar {
+    transition: all 0.3s ease;
+    height: 3px !important;
+}
+
+.password-requirements {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+}
+
+.requirement {
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    font-size: 0.65rem;
+    line-height: 1.2;
+}
+
+.requirement.met {
+    color: white;
+}
+
+.requirement.not-met {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.requirement i {
+    font-size: 10px;
+    width: 12px;
+}
+
+.confirmation-status {
+    min-height: 16px;
+    font-size: 0.65rem;
+    line-height: 1.2;
+}
+
+/* Mobile adjustments for password strength */
+@media (max-width: 480px) {
+    .password-strength {
+        margin-top: 3px;
+    }
+
+    .strength-bars {
+        margin-bottom: 3px;
+    }
+
+    .strength-bar {
+        height: 2px !important;
+    }
+
+    .password-requirements {
+        margin: 3px 0 0 0;
+    }
+
+    .requirement {
+        font-size: 0.6rem;
+    }
+
+    .confirmation-status {
+        min-height: 14px;
+        font-size: 0.6rem;
+    }
+}
+
+/* Animation for requirements */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.password-requirements {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Remove all scroll-related styles */
+.auth-form-content {
+    /* Hapus max-height dan overflow */
+}
+
+.auth-container {
+    /* Hapus overflow-y */
+}
+
+/* Ensure body can scroll if needed, but form tetap tanpa scroll */
+body {
+    overflow-y: auto;
 }

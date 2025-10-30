@@ -1,0 +1,94 @@
+/* public/css/app.css - General App Styles */
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Utility classes */
+.hidden {
+    display: none !important;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Focus styles for accessibility */
+.focus\:outline-none:focus {
+    outline: 2px solid #002F2D;
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #002F2D;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #001f1e;
+}
+
+/* Hide error messages in forms since we use SweetAlert */
+.text-red-200,
+.text-red-100 {
+    display: none !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 0.5rem;
+        align-items: flex-start;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* Tablet responsive */
+@media (min-width: 769px) and (max-width: 1024px) {
+    body {
+        padding: 2rem;
+    }
+}
+
+/* Desktop large screens */
+@media (min-width: 1025px) {
+    body {
+        padding: 2rem;
+    }
+}

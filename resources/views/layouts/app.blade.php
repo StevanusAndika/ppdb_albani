@@ -10,117 +10,13 @@
 
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- CSS Files -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <style>
-        .auth-container {
-            box-shadow: 0 15px 35px rgba(5, 117, 114, 0.3);
-            background: linear-gradient(145deg, #057572, #04615f);
-        }
-
-        .btn-primary {
-            background: #002F2D;
-            color: white;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .btn-primary:hover {
-            background: #001f1e;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 47, 45, 0.4);
-        }
-
-        .btn-google {
-            background: #002F2D;
-            color: white;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-google:hover {
-            background: #001f1e;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 47, 45, 0.4);
-        }
-
-        .google-icon {
-            background: conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 73% 55%/150% 150% no-repeat;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .input-field {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: all 0.3s ease;
-        }
-
-        .input-field:focus {
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
-            border-color: white;
-            background: white;
-        }
-
-        .text-white-90 {
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .divider {
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .logo-container {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            padding: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-
-        .logo-text {
-            font-weight: 800;
-            font-size: 1.8rem;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, #ffffff, #e0f2f1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .password-toggle {
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .password-toggle:hover {
-            color: #002F2D;
-        }
-
-        .password-input-wrapper {
-            position: relative;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            padding: 4px;
-            z-index: 10;
-        }
-    </style>
 
     @yield('styles')
 </head>
@@ -131,31 +27,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Password toggle functionality
-        function initPasswordToggle() {
-            const passwordToggles = document.querySelectorAll('.password-toggle');
-
-            passwordToggles.forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    const passwordInput = this.closest('.password-input-wrapper').querySelector('input');
-                    const icon = this.querySelector('i');
-
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                        this.setAttribute('title', 'Sembunyikan password');
-                    } else {
-                        passwordInput.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                        this.setAttribute('title', 'Tampilkan password');
-                    }
-                });
-            });
-        }
-
-        // SweetAlert for notifications
+        // SweetAlert for notifications - Hanya tampilkan di popup, sembunyikan error di form
         @if(session('success'))
             Swal.fire({
                 icon: 'success',
@@ -203,6 +75,40 @@
                 color: '#dc2626'
             });
         @endif
+
+        // Global password toggle functionality
+        function initPasswordToggle() {
+            const passwordToggles = document.querySelectorAll('.password-toggle-btn');
+
+            passwordToggles.forEach(btn => {
+                // Set initial title
+                btn.setAttribute('title', 'Tampilkan password');
+                btn.setAttribute('aria-label', 'Tampilkan password');
+
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                        this.setAttribute('title', 'Sembunyikan password');
+                        this.setAttribute('aria-label', 'Sembunyikan password');
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                        this.setAttribute('title', 'Tampilkan password');
+                        this.setAttribute('aria-label', 'Tampilkan password');
+                    }
+
+                    // Focus kembali ke input setelah toggle
+                    passwordInput.focus();
+                });
+            });
+        }
 
         // Initialize when document is loaded
         document.addEventListener('DOMContentLoaded', function() {

@@ -66,7 +66,7 @@
     <!-- Navbar -->
     <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="text-lg md:text-xl font-bold text-primary nav-logo">PPDB Ponpes Al Bani</div>
+            <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
 
             <!-- Desktop menu -->
             <div class="hidden md:flex space-x-6 items-center">

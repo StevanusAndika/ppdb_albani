@@ -60,7 +60,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle manual login
+     * Handle manual login - PERBAIKAN: Socialite user bisa login manual
      */
     public function login(Request $request)
     {
@@ -100,11 +100,11 @@ class AuthController extends Controller
             ])->withInput();
         }
 
-        // Cek apakah user adalah socialite user yang mencoba login manual
-        if ($user->isSocialiteUser()) {
+        // PERBAIKAN: Socialite user bisa login manual jika sudah punya password
+        if ($user->isSocialiteUser() && !$user->canLoginManually()) {
             return back()->withErrors([
-                'email' => 'Akun ini terdaftar melalui ' . ucfirst($user->provider_name) . '. Silakan login menggunakan ' . ucfirst($user->provider_name) . '.',
-            ])->withInput();
+                'email' => 'Akun ini terdaftar melalui ' . ucfirst($user->provider_name) . '. Silakan login menggunakan ' . ucfirst($user->provider_name) . ' atau reset password untuk membuat password manual.',
+            ])->withInput()->with('socialite_user_no_password', true);
         }
 
         // Attempt login
@@ -139,7 +139,10 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'phone_number' => 'nullable|string|max:15',
+            'phone_number' => 'nullable|string|max:15|regex:/^[0-9]+$/',
+        ], [
+            'phone_number.regex' => 'Nomor telepon hanya boleh mengandung angka.',
+            'phone_number.max' => 'Nomor telepon maksimal 15 digit.',
         ]);
 
         if ($validator->fails()) {
@@ -166,7 +169,69 @@ class AuthController extends Controller
             DB::commit();
 
             // Redirect ke login dengan pesan sukses
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Akun Anda telah aktif. Silakan login dengan akun Anda.');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors(['error' => 'Terjadi kesalahan saat registrasi. Silakan coba lagi.'])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Handle socialite registration - PERBAIKAN: Socialite user dibuat dengan password
+     */
+    public function handleSocialiteRegistration(Request $request)
+    {
+        // Check if already logged in
+        $redirect = $this->redirectIfAuthenticated();
+        if ($redirect) {
+            return $redirect;
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone_number' => 'nullable|string|max:15|regex:/^[0-9]+$/',
+            'provider' => 'required|string',
+            'provider_id' => 'required|string',
+        ], [
+            'phone_number.regex' => 'Nomor telepon hanya boleh mengandung angka.',
+            'phone_number.max' => 'Nomor telepon maksimal 15 digit.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // PERBAIKAN: Socialite user dibuat dengan password random agar bisa login manual
+            $randomPassword = Str::random(12);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($randomPassword),
+                'phone_number' => $request->phone_number,
+                'role' => 'calon_santri',
+                'is_active' => true,
+                'provider_id' => $request->provider_id,
+                'provider_name' => $request->provider,
+                'email_verified_at' => now(),
+            ]);
+
+            DB::commit();
+
+            // Login user setelah registrasi socialite
+            Auth::login($user, true);
+
+            // Redirect ke dashboard
+            return redirect()->route('santri.dashboard')->with('success', 'Registrasi dengan ' . ucfirst($request->provider) . ' berhasil! Akun Anda telah aktif. Selamat datang.');
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -240,6 +305,14 @@ class AuthController extends Controller
             return redirect()->route('login')->with('error', 'Akun Anda tidak aktif. Silakan hubungi administrator.');
         }
 
+        // PERBAIKAN: Update provider info jika user sudah ada tapi belum punya provider info
+        if (!$user->isSocialiteUser()) {
+            $user->update([
+                'provider_id' => $socialUser->getId(),
+                'provider_name' => $provider
+            ]);
+        }
+
         // Login user
         Auth::login($user, true);
 
@@ -248,63 +321,6 @@ class AuthController extends Controller
             return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang Admin.');
         } else {
             return redirect()->route('santri.dashboard')->with('success', 'Login berhasil! Selamat datang.');
-        }
-    }
-
-    /**
-     * Handle socialite registration
-     */
-    public function handleSocialiteRegistration(Request $request)
-    {
-        // Check if already logged in
-        $redirect = $this->redirectIfAuthenticated();
-        if ($redirect) {
-            return $redirect;
-        }
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone_number' => 'nullable|string|max:15',
-            'provider' => 'required|string',
-            'provider_id' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make(Str::random(16)),
-                'phone_number' => $request->phone_number,
-                'role' => 'calon_santri',
-                'is_active' => true,
-                'provider_id' => $request->provider_id,
-                'provider_name' => $request->provider,
-                'email_verified_at' => now(),
-            ]);
-
-            DB::commit();
-
-            // Login user setelah registrasi socialite
-            Auth::login($user, true);
-
-            // Redirect ke dashboard
-            return redirect()->route('santri.dashboard')->with('success', 'Registrasi dengan ' . ucfirst($request->provider) . ' berhasil! Selamat datang.');
-
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            return back()
-                ->withErrors(['error' => 'Terjadi kesalahan saat registrasi. Silakan coba lagi.'])
-                ->withInput();
         }
     }
 

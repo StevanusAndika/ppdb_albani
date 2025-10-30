@@ -5,18 +5,14 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
 
 class PasswordResetController extends Controller
 {
     /**
-     * Menampilkan form untuk request reset password
+     * Show the forgot password form
      */
     public function showLinkRequestForm()
     {
@@ -24,156 +20,101 @@ class PasswordResetController extends Controller
     }
 
     /**
-     * Mengirim email reset password
+     * Handle forgot password request
      */
     public function sendResetLinkEmail(Request $request)
     {
-        $request->validate(['email' => 'required|email']);
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+        ]);
 
-        // Cek apakah user ada dan aktif
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Format email tidak valid.');
+        }
+
+        // Cek apakah user terdaftar
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->withErrors(['email' => 'Email tidak ditemukan dalam sistem kami.']);
+            return back()
+                ->withInput()
+                ->with('error', 'Email tidak ditemukan dalam sistem.');
         }
 
-        if (!$user->is_active) {
-            return back()->withErrors(['email' => 'Akun Anda tidak aktif. Silakan hubungi administrator.']);
-        }
-
-        // Cek jika user login via socialite
-        if ($user->isSocialiteUser()) {
-            return back()->withErrors(['email' => 'Akun ini terdaftar melalui media sosial. Gunakan metode login yang sama.']);
-        }
-
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
-
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with(['status' => __($status)])
-            : back()->withErrors(['email' => __($status)]);
+        // Jika user ditemukan, tampilkan konfirmasi reset password
+        return back()
+            ->withInput()
+            ->with('show_confirmation', true)
+            ->with('user_email', $user->email);
     }
 
     /**
-     * Menampilkan form reset password
-     */
-    public function showResetForm(Request $request, $token = null)
-    {
-        return view('auth.reset-password')->with([
-            'token' => $token,
-            'email' => $request->email
-        ]);
-    }
-
-    /**
-     * Reset password
+     * Handle password reset confirmation
      */
     public function reset(Request $request)
     {
-        $request->validate([
-            'token' => 'required',
+        // Validasi input dengan password strength
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'action' => 'required|in:confirm,cancel',
+            'new_password' => [
+                'required_if:action,confirm',
+                'min:8',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/'
+            ],
         ], [
-            'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak sesuai.',
+            'new_password.required_if' => 'Password baru wajib diisi.',
+            'new_password.min' => 'Password minimal 8 karakter.',
+            'new_password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'new_password.regex' => 'Password harus mengandung minimal 1 huruf kecil, 1 huruf besar, 1 angka, dan 1 simbol.',
         ]);
 
-        // Cek token reset password
-        $tokenExists = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->where('created_at', '>', Carbon::now()->subHours(2))
-            ->first();
-
-        if (!$tokenExists) {
-            return back()->withErrors(['email' => 'Token reset password tidak valid atau sudah kedaluwarsa.']);
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('show_confirmation', true)
+                ->with('user_email', $request->email);
         }
 
-        // Verifikasi token
-        if (!Hash::check($request->token, $tokenExists->token)) {
-            return back()->withErrors(['email' => 'Token reset password tidak valid.']);
+        // Jika user membatalkan reset
+        if ($request->action === 'cancel') {
+            return redirect()->route('password.request')
+                ->with('info', 'Reset password dibatalkan.');
         }
 
-        // Cari user
+        // Cek kembali apakah user terdaftar
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->withErrors(['email' => 'Email tidak ditemukan.']);
+            return redirect()->route('password.request')
+                ->with('error', 'User tidak ditemukan.');
         }
 
-        if (!$user->is_active) {
-            return back()->withErrors(['email' => 'Akun Anda tidak aktif. Silakan hubungi administrator.']);
+        try {
+            // Update password dengan yang baru
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            return redirect()->route('login')
+                ->with('success', 'Password berhasil direset! Silakan login dengan password baru.');
+
+        } catch (\Exception $e) {
+            return redirect()->route('password.request')
+                ->with('error', 'Terjadi kesalahan saat reset password. Silakan coba lagi.');
         }
-
-        if ($user->isSocialiteUser()) {
-            return back()->withErrors(['email' => 'Akun ini terdaftar melalui media sosial. Tidak dapat mereset password.']);
-        }
-
-        // Update password
-        $user->password = Hash::make($request->password);
-        $user->setRememberToken(Str::random(60));
-        $user->save();
-
-        // Hapus token reset password
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-        // Trigger event
-        event(new PasswordReset($user));
-
-        // Login otomatis setelah reset password
-        auth()->login($user);
-
-        return redirect()->route('dashboard')
-            ->with('status', 'Password berhasil direset! Anda telah login secara otomatis.');
     }
 
     /**
-     * Reset password untuk admin
+     * Show reset form (untuk token-based reset - opsional)
      */
-    public function adminResetPassword(Request $request, $userId)
+    public function showResetForm($token)
     {
-        // Hanya admin yang bisa akses
-        if (!auth()->user()->isAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $request->validate([
-            'password' => 'required|min:8|confirmed',
-        ]);
-
-        $user = User::findOrFail($userId);
-
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
-
-        return back()->with('success', 'Password berhasil direset untuk user ' . $user->name);
-    }
-
-    /**
-     * Cek status reset password
-     */
-    public function checkResetStatus(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
-
-        $token = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->first();
-
-        if ($token) {
-            $createdAt = Carbon::parse($token->created_at);
-            $expiresAt = $createdAt->addHours(2);
-
-            return response()->json([
-                'exists' => true,
-                'expires_at' => $expiresAt->format('Y-m-d H:i:s'),
-                'is_expired' => $expiresAt->isPast(),
-            ]);
-        }
-
-        return response()->json(['exists' => false]);
+        return view('auth.reset-password', ['token' => $token]);
     }
 }
