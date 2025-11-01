@@ -14,7 +14,7 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 
-// Password Reset Routes
+// Password Reset Routes dengan OTP WhatsApp
 Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])
     ->name('password.request');
 Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
@@ -28,11 +28,15 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::post('/socialite/register', [AuthController::class, 'handleSocialiteRegistration'])
     ->name('socialite.register.post');
 
-// Password Reset Action Routes
+// Password Reset Action Routes dengan OTP
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])
     ->name('password.email');
+Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])
+    ->name('password.verify.otp');
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])
     ->name('password.update');
+Route::post('/resend-otp', [PasswordResetController::class, 'resendOtp'])
+    ->name('password.resend.otp');
 
 // Socialite Routes
 Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])

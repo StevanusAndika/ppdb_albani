@@ -57,9 +57,6 @@ class User extends Authenticatable
 
     public function canLoginManually(): bool
     {
-        // User bisa login manual jika:
-        // 1. Memiliki password manual, ATAU
-        // 2. Socialite user yang sudah set password melalui reset password
         return $this->hasManualPassword();
     }
 
@@ -86,5 +83,26 @@ class User extends Authenticatable
     public function registrations()
     {
         return $this->hasMany(Registration::class);
+    }
+
+    // Method baru untuk mendapatkan nomor telepon yang diformat
+    public function getFormattedPhoneNumber(): string
+    {
+        $phone = $this->phone_number;
+
+        // Hapus karakter non-digit
+        $phone = preg_replace('/\D/', '', $phone);
+
+        // Jika diawali dengan 0, ganti dengan 62
+        if (substr($phone, 0, 1) === '0') {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        // Jika tidak diawali dengan 62, tambahkan
+        if (substr($phone, 0, 2) !== '62') {
+            $phone = '62' . $phone;
+        }
+
+        return $phone;
     }
 }

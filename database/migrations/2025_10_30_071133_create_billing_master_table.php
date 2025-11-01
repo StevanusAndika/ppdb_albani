@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 2); // Besaran tagihan dengan skala 2 digit desimal
             $table->integer('status')->default(1); // Status show (1) atau hide (2)
             $table->string('created_by')->nullable();
+            
             $table->string('last_modified_by')->nullable();
             $table->timestamps();
         });
