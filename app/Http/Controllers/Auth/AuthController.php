@@ -60,7 +60,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle manual login - PERBAIKAN: Socialite user bisa login manual
+     * Handle manual login - UPDATED: Menampilkan nama user di success message
      */
     public function login(Request $request)
     {
@@ -100,7 +100,7 @@ class AuthController extends Controller
             ])->withInput();
         }
 
-        // PERBAIKAN: Socialite user bisa login manual jika sudah punya password
+        // Socialite user bisa login manual jika sudah punya password
         if ($user->isSocialiteUser() && !$user->canLoginManually()) {
             return back()->withErrors([
                 'email' => 'Akun ini terdaftar melalui ' . ucfirst($user->provider_name) . '. Silakan login menggunakan ' . ucfirst($user->provider_name) . ' atau reset password untuk membuat password manual.',
@@ -111,11 +111,11 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Redirect berdasarkan role dengan notifikasi
+            // Redirect berdasarkan role dengan notifikasi yang menyertakan nama user
             if (Auth::user()->isAdmin()) {
-                return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang Admin.');
+                return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang ' . Auth::user()->name . '.');
             } else {
-                return redirect()->route('santri.dashboard')->with('success', 'Login berhasil! Selamat datang.');
+                return redirect()->route('santri.dashboard')->with('success', 'Login berhasil! Selamat datang ' . Auth::user()->name . '.');
             }
         }
 
@@ -125,7 +125,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle manual registration
+     * Handle manual registration - UPDATED: phone_number required & menampilkan nama user
      */
     public function register(Request $request)
     {
@@ -139,8 +139,9 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'phone_number' => 'nullable|string|max:15|regex:/^[0-9]+$/',
+            'phone_number' => 'required|string|max:15|regex:/^[0-9]+$/',
         ], [
+            'phone_number.required' => 'Nomor telepon wajib diisi.',
             'phone_number.regex' => 'Nomor telepon hanya boleh mengandung angka.',
             'phone_number.max' => 'Nomor telepon maksimal 15 digit.',
         ]);
@@ -168,8 +169,8 @@ class AuthController extends Controller
 
             DB::commit();
 
-            // Redirect ke login dengan pesan sukses
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Akun Anda telah aktif. Silakan login dengan akun Anda.');
+            // Redirect ke login dengan pesan sukses yang menyertakan nama user
+            return redirect()->route('login')->with('success', 'Registrasi berhasil ' . $user->name . '! Akun Anda telah aktif. Silakan login dengan akun Anda.');
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -181,7 +182,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle socialite registration - PERBAIKAN: Socialite user dibuat dengan password
+     * Handle socialite registration - UPDATED: phone_number required & menampilkan nama user
      */
     public function handleSocialiteRegistration(Request $request)
     {
@@ -194,10 +195,11 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone_number' => 'nullable|string|max:15|regex:/^[0-9]+$/',
+            'phone_number' => 'required|string|max:15|regex:/^[0-9]+$/',
             'provider' => 'required|string',
             'provider_id' => 'required|string',
         ], [
+            'phone_number.required' => 'Nomor telepon wajib diisi.',
             'phone_number.regex' => 'Nomor telepon hanya boleh mengandung angka.',
             'phone_number.max' => 'Nomor telepon maksimal 15 digit.',
         ]);
@@ -211,7 +213,7 @@ class AuthController extends Controller
         try {
             DB::beginTransaction();
 
-            // PERBAIKAN: Socialite user dibuat dengan password random agar bisa login manual
+            // Socialite user dibuat dengan password random agar bisa login manual
             $randomPassword = Str::random(12);
             $user = User::create([
                 'name' => $request->name,
@@ -230,8 +232,8 @@ class AuthController extends Controller
             // Login user setelah registrasi socialite
             Auth::login($user, true);
 
-            // Redirect ke dashboard
-            return redirect()->route('santri.dashboard')->with('success', 'Registrasi dengan ' . ucfirst($request->provider) . ' berhasil! Akun Anda telah aktif. Selamat datang.');
+            // Redirect ke dashboard dengan pesan sukses yang menyertakan nama user
+            return redirect()->route('santri.dashboard')->with('success', 'Registrasi dengan ' . ucfirst($request->provider) . ' berhasil! Akun Anda telah aktif. Selamat datang ' . $user->name . '.');
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -274,7 +276,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle provider callback for socialite login
+     * Handle provider callback for socialite login - UPDATED: Menampilkan nama user di success message
      */
     public function handleProvideCallback($provider)
     {
@@ -296,7 +298,7 @@ class AuthController extends Controller
                     'provider' => $provider,
                     'provider_id' => $socialUser->getId(),
                 ],
-                'info' => 'Email tidak ditemukan. Silakan lengkapi pendaftaran dengan ' . ucfirst($provider) . '.'
+                'info' => 'Silahkan lengkapi data'
             ]);
         }
 
@@ -305,7 +307,7 @@ class AuthController extends Controller
             return redirect()->route('login')->with('error', 'Akun Anda tidak aktif. Silakan hubungi administrator.');
         }
 
-        // PERBAIKAN: Update provider info jika user sudah ada tapi belum punya provider info
+        // Update provider info jika user sudah ada tapi belum punya provider info
         if (!$user->isSocialiteUser()) {
             $user->update([
                 'provider_id' => $socialUser->getId(),
@@ -316,11 +318,11 @@ class AuthController extends Controller
         // Login user
         Auth::login($user, true);
 
-        // Redirect berdasarkan role
+        // Redirect berdasarkan role dengan pesan sukses yang menyertakan nama user
         if ($user->isAdmin()) {
-            return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang Admin.');
+            return redirect()->route('admin.dashboard')->with('success', 'Login berhasil! Selamat datang ' . $user->name . '.');
         } else {
-            return redirect()->route('santri.dashboard')->with('success', 'Login berhasil! Selamat datang.');
+            return redirect()->route('santri.dashboard')->with('success', 'Login berhasil! Selamat datang ' . $user->name . '.');
         }
     }
 

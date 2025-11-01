@@ -15,12 +15,12 @@
 
     <!-- Form Login -->
     <div class="p-3 md:p-6">
-        <form action="{{ route('login.post') }}" method="POST" class="space-y-3 md:space-y-4">
+        <form action="{{ route('login.post') }}" method="POST" class="space-y-3 md:space-y-4" id="loginForm">
             @csrf
 
             <!-- Email Field -->
             <div>
-                <label for="email" class="block text-white-90 text-xs md:text-sm font-medium mb-1 md:mb-2">Email</label>
+                <label for="email" class="block text-white-90 text-xs md:text-sm font-medium mb-1 md:mb-2">Email <span class="text-red-400">*</span></label>
                 <input
                     type="email"
                     id="email"
@@ -35,14 +35,14 @@
 
             <!-- Password Field -->
             <div>
-                <label for="password" class="block text-white-90 text-xs md:text-sm font-medium mb-1 md:mb-2">Password</label>
+                <label for="password" class="block text-white-90 text-xs md:text-sm font-medium mb-1 md:mb-2">Password <span class="text-red-400">*</span></label>
                 <div class="password-input-wrapper">
                     <input
                         type="password"
                         id="password"
                         name="password"
                         class="input-field w-full px-3 py-2 md:px-4 md:py-3 rounded-lg focus:ring-2 focus:ring-white transition text-gray-800 placeholder-gray-500 pr-10 md:pr-12 text-xs md:text-sm"
-                        placeholder="Masukkan password Anda"
+                        placeholder="Masukkan password"
                         required
                     >
                     <button type="button" class="password-toggle-btn" data-target="password">
@@ -52,18 +52,26 @@
             </div>
 
             <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between text-xs md:text-sm">
+            <div class="flex items-center justify-between">
                 <label class="flex items-center">
-                    <input type="checkbox" name="remember" class="rounded border-gray-300 text-white focus:ring-white scale-75 md:scale-100">
-                    <span class="ml-1 md:ml-2 text-white-90">Ingat saya</span>
+                    <input
+                        type="checkbox"
+                        name="remember"
+                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    >
+                    <span class="ml-2 text-white-90 text-xs md:text-sm">Ingat saya</span>
                 </label>
-                <a href="{{ route('password.request') }}" class="text-white hover:underline text-xs md:text-sm">Lupa password?</a>
+
+                <a href="{{ route('password.request') }}" class="text-white hover:underline text-xs md:text-sm">
+                    Lupa password?
+                </a>
             </div>
 
             <!-- Login Button -->
             <button
                 type="submit"
                 class="btn-primary w-full py-2 md:py-3 rounded-lg font-medium transition duration-200 shadow-md text-xs md:text-sm"
+                id="loginSubmitBtn"
             >
                 <i class="fas fa-sign-in-alt mr-1 md:mr-2 text-xs md:text-sm"></i>
                 Login
@@ -79,58 +87,79 @@
 
         <!-- Google Login Button -->
         <a href="{{ route('socialite.redirect', 'google') }}"
-            class="btn-google w-full flex items-center justify-center gap-1 md:gap-2 py-2 md:py-3 rounded-lg font-medium transition duration-200 shadow-md text-xs md:text-sm"
+            class="btn-google w-full flex items-center justify-center gap-1 md:gap-2 py-2 md:py-3 rounded-lg font-medium transition duration-200 shadow-md text-xs md:text-sm mb-3 md:mb-4"
         >
             <span class="google-icon text-base md:text-lg font-bold">G</span>
             Login dengan Google
         </a>
 
         <!-- Register Link -->
-        <div class="mt-3 md:mt-4 text-center">
+        <div class="text-center">
             <p class="text-white-90 text-xs md:text-sm">
                 Belum punya akun?
                 <a href="{{ route('register') }}" class="text-white font-medium hover:underline ml-1">Daftar di sini</a>
             </p>
         </div>
+
+        <!-- Auto Redirect to Register Section -->
+        @if(session('redirect_to_register'))
+            <div class="mt-3 md:mt-4 p-2 md:p-3 bg-yellow-500/20 rounded-lg border border-yellow-300/30 text-center">
+                <p class="text-xs md:text-sm text-white mb-1">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    Email tidak ditemukan. Belum punya akun?
+                </p>
+                <a href="{{ route('register') }}" class="text-white font-medium hover:underline text-xs md:text-sm">
+                    Daftar di sini
+                </a>
+            </div>
+        @endif
+
+        <!-- Socialite User No Password Warning -->
+        @if(session('socialite_user_no_password'))
+            <div class="mt-3 md:mt-4 p-2 md:p-3 bg-blue-500/20 rounded-lg border border-blue-300/30 text-center">
+                <p class="text-xs md:text-sm text-white mb-1">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Akun ini terdaftar melalui Google. Silakan login menggunakan Google.
+                </p>
+                <a href="{{ route('socialite.redirect', 'google') }}" class="text-white font-medium hover:underline text-xs md:text-sm">
+                    Login dengan Google
+                </a>
+            </div>
+        @endif
     </div>
 </div>
 
 <script>
-// Auto show register suggestion
+// Auto focus on email field if there's redirect_to_register session
 document.addEventListener('DOMContentLoaded', function() {
     @if(session('redirect_to_register'))
-        const registerSuggestion = document.createElement('div');
-        registerSuggestion.className = 'mt-2 md:mt-3 p-2 md:p-3 bg-yellow-500/20 rounded-lg border border-yellow-300/30 text-center';
-        registerSuggestion.innerHTML = `
-            <p class="text-xs md:text-sm text-white mb-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>
-                Email tidak ditemukan. Belum punya akun?
-            </p>
-            <a href="{{ route('register') }}" class="text-white font-medium hover:underline bg-yellow-600 hover:bg-yellow-700 px-2 py-1 md:px-3 md:py-1 rounded-lg transition duration-200 text-xs md:text-sm">
-                Daftar Sekarang
-            </a>
-        `;
-
-        const form = document.querySelector('form');
-        form.parentNode.insertBefore(registerSuggestion, form.nextSibling);
+        const emailInput = document.getElementById('email');
+        if (emailInput) {
+            emailInput.focus();
+            emailInput.select();
+        }
     @endif
 
-    @if(session('socialite_user_no_password'))
-        const socialiteSuggestion = document.createElement('div');
-        socialiteSuggestion.className = 'mt-2 md:mt-3 p-2 md:p-3 bg-blue-500/20 rounded-lg border border-blue-300/30 text-center';
-        socialiteSuggestion.innerHTML = `
-            <p class="text-xs md:text-sm text-white mb-1">
-                <i class="fas fa-info-circle mr-1"></i>
-                Akun Google terdeteksi. Reset password untuk login manual.
-            </p>
-            <a href="{{ route('password.request') }}" class="text-white font-medium hover:underline bg-blue-600 hover:bg-blue-700 px-2 py-1 md:px-3 md:py-1 rounded-lg transition duration-200 text-xs md:text-sm">
-                Reset Password
-            </a>
-        `;
+    // Form validation
+    const loginForm = document.getElementById('loginForm');
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
 
-        const form = document.querySelector('form');
-        form.parentNode.insertBefore(socialiteSuggestion, form.nextSibling);
-    @endif
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!email || !password) {
+                e.preventDefault();
+                // Validation will be handled by browser required attribute
+                return;
+            }
+
+            // Show loading state
+            loginSubmitBtn.disabled = true;
+            loginSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+        });
+    }
 });
 </script>
 @endsection

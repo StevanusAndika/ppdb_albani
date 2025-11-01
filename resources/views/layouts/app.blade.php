@@ -18,6 +18,8 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+   
+
     @yield('styles')
 </head>
 <body class="min-h-screen flex items-center justify-center p-4" style="background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%); font-family: 'Poppins', sans-serif;">
@@ -27,16 +29,18 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // SweetAlert for notifications - Hanya tampilkan di popup, sembunyikan error di form
+        // SweetAlert for notifications - Hanya tampilkan di popup saja dengan tombol OK
         @if(session('success'))
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
                 text: '{{ session('success') }}',
-                timer: 3000,
-                showConfirmButton: false,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#10b981',
                 background: '#f0fdf4',
-                color: '#166534'
+                color: '#166534',
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
         @endif
 
@@ -45,10 +49,12 @@
                 icon: 'error',
                 title: 'Gagal!',
                 text: '{{ session('error') }}',
-                timer: 4000,
-                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444',
                 background: '#fef2f2',
-                color: '#dc2626'
+                color: '#dc2626',
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
         @endif
 
@@ -57,10 +63,12 @@
                 icon: 'info',
                 title: 'Informasi',
                 text: '{{ session('info') }}',
-                timer: 4000,
-                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#3b82f6',
                 background: '#eff6ff',
-                color: '#1e40af'
+                color: '#1e40af',
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
         @endif
 
@@ -69,10 +77,12 @@
                 icon: 'error',
                 title: 'Validasi Gagal',
                 html: `{!! implode('<br>', $errors->all()) !!}`,
-                timer: 5000,
-                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444',
                 background: '#fef2f2',
-                color: '#dc2626'
+                color: '#dc2626',
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
         @endif
 
