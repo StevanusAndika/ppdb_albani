@@ -17,7 +17,7 @@ class XenditServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Comment sementara untuk bisa publish
-        // Xendit::setApiKey(config('xendit.secret_key'));
+        Xendit::setApiKey(config('xendit.secret_key'));
 
         $this->publishes([
             __DIR__.'/../../config/xendit.php' => config_path('xendit.php'),
