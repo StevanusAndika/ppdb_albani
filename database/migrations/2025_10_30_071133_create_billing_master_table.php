@@ -6,26 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('billing_master', function (Blueprint $table) {
-            $table->uuid('recid_billing_master')->primary();
-            $table->string('billing_name'); // Nama tagihan (misalnya: daftar ulang, spp)
-            $table->decimal('amount', 15, 2); // Besaran tagihan dengan skala 2 digit desimal
-            $table->integer('status')->default(1); // Status show (1) atau hide (2)
-            $table->string('created_by')->nullable();
-            
-            $table->string('last_modified_by')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('billing_master')) {
+            Schema::create('billing_master', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->boolean('is_active')->default(true);
+                $table->decimal('total_amount', 15, 2)->default(0);
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('billing_master');

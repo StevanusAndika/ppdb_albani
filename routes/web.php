@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\BillingPackage\BillingPackageController;
 
 // Public Routes
 Route::get('/', function () {
@@ -14,7 +15,7 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 
-// Password Reset Routes dengan OTP WhatsApp
+// Password Reset Routes
 Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])
     ->name('password.request');
 Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
@@ -28,7 +29,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.po
 Route::post('/socialite/register', [AuthController::class, 'handleSocialiteRegistration'])
     ->name('socialite.register.post');
 
-// Password Reset Action Routes dengan OTP
+// Password Reset Action Routes
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])
     ->name('password.email');
 Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])
@@ -52,6 +53,18 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
+
+    // Billing Packages Routes
+    Route::prefix('billing-packages')->name('billing-packages.')->group(function () {
+        Route::get('/', [BillingPackageController::class, 'index'])->name('index');
+        Route::get('/create', [BillingPackageController::class, 'create'])->name('create');
+        Route::post('/', [BillingPackageController::class, 'store'])->name('store');
+        Route::get('/{billingPackage}', [BillingPackageController::class, 'show'])->name('show');
+        Route::get('/{billingPackage}/edit', [BillingPackageController::class, 'edit'])->name('edit');
+        Route::put('/{billingPackage}', [BillingPackageController::class, 'update'])->name('update');
+        Route::delete('/{billingPackage}', [BillingPackageController::class, 'destroy'])->name('destroy');
+        Route::post('/{billingPackage}/toggle-status', [BillingPackageController::class, 'toggleStatus'])->name('toggle-status');
+    });
 });
 
 // Santri Routes

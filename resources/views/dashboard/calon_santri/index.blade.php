@@ -55,7 +55,7 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <a href="#" class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300 flex items-center justify-center">Lihat Pengumuman</a>
+                    <a href="#" class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300 flex items-center justify-center">Lihat Status</a>
                     <a href="#pendaftaran" class="bg-emerald-600 text-white px-4 py-1.5 rounded-full hover:bg-emerald-700 transition duration-300 flex items-center justify-center">Isi Form Pendaftaran</a>
                 </div>
             </div>
