@@ -8,6 +8,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <script>
+        /* Make custom color names available project-wide so views like
+           welcome.blade.php and dashboard use the same 'primary'/'secondary' colors */
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#057572',
+                        'secondary': '#5B5B5B',
+                        'accent': '#9D9D9D',
+                        'white': '#FFFFFF'
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -22,7 +39,7 @@
 
     @yield('styles')
 </head>
-<body class="min-h-screen flex items-center justify-center p-4" style="background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%); font-family: 'Poppins', sans-serif;">
+<body class="bg-gray-50 font-sans" style="font-family: 'Poppins', sans-serif;">
     @yield('content')
 
     <!-- SweetAlert2 JS -->

@@ -9,3 +9,82 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Shared styles copied from welcome.blade.php so dashboard pages (santri) match visual layout */
+.icon-bg {
+    background-color: rgba(5, 117, 114, 0.1);
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #057572;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+/* Perbaikan untuk navbar mobile (keperluan style parity between welcome and dashboard) */
+@media (max-width: 767px) {
+    .nav-container {
+        padding: 0.75rem 1rem;
+    }
+    .nav-logo {
+        font-size: 1.1rem;
+    }
+    .mobile-menu-button {
+        padding: 0.5rem;
+    }
+    .mobile-menu {
+        border-radius: 1rem;
+        margin-top: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .mobile-menu-item {
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Page-specific overrides for dashboard pages that should match welcome layout */
+.full-width-page {
+    /* slightly larger base font for dashboard readability */
+    font-size: 16px;
+}
+
+/* Make common container and max-w classes take full available width on this page */
+.full-width-page .container,
+.full-width-page .max-w-7xl,
+.full-width-page .max-w-4xl,
+.full-width-page .max-w-5xl {
+    max-width: 100% !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Slightly scale headings on larger screens inside this page */
+@media (min-width: 768px) {
+    .full-width-page h1 { font-size: 2.25rem; }
+    .full-width-page h2 { font-size: 1.75rem; }
+    .full-width-page h3 { font-size: 1.25rem; }
+
+    /* Ensure desktop nav is visible for this page even if utility classes get overridden */
+    .full-width-page .desktop-menu { display: flex !important; }
+
+    /* Make action buttons a bit larger for desktop */
+    .full-width-page .bg-primary.text-white.px-4.py-1\.5.rounded-full,
+    .full-width-page button.bg-primary { padding: 0.75rem 1rem; font-size: 1rem; }
+}
+
+/* Minor spacing/tweaks for the dashboard cards to use more horizontal space */
+.full-width-page .rounded-xl.p-6 { padding: 1.25rem; }
+
+/* Ensure step-number sizing remains consistent */
+.full-width-page .step-number { width: 48px; height: 48px; }
