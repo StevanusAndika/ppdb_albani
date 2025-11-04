@@ -4,14 +4,14 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page">
-    <!-- Navbar (shared pattern with welcome/santri) -->
+    <!-- Navbar -->
     <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
         <div class="container mx-auto flex justify-between items-center">
             <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
 
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
                 <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
+                <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary hover:text-secondary font-medium">Profil</a>
                 <a href="#pendaftaran" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
                 <a href="#dokumen" class="text-primary hover:text-secondary font-medium">Dokumen</a>
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
@@ -48,7 +48,7 @@
         <p class="text-secondary">Halo, <span class="font-semibold">{{ Auth::user()->name }}</span> — Panel pengelolaan sistem PPDB.</p>
     </header>
 
-    <!-- Main Content (full-width layout like santri) -->
+    <!-- Main Content -->
     <main class="max-w-7xl mx-auto py-6 px-4">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left: Profile Card -->
@@ -65,22 +65,21 @@
 
                 <div class="mt-6 space-y-2 text-sm text-secondary">
                     <div class="flex justify-between"><span>Telepon</span><span class="font-medium">{{ Auth::user()->phone_number ?? '-' }}</span></div>
-                    <div class="flex justify-between"><span>Role</span><span class="font-medium text-blue-600">Administrator</span></div>
-                    <div class="flex justify-between"><span>Tanggal Bergabung</span><span class="font-medium">-</span></div>
+                    <div class="flex justify-between"><span>Role</span><span class="font-medium text-blue-600">{{ Auth::user()->role}}</span></div>
+                    <div class="flex justify-between"><span>Tanggal Bergabung</span><span class="font-medium">{{ Auth::user()->created_at->translatedFormat('d F Y') }}</span></div>
                 </div>
 
                 <div class="mt-6 flex gap-3">
-                    <a href="#" class="w-full text-center bg-primary text-white py-2 rounded-full">Edit Profil</a>
-                    <a href="#" class="w-full text-center bg-secondary text-white py-2 rounded-full">Pengaturan</a>
+                     <a href="{{ route('admin.settings.index') }}?tab=profile" class="w-full text-center bg-primary text-white py-2 rounded-full transition duration-300 hover:bg-secondary">Edit Profil</a>
                 </div>
             </div>
 
-            <!-- Right: Main admin content (spans 2 columns) -->
+            <!-- Right: Main admin content -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Welcome Message -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Selamat Datang, {{ Auth::user()->name }}!</h2>
-                    <p class="text-gray-600">Anda login sebagai <span class="font-semibold text-blue-600">Administrator</span></p>
+                    <p class="text-gray-600">Anda login sebagai <span class="font-semibold text-blue-600">{{ Auth::user()->role }}</span></p>
                 </div>
 
                 <!-- Stats Cards -->
@@ -92,7 +91,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Total Users</p>
-                                <p class="text-2xl font-semibold text-gray-900">0</p>
+                                <p class="text-2xl font-semibold text-gray-900">{{ \App\Models\User::count() }}</p>
                             </div>
                         </div>
                     </div>
@@ -104,7 +103,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Total Santri</p>
-                                <p class="text-2xl font-semibold text-gray-900">0</p>
+                                <p class="text-2xl font-semibold text-gray-900">{{ \App\Models\User::where('role', 'calon_santri')->count() }}</p>
                             </div>
                         </div>
                     </div>
@@ -138,7 +137,7 @@
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <a href="#" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                        <a href="{{ route('admin.manage-users.index') }}" class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-lg transition duration-200 text-center">
                             <i class="fas fa-user-cog text-2xl mb-2"></i>
                             <p>Kelola User</p>
                         </a>
@@ -150,17 +149,29 @@
                             <i class="fas fa-chart-bar text-2xl mb-2"></i>
                             <p>Laporan</p>
                         </a>
-                        <a href="#" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                            <i class="fas fa-cog text-2xl mb-2"></i>
-                            <p>Settings</p>
+                        <a href="{{ route('admin.billing.packages.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                            <i class="fas fa-money-bill-wave text-2xl mb-2"></i>
+                            <p>Kelola Paket & Harga</p>
                         </a>
+                    </div>
+                </div>
+
+                <!-- Additional Quick Actions -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Kelola Konten Website</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="{{ route('admin.content.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                            <i class="fas fa-edit text-2xl mb-2"></i>
+                            <p>Kelola Konten</p>
+                        </a>
+
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Footer (simple, shared) -->
+    <!-- Footer -->
     <footer class="bg-primary text-white py-8 px-4 mt-6">
         <div class="max-w-7xl mx-auto text-center">
             <p>&copy; 2025 PPDB Pesantren AI-Our'an Bani Syahid</p>
@@ -168,7 +179,7 @@
     </footer>
 
     <script>
-        // Mobile menu toggle (reused pattern)
+        // Mobile menu toggle
         document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu) mobileMenu.classList.toggle('hidden');
