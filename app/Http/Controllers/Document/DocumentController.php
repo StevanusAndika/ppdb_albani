@@ -102,7 +102,7 @@ class DocumentController extends Controller
         $folderName = $folderNames[$documentType] ?? ucfirst($documentType);
         $cleanUsername = preg_replace('/[^a-zA-Z0-9]/', '_', $username);
 
-        return "uploads/{$cleanUsername}/{$folderName}";
+        return "Uploads/{$cleanUsername}/{$folderName}";
     }
 
     private function getDocumentColumn($documentType)
@@ -122,8 +122,8 @@ class DocumentController extends Controller
         $column = $this->getDocumentColumn($documentType);
         $oldFilePath = $registration->$column;
 
-        if ($oldFilePath && Storage::disk('public')->exists($oldFilePath)) {
-            Storage::disk('public')->delete($oldFilePath);
+        if ($oldFilePath && Storage::disk('public/Documents')->exists($oldFilePath)) {
+            Storage::disk('public/Documents')->delete($oldFilePath);
         }
     }
 
@@ -170,10 +170,10 @@ class DocumentController extends Controller
         $column = $this->getDocumentColumn($documentType);
         $filePath = $registration->$column;
 
-        if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+        if (!$filePath || !Storage::disk('public/Documents')->exists($filePath)) {
             abort(404);
         }
 
-        return response()->file(Storage::disk('public')->path($filePath));
+        return response()->file(Storage::disk('public/Documents')->path($filePath));
     }
 }
