@@ -13,7 +13,7 @@ class FonnteService
     public function __construct()
     {
         $this->apiUrl = 'https://api.fonnte.com/send';
-        $this->token = env('FONNTE_TOKEN'); 
+        $this->token = env('FONNTE_TOKEN');
     }
 
     /**
@@ -67,4 +67,26 @@ class FonnteService
 
         return $this->sendMessage($phone, $message);
     }
+
+    /**
+ * Kirim notifikasi penolakan pendaftaran
+ */
+    public function sendRegistrationRejection(string $phone, string $namaSantri, string $alasan): array
+    {
+    $message = "PEMBERITAHUAN PENOLAKAN PENDAFTARAN\n\n"
+             . "Kepada Yth. Orang Tua/Wali Santri {$namaSantri},\n\n"
+             . "Dengan hormat, kami sampaikan bahwa pendaftaran calon santri *{$namaSantri}* "
+             . "tidak dapat kami terima dengan alasan:\n\n"
+             . "*{$alasan}*\n\n"
+             . "Silakan login ke sistem PPDB untuk:\n"
+             . "1. Melengkapi data yang kurang\n"
+             . "2. Memperbaiki data yang tidak sesuai\n"
+             . "3. Mengunggah ulang dokumen yang diperlukan\n\n"
+             . "Anda dapat mengisi ulang formulir pendaftaran dengan data yang benar dan lengkap.\n\n"
+             . "Terima kasih atas perhatiannya.\n\n"
+             . "Salam,\n"
+             . "Panitia PPDB Pondok Pesantren Bani Syahid";
+
+    return $this->sendMessage($phone, $message);
+}
 }

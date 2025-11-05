@@ -10,11 +10,17 @@ use App\Http\Controllers\adminsetting\SettingController;
 use App\Http\Controllers\KontenSetting\KontenController;
 use App\Http\Controllers\ManageUser\ManageUserController;
 use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\Biodata\BiodataController;
+use App\Http\Controllers\Document\DocumentController;
+use App\Http\Controllers\Admin\RegistrationController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
 // Auth Routes
+// AJAX Validation Routes
+Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
+Route::post('/check-phone', [AuthController::class, 'checkPhoneNumber'])->name('check.phone');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 
@@ -100,24 +106,47 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         });
     });
 
-    // Tambahkan dalam group admin
+    // Manage Users
     Route::prefix('manage-users')->name('manage-users.')->group(function () {
-    Route::get('/', [ManageUserController::class, 'index'])->name('index');
-    Route::get('/create', [ManageUserController::class, 'create'])->name('create');
-    Route::post('/', [ManageUserController::class, 'store'])->name('store');
-    Route::get('/{user}/edit', [ManageUserController::class, 'edit'])->name('edit');
-    Route::put('/{user}', [ManageUserController::class, 'update'])->name('update');
-    Route::delete('/{user}', [ManageUserController::class, 'destroy'])->name('destroy');
-    Route::post('/{user}/toggle-status', [ManageUserController::class, 'toggleStatus'])->name('toggle-status');
-    Route::get('/generate-password', [ManageUserController::class, 'generatePassword'])->name('generate-password');
+        Route::get('/', [ManageUserController::class, 'index'])->name('index');
+        Route::get('/create', [ManageUserController::class, 'create'])->name('create');
+        Route::post('/', [ManageUserController::class, 'store'])->name('store');
+        Route::get('/{user}/edit', [ManageUserController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [ManageUserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [ManageUserController::class, 'destroy'])->name('destroy');
+        Route::post('/{user}/toggle-status', [ManageUserController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('/generate-password', [ManageUserController::class, 'generatePassword'])->name('generate-password');
+    });
+
+    // Registration Management
+    Route::prefix('registrations')->name('registrations.')->group(function () {
+        Route::get('/', [RegistrationController::class, 'index'])->name('index');
+        Route::get('/{registration}', [RegistrationController::class, 'show'])->name('show');
+        Route::put('/{registration}/status', [RegistrationController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{registration}/send-notification', [RegistrationController::class, 'sendNotification'])->name('send-notification');
     });
 });
 
 // Santri Routes
+// Santri Routes - Tambahkan dalam group santri
 Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'santriDashboard'])->name('dashboard');
-});
 
+    // Biodata Routes
+    Route::prefix('biodata')->name('biodata.')->group(function () {
+        Route::get('/', [BiodataController::class, 'index'])->name('index');
+        Route::post('/', [BiodataController::class, 'store'])->name('store');
+        Route::get('/package/{package}/prices', [BiodataController::class, 'getPackagePrices'])->name('package.prices');
+    });
+
+    // Document Routes
+    Route::prefix('documents')->name('documents.')->group(function () {
+        Route::get('/', [DocumentController::class, 'index'])->name('index');
+        Route::post('/upload/{documentType}', [DocumentController::class, 'upload'])->name('upload');
+        Route::delete('/delete/{documentType}', [DocumentController::class, 'delete'])->name('delete');
+        Route::get('/file/{documentType}', [DocumentController::class, 'getFile'])->name('file');
+    });
+});
 // General Authenticated Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
