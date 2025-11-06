@@ -10,8 +10,12 @@
             <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
 
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
-                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium">Dashboard</a>
-                <a href="{{ route('admin.manage-users.index') }}" class="text-primary hover:text-secondary font-medium">Manajemen Users</a>
+                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
+                <a href="{{ route('admin.manage-users.index') }}" class="text-primary hover:text-secondary font-medium">Profil</a>
+                <a href="{{ route('admin.manage-users.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
+                <a href="{{ route('admin.manage-users.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
+
+
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
                     <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>

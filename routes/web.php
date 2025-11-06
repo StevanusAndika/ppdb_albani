@@ -18,7 +18,6 @@ use App\Http\Controllers\Admin\RegistrationController;
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
 // Auth Routes
-// AJAX Validation Routes
 Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
 Route::post('/check-phone', [AuthController::class, 'checkPhoneNumber'])->name('check.phone');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -61,10 +60,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
 
-    // ==================== CONTENT MANAGEMENT ROUTES ====================
+    // Content Management
     Route::prefix('content')->name('content.')->group(function () {
         Route::get('/', [KontenController::class, 'index'])->name('index');
         Route::put('/update', [KontenController::class, 'update'])->name('update');
@@ -73,16 +71,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/program/{index}', [KontenController::class, 'deleteProgram'])->name('program.delete');
     });
 
-    // ==================== SETTINGS ROUTES ====================
+    // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingController::class, 'index'])->name('index');
         Route::put('/profile', [SettingController::class, 'updateProfile'])->name('profile.update');
         Route::post('/google/disconnect', [SettingController::class, 'disconnectGoogle'])->name('google.disconnect');
     });
 
-    // ==================== BILLING PACKAGES ROUTES ====================
+    // Billing Packages
     Route::prefix('billing')->name('billing.')->group(function () {
-        // Packages Routes
         Route::prefix('packages')->name('packages.')->group(function () {
             Route::get('/', [PackageController::class, 'index'])->name('index');
             Route::get('/create', [PackageController::class, 'create'])->name('create');
@@ -128,7 +125,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 // Santri Routes
-// Santri Routes - Tambahkan dalam group santri
 Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'santriDashboard'])->name('dashboard');
 
@@ -139,14 +135,22 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::get('/package/{package}/prices', [BiodataController::class, 'getPackagePrices'])->name('package.prices');
     });
 
-    // Document Routes
+    // Document Routes - COMPLETE VERSION
+   // Dalam routes/web.php - bagian santri documents
     Route::prefix('documents')->name('documents.')->group(function () {
-        Route::get('/', [DocumentController::class, 'index'])->name('index');
-        Route::post('/upload/{documentType}', [DocumentController::class, 'upload'])->name('upload');
-        Route::delete('/delete/{documentType}', [DocumentController::class, 'delete'])->name('delete');
-        Route::get('/file/{documentType}', [DocumentController::class, 'getFile'])->name('file');
-    });
+    Route::get('/', [DocumentController::class, 'index'])->name('index');
+    Route::post('/upload/{documentType}', [DocumentController::class, 'upload'])->name('upload');
+    Route::delete('/delete/{documentType}', [DocumentController::class, 'delete'])->name('delete');
+    Route::get('/file/{documentType}', [DocumentController::class, 'getFile'])->name('file');
+    Route::get('/download/{documentType}', [DocumentController::class, 'download'])->name('download');
+    Route::post('/complete', [DocumentController::class, 'completeRegistration'])->name('complete');
+    Route::get('/progress', [DocumentController::class, 'getProgress'])->name('progress');
+    Route::get('/test-image', [DocumentController::class, 'testImage'])->name('test-image');
+        Route::get('/download-all', [DocumentController::class, 'downloadAll'])->name('download-all');
+
 });
+});
+
 // General Authenticated Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

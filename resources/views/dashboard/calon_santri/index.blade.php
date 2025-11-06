@@ -16,7 +16,7 @@
                 <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
-                    <button type="submit" class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300">Logout</button>
+                    <button type="submit" class="bg-red-500 hover:bg-red-600  text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300">Logout</button>
                 </form>
             </div>
 
@@ -129,6 +129,16 @@
                         </a>
                     @endif
                 </div>
+
+                <!-- Download All Documents Button -->
+                @if($registration && $registration->hasAllDocuments())
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <button onclick="downloadAllDocuments()" class="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-file-archive mr-2"></i> Download Semua Dokumen (ZIP)
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-2">Download semua dokumen dalam satu file ZIP</p>
+                </div>
+                @endif
             </div>
 
             <!-- Middle: Status & Steps -->
@@ -159,8 +169,8 @@
                                             'diterima' => 'fa-check-circle'
                                         ];
                                     @endphp
-                                    <div class="px-3 py-2 rounded-full text-sm font-medium {{ $statusColors[$registration->status_pendaftaran] }} items-center">
-                                        <i class="fas {{ $statusIcons[$registration->status_pendaftaran] }} mr-2"></i>
+                                    <div class="px-3 py-2 rounded-full text-sm font-medium {{ $statusColors[$registration->status_pendaftaran] ?? 'bg-gray-100 text-gray-800' }} items-center">
+                                        <i class="fas {{ $statusIcons[$registration->status_pendaftaran] ?? 'fa-question-circle' }} mr-2"></i>
                                         {{ $registration->status_label }}
                                     </div>
                                 @else
@@ -292,9 +302,16 @@
                 <div id="dokumen" class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-primary">Kelengkapan Dokumen</h3>
-                        <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary text-sm font-medium">
-                            Kelola Dokumen
-                        </a>
+                        <div class="flex gap-2">
+                            @if($registration && $registration->hasAllDocuments())
+                            <button onclick="downloadAllDocuments()" class="bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-700 transition duration-300 text-sm flex items-center">
+                                <i class="fas fa-file-archive mr-1"></i> Download ZIP
+                            </button>
+                            @endif
+                            <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
+                                Kelola Dokumen
+                            </a>
+                        </div>
                     </div>
 
                     @if($registration)
@@ -328,7 +345,7 @@
                             ];
                         @endphp
 
-                        @foreach($documents as $doc)
+                        @foreach($documents as $type => $doc)
                         <div class="p-4 rounded-lg border-2 {{ $doc['uploaded'] ? 'border-green-500 bg-green-50' : 'border-gray-300' }} text-center transition duration-300 hover:shadow-md">
                             <i class="{{ $doc['icon'] }} text-2xl {{ $doc['uploaded'] ? 'text-green-500' : 'text-gray-400' }} mb-2"></i>
                             <div class="text-sm font-semibold {{ $doc['uploaded'] ? 'text-green-700' : 'text-gray-600' }}">
@@ -337,6 +354,17 @@
                             <div class="text-xs mt-1 {{ $doc['uploaded'] ? 'text-green-600' : 'text-gray-500' }}">
                                 {{ $doc['uploaded'] ? '✓ Terunggah' : 'Belum diunggah' }}
                             </div>
+                            @if($doc['uploaded'])
+                            <div class="mt-2 flex justify-center gap-1">
+                                <a href="{{ route('santri.documents.file', $type) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs">
+                                    <i class="fas fa-eye"></i> Lihat
+                                </a>
+                                <span class="text-gray-300">|</span>
+                                <button onclick="downloadSingleDocument('{{ $type }}')" class="text-green-600 hover:text-green-800 text-xs">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                            @endif
                         </div>
                         @endforeach
                     </div>
@@ -379,7 +407,8 @@
                             <p class="text-sm opacity-75">Kelola berkas persyaratan</p>
                         </a>
                     </div>
-                </div>
+
+                  
                 @endif
             </div>
         </div>
@@ -399,11 +428,79 @@
     </style>
 
     <script>
-        // Mobile menu toggle (small, follows welcome pattern)
+        // Mobile menu toggle
         document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu) mobileMenu.classList.toggle('hidden');
         });
+
+        // Download single document
+        function downloadSingleDocument(documentType) {
+            const link = document.createElement('a');
+            link.href = `/santri/documents/download/${documentType}`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Download all documents as ZIP
+        function downloadAllDocuments() {
+            // Show loading
+            Swal.fire({
+                title: 'Mempersiapkan File...',
+                text: 'Sedang membuat file ZIP dari semua dokumen',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Create a temporary link to trigger download
+            const link = document.createElement('a');
+            link.href = `/santri/documents/download-all`;
+            link.target = '_blank';
+
+            // Try download with fetch for error handling
+            fetch(`/santri/documents/download-all`, {
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => {
+                Swal.close();
+
+                if (!response.ok) {
+                    // If response not ok, try to parse error message
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || 'Download gagal');
+                    });
+                }
+
+                // If response ok, trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Download Berhasil',
+                    text: 'Semua dokumen berhasil didownload dalam format ZIP',
+                    confirmButtonText: 'OK'
+                });
+            })
+            .catch(error => {
+                Swal.close();
+                console.error('Download all error:', error);
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Download Gagal',
+                    text: error.message || 'Terjadi kesalahan saat mendownload file ZIP',
+                    confirmButtonText: 'Mengerti'
+                });
+            });
+        }
     </script>
 </div>
 @endsection

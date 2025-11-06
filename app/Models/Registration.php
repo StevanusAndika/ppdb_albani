@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Registration extends Model
 {
@@ -68,6 +69,8 @@ class Registration extends Model
         'dilihat_pada' => 'datetime',
     ];
 
+    protected $appends = ['status_label', 'total_biaya', 'formatted_total_biaya'];
+
     protected static function boot()
     {
         parent::boot();
@@ -76,6 +79,10 @@ class Registration extends Model
             if (empty($registration->id_pendaftaran)) {
                 $registration->id_pendaftaran = 'PSB-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
             }
+        });
+
+        static::deleting(function ($registration) {
+            $registration->deleteAllDocuments();
         });
     }
 
@@ -145,5 +152,74 @@ class Registration extends Model
                !empty($this->ijazah_path) &&
                !empty($this->akta_kelahiran_path) &&
                !empty($this->pas_foto_path);
+    }
+
+    /**
+     * Scope untuk dokumen yang akan expired dalam 3-4 tahun
+     */
+    public function scopeExpiringDocuments($query)
+    {
+        $threeYearsAgo = now()->subYears(3);
+        $fourYearsAgo = now()->subYears(4);
+
+        return $query->where(function($q) use ($threeYearsAgo, $fourYearsAgo) {
+            $q->where('created_at', '<=', $threeYearsAgo)
+              ->where('created_at', '>=', $fourYearsAgo);
+        })->where(function($q) {
+            $q->whereNotNull('kartu_keluaga_path')
+              ->orWhereNotNull('ijazah_path')
+              ->orWhereNotNull('akta_kelahiran_path')
+              ->orWhereNotNull('pas_foto_path');
+        });
+    }
+
+    /**
+     * Hapus semua dokumen yang terkait
+     */
+    public function deleteAllDocuments()
+    {
+        $documents = [
+            'kartu_keluaga_path',
+            'ijazah_path',
+            'akta_kelahiran_path',
+            'pas_foto_path'
+        ];
+
+        foreach ($documents as $document) {
+            if ($this->$document && Storage::disk('public')->exists($this->$document)) {
+                Storage::disk('public')->delete($this->$document);
+                $this->$document = null;
+            }
+        }
+
+        $this->save();
+    }
+
+    /**
+     * Cek apakah dokumen sudah expired (lebih dari 3 tahun)
+     */
+    public function isDocumentsExpired()
+    {
+        return $this->created_at->diffInYears(now()) >= 3;
+    }
+
+    /**
+     * Get document upload progress
+     */
+    public function getUploadProgressAttribute()
+    {
+        $uploaded = 0;
+        $total = 4;
+
+        if (!empty($this->kartu_keluaga_path)) $uploaded++;
+        if (!empty($this->ijazah_path)) $uploaded++;
+        if (!empty($this->akta_kelahiran_path)) $uploaded++;
+        if (!empty($this->pas_foto_path)) $uploaded++;
+
+        return [
+            'uploaded' => $uploaded,
+            'total' => $total,
+            'percentage' => ($uploaded / $total) * 100
+        ];
     }
 }
