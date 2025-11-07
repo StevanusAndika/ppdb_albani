@@ -86,6 +86,34 @@ class Registration extends Model
         });
     }
 
+
+    // Tambahkan di model Registration
+// Tambahkan method ini
+        public function payments()
+        {
+            return $this->hasMany(Payment::class);
+        }
+
+        public function hasSuccessfulPayment()
+        {
+            return $this->payments()
+                ->whereIn('status', ['success', 'lunas'])
+                ->exists();
+        }
+
+        public function hasPendingPayment()
+        {
+            return $this->payments()
+                ->whereIn('status', ['pending', 'waiting_payment', 'processing'])
+                ->exists();
+        }
+
+        public function getSuccessfulPaymentAttribute()
+        {
+            return $this->payments()
+                ->whereIn('status', ['success', 'lunas'])
+                ->first();
+        }
     public function user()
     {
         return $this->belongsTo(User::class);

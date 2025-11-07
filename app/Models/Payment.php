@@ -4,114 +4,114 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Payment extends Model
 {
     use HasFactory;
 
-    const STATUS_PENDING = 'pending';
-    const STATUS_SUCCESS = 'success';
-    const STATUS_FAILED = 'failed';
-    const STATUS_EXPIRED = 'expired';
-
     protected $fillable = [
+        'payment_code',
         'registration_id',
-        'nomor_invoice',
-        'jumlah_pembayaran',
-        'metode_pembayaran',
+        'user_id',
+        'amount',
+        'payment_method',
         'status',
-        'gateway_pembayaran',
-        'id_transaksi_gateway',
-        'waktu_pembayaran_sukses',
-        'waktu_kadaluarsa',
+        'xendit_id',
+        'xendit_external_id',
+        'xendit_response',
+        'admin_notes',
+        'paid_at',
+        'expired_at'
     ];
 
     protected $casts = [
-        'jumlah_pembayaran' => 'decimal:2',
-        'waktu_pembayaran_sukses' => 'datetime',
-        'waktu_kadaluarsa' => 'datetime',
+        'amount' => 'decimal:2',
+        'paid_at' => 'datetime',
+        'expired_at' => 'datetime',
+        'xendit_response' => 'array'
     ];
 
-    public function registration(): BelongsTo
+    protected $appends = ['formatted_amount', 'status_label', 'status_color'];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($payment) {
+            if (empty($payment->payment_code)) {
+                $payment->payment_code = 'PAY-' . date('Ymd') . '-' . strtoupper(uniqid());
+            }
+        });
+    }
+
+    public function registration()
     {
         return $this->belongsTo(Registration::class);
     }
 
-    public function paymentLogs(): HasMany
+    public function user()
     {
-        return $this->hasMany(PaymentLog::class);
+        return $this->belongsTo(User::class);
     }
 
-    public function getStatusColorAttribute(): string
+    public function getFormattedAmountAttribute()
     {
-        return match($this->status) {
-            self::STATUS_PENDING => 'yellow',
-            self::STATUS_SUCCESS => 'green',
-            self::STATUS_FAILED => 'red',
-            self::STATUS_EXPIRED => 'gray',
-            default => 'gray',
-        };
+        return 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
 
-    public function getStatusTextAttribute(): string
+    public function getStatusLabelAttribute()
     {
-        return match($this->status) {
-            self::STATUS_PENDING => 'Menunggu',
-            self::STATUS_SUCCESS => 'Sukses',
-            self::STATUS_FAILED => 'Gagal',
-            self::STATUS_EXPIRED => 'Kadaluarsa',
-            default => $this->status,
-        };
+        $statuses = [
+            'pending' => 'Menunggu',
+            'waiting_payment' => 'Menunggu Pembayaran',
+            'processing' => 'Sedang Diproses',
+            'success' => 'Berhasil',
+            'failed' => 'Gagal',
+            'expired' => 'Kadaluarsa',
+            'lunas' => 'Lunas'
+        ];
+
+        return $statuses[$this->status] ?? $this->status;
     }
 
-    public function getJumlahFormatAttribute(): string
+    public function getStatusIconAttribute()
     {
-        return 'Rp ' . number_format($this->jumlah_pembayaran, 0, ',', '.');
+        $icons = [
+            'pending' => 'fa-clock',
+            'waiting_payment' => 'fa-hourglass-half',
+            'processing' => 'fa-sync-alt',
+            'success' => 'fa-check-circle',
+            'failed' => 'fa-times-circle',
+            'expired' => 'fa-calendar-times',
+            'lunas' => 'fa-check-double'
+        ];
+
+        return $icons[$this->status] ?? 'fa-question-circle';
     }
 
-    public function isPending(): bool
+    public function isPaid()
     {
-        return $this->status === self::STATUS_PENDING;
+        return in_array($this->status, ['success', 'lunas']);
     }
 
-    public function isSuccess(): bool
+    public function isPending()
     {
-        return $this->status === self::STATUS_SUCCESS;
+        return in_array($this->status, ['pending', 'waiting_payment', 'processing']);
     }
 
-    public function isFailed(): bool
+    public function markAsPaid($method = 'manual')
     {
-        return $this->status === self::STATUS_FAILED;
+        $this->update([
+            'status' => 'lunas',
+            'paid_at' => now(),
+            'admin_notes' => $method === 'manual' ? 'Pembayaran manual oleh admin' : $this->admin_notes
+        ]);
     }
 
-    public function isExpired(): bool
+    public function canMakePayment()
     {
-        return $this->status === self::STATUS_EXPIRED;
-    }
-
-    public function isExpiredNow(): bool
-    {
-        return $this->waktu_kadaluarsa && $this->waktu_kadaluarsa->isPast();
-    }
-
-    public static function generateInvoiceNumber(): string
-    {
-        $prefix = 'INV';
-        $year = date('Y');
-        $month = date('m');
-
-        $lastInvoice = self::where('nomor_invoice', 'like', "{$prefix}/{$year}/{$month}/%")
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $nextNumber = 1;
-        if ($lastInvoice) {
-            $lastNumber = (int) substr($lastInvoice->nomor_invoice, -4);
-            $nextNumber = $lastNumber + 1;
-        }
-
-        return "{$prefix}/{$year}/{$month}/" . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        return $this->registration &&
+               $this->registration->status_pendaftaran !== 'belum_mendaftar' &&
+               $this->registration->hasAllDocuments();
     }
 }

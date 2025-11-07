@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page">
-    <!-- Navbar (in-page for styling parity with welcome) -->
+    <!-- Navbar -->
     <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
@@ -14,9 +14,10 @@
                 <a href="#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
+                <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600  text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300">Logout</button>
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
                 </form>
             </div>
 
@@ -34,6 +35,7 @@
                 <a href="#profile" class="text-primary">Profil</a>
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary">Dokumen</a>
+                <a href="{{ route('santri.payments.index') }}" class="text-primary">Pembayaran</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full bg-primary text-white py-2 rounded-full mt-2">Logout</button>
@@ -75,6 +77,16 @@
                     @elseif($registration)
                         <a href="{{ route('santri.documents.index') }}" class="bg-orange-500 text-white px-4 py-1.5 rounded-full hover:bg-orange-600 transition duration-300 flex items-center justify-center">
                             Lengkapi Dokumen
+                        </a>
+                    @endif
+
+                    @if($registration && $hasSuccessfulPayment)
+                        <a href="{{ route('santri.payments.index') }}" class="bg-purple-600 text-white px-4 py-1.5 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center">
+                            Pembayaran Selesai
+                        </a>
+                    @elseif($registration && $registration->hasAllDocuments())
+                        <a href="{{ route('santri.payments.create') }}" class="bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center">
+                            Bayar Sekarang
                         </a>
                     @endif
                 </div>
@@ -248,7 +260,7 @@
                                         @if($registration && $registration->hasAllDocuments())
                                             Lengkap
                                         @elseif($registration)
-                                            {{ $documentProgress }}% Selesai
+                                            {{ round($documentProgress) }}% Selesai
                                         @else
                                             Belum
                                         @endif
@@ -257,15 +269,17 @@
                             </div>
                         </div>
 
-                        <!-- Step 4: Verifikasi -->
-                        <div class="p-4 border-2 {{ $registration && $registration->status_pendaftaran == 'diterima' ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
+                        <!-- Step 4: Pembayaran -->
+                        <div class="p-4 border-2 {{ $hasSuccessfulPayment ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
                             <div class="flex items-center gap-3">
-                                <div class="step-number {{ $registration && $registration->status_pendaftaran == 'diterima' ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600' }}">4</div>
+                                <div class="step-number {{ $hasSuccessfulPayment ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600' }}">4</div>
                                 <div>
-                                    <h4 class="font-semibold {{ $registration && $registration->status_pendaftaran == 'diterima' ? 'text-green-800' : 'text-gray-600' }}">Verifikasi</h4>
-                                    <p class="text-sm {{ $registration && $registration->status_pendaftaran == 'diterima' ? 'text-green-600' : 'text-gray-500' }}">
-                                        @if($registration)
-                                            {{ $registration->status_label }}
+                                    <h4 class="font-semibold {{ $hasSuccessfulPayment ? 'text-green-800' : 'text-gray-600' }}">Pembayaran</h4>
+                                    <p class="text-sm {{ $hasSuccessfulPayment ? 'text-green-600' : 'text-gray-500' }}">
+                                        @if($hasSuccessfulPayment)
+                                            Lunas
+                                        @elseif($registration && $registration->hasAllDocuments())
+                                            Siap Bayar
                                         @else
                                             Menunggu
                                         @endif
@@ -285,7 +299,7 @@
                                     $totalProgress = 25; // Step 1 always complete
                                     if ($registration) $totalProgress += 25; // Step 2
                                     if ($registration->hasAllDocuments()) $totalProgress += 25; // Step 3
-                                    if ($registration->status_pendaftaran == 'diterima') $totalProgress += 25; // Step 4
+                                    if ($hasSuccessfulPayment) $totalProgress += 25; // Step 4
                                 @endphp
                                 {{ $totalProgress }}%
                             </span>
@@ -297,6 +311,81 @@
                     </div>
                     @endif
                 </div>
+
+                <!-- Status Pembayaran -->
+                @if($registration && $registration->hasAllDocuments())
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-primary">Status Pembayaran</h3>
+                        <div class="flex gap-2">
+                            <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
+                                Riwayat Pembayaran
+                            </a>
+                            @if(!$hasSuccessfulPayment)
+                            <a href="{{ route('santri.payments.create') }}" class="bg-primary text-white px-3 py-1 rounded-full hover:bg-secondary transition duration-300 text-sm flex items-center">
+                                <i class="fas fa-credit-card mr-1"></i> Bayar Sekarang
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($latestPayment)
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-blue-800">Pembayaran Terakhir</h4>
+                                <p class="text-blue-600 text-sm">Kode: {{ $latestPayment->payment_code }}</p>
+                                <p class="text-blue-600 text-sm">Jumlah: {{ $latestPayment->formatted_amount }}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ $latestPayment->status_color }}">
+                                    {{ $latestPayment->status_label }}
+                                </span>
+                                <p class="text-blue-600 text-sm mt-1">{{ $latestPayment->created_at->format('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+
+                        @if($latestPayment->payment_method === 'cash' && $latestPayment->isPending())
+                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-yellow-500 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-yellow-800">Instruksi Pembayaran Cash</p>
+                                    <p class="text-yellow-700 text-sm mt-1">
+                                        Silakan datang ke Pesantren Al-Qur'an Bani Syahid untuk melakukan pembayaran kepada admin.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($latestPayment->payment_method === 'xendit' && $latestPayment->isPending() && $latestPayment->xendit_response)
+                        <div class="mt-3">
+                            <a href="{{ $latestPayment->xendit_response['invoice_url'] }}"
+                               target="_blank"
+                               class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300 font-semibold text-center block">
+                                Lanjutkan Pembayaran Online
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                    @else
+                    <div class="text-center py-6">
+                        <i class="fas fa-credit-card text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Belum ada pembayaran</p>
+                        <a href="{{ route('santri.payments.create') }}" class="inline-block mt-3 bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition duration-300">
+                            Buat Pembayaran Pertama
+                        </a>
+                    </div>
+                    @endif
+
+                    @if($payments->count() > 1)
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600">Total riwayat pembayaran: {{ $payments->count() }}</p>
+                    </div>
+                    @endif
+                </div>
+                @endif
 
                 <!-- Dokumen Section -->
                 <div id="dokumen" class="bg-white rounded-xl shadow-md p-6">
@@ -373,7 +462,7 @@
                     <div class="mt-4">
                         <div class="flex justify-between text-sm text-gray-600 mb-1">
                             <span>Progress Dokumen</span>
-                            <span>{{ $documentProgress }}%</span>
+                            <span>{{ round($documentProgress) }}%</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
                             <div class="bg-primary h-2 rounded-full transition-all duration-300"
@@ -384,7 +473,7 @@
                     <div class="text-center py-6">
                         <i class="fas fa-folder-open text-4xl text-gray-300 mb-3"></i>
                         <p class="text-gray-500">Silakan isi biodata terlebih dahulu untuk mengunggah dokumen</p>
-                        <a href="{{ route('santri.biodata.index') }}" class="inline-block mt-3 bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition duration-300">
+                        <a href="{{ route('santri.biodata.index') }}" class="inline-block mt-3 bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition duration-300">
                             Isi Biodata Sekarang
                         </a>
                     </div>
@@ -406,9 +495,28 @@
                             <p class="font-semibold">Upload Dokumen</p>
                             <p class="text-sm opacity-75">Kelola berkas persyaratan</p>
                         </a>
+                        <a href="{{ route('santri.payments.index') }}" class="p-4 border-2 border-green-500 rounded-lg text-center hover:bg-green-500 hover:text-white transition duration-300">
+                            <i class="fas fa-receipt text-2xl mb-2"></i>
+                            <p class="font-semibold">Riwayat Bayar</p>
+                            <p class="text-sm opacity-75">Lihat status pembayaran</p>
+                        </a>
+                        @if(!$hasSuccessfulPayment && $registration->hasAllDocuments())
+                        <a href="{{ route('santri.payments.create') }}" class="p-4 border-2 border-blue-500 rounded-lg text-center hover:bg-blue-500 hover:text-white transition duration-300">
+                            <i class="fas fa-credit-card text-2xl mb-2"></i>
+                            <p class="font-semibold">Bayar Sekarang</p>
+                            <p class="text-sm opacity-75">Selesaikan pembayaran</p>
+                        </a>
+                        @else
+                        <div class="p-4 border-2 border-gray-300 rounded-lg text-center bg-gray-50">
+                            <i class="fas fa-check-circle text-2xl mb-2 text-gray-400"></i>
+                            <p class="font-semibold text-gray-400">Pembayaran</p>
+                            <p class="text-sm opacity-75 text-gray-400">
+                                {{ $hasSuccessfulPayment ? 'Sudah Lunas' : 'Menunggu Dokumen' }}
+                            </p>
+                        </div>
+                        @endif
                     </div>
-
-                  
+                </div>
                 @endif
             </div>
         </div>

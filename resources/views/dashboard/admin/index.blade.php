@@ -197,7 +197,7 @@
                     @endif
                 </div>
 
-                <!-- Quick Actions -->
+               <!-- Di bagian Quick Actions -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -209,17 +209,17 @@
                             <i class="fas fa-clipboard-list text-2xl mb-2"></i>
                             <p>Kelola Pendaftaran</p>
                         </a>
-                        <a href="{{ route('admin.billing.packages.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                        <!-- TAMBAHKAN INI: Link ke halaman transaksi -->
+                        <a href="{{ route('admin.transactions.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                                <i class="fas fa-credit-card text-2xl mb-2"></i>
+                                <p>Kelola Transaksi</p>
+                            </a>
+                            <a href="{{ route('admin.billing.packages.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
                             <i class="fas fa-box text-2xl mb-2"></i>
                             <p>Kelola Paket</p>
                         </a>
-                        <a href="{{ route('admin.billing.packages.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                            <i class="fas fa-money-bill-wave text-2xl mb-2"></i>
-                            <p>Kelola Harga</p>
-                        </a>
                     </div>
                 </div>
-
                 <!-- Additional Quick Actions -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Kelola Konten Website</h3>

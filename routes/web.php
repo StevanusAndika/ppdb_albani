@@ -13,6 +13,8 @@ use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Biodata\BiodataController;
 use App\Http\Controllers\Document\DocumentController;
 use App\Http\Controllers\Admin\RegistrationController;
+use App\Http\Controllers\Payment\PaymentController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
@@ -122,6 +124,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{registration}/status', [RegistrationController::class, 'updateStatus'])->name('update-status');
         Route::post('/{registration}/send-notification', [RegistrationController::class, 'sendNotification'])->name('send-notification');
     });
+
+    // Transaction Management
+    Route::prefix('transactions')->name('transactions.')->group(function () {
+        Route::get('/', [AdminPaymentController::class, 'index'])->name('index');
+        Route::get('/search', [AdminPaymentController::class, 'search'])->name('search');
+        Route::get('/{payment}', [AdminPaymentController::class, 'show'])->name('show');
+        Route::put('/{payment}/status', [AdminPaymentController::class, 'updateStatus'])->name('update-status');
+    });
 });
 
 // Santri Routes
@@ -135,23 +145,35 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::get('/package/{package}/prices', [BiodataController::class, 'getPackagePrices'])->name('package.prices');
     });
 
-    // Document Routes - COMPLETE VERSION
-   // Dalam routes/web.php - bagian santri documents
+    // Document Routes
     Route::prefix('documents')->name('documents.')->group(function () {
-    Route::get('/', [DocumentController::class, 'index'])->name('index');
-    Route::post('/upload/{documentType}', [DocumentController::class, 'upload'])->name('upload');
-    Route::delete('/delete/{documentType}', [DocumentController::class, 'delete'])->name('delete');
-    Route::get('/file/{documentType}', [DocumentController::class, 'getFile'])->name('file');
-    Route::get('/download/{documentType}', [DocumentController::class, 'download'])->name('download');
-    Route::post('/complete', [DocumentController::class, 'completeRegistration'])->name('complete');
-    Route::get('/progress', [DocumentController::class, 'getProgress'])->name('progress');
-    Route::get('/test-image', [DocumentController::class, 'testImage'])->name('test-image');
+        Route::get('/', [DocumentController::class, 'index'])->name('index');
+        Route::post('/upload/{documentType}', [DocumentController::class, 'upload'])->name('upload');
+        Route::delete('/delete/{documentType}', [DocumentController::class, 'delete'])->name('delete');
+        Route::get('/file/{documentType}', [DocumentController::class, 'getFile'])->name('file');
+        Route::get('/download/{documentType}', [DocumentController::class, 'download'])->name('download');
+        Route::post('/complete', [DocumentController::class, 'completeRegistration'])->name('complete');
+        Route::get('/progress', [DocumentController::class, 'getProgress'])->name('progress');
+        Route::get('/test-image', [DocumentController::class, 'testImage'])->name('test-image');
         Route::get('/download-all', [DocumentController::class, 'downloadAll'])->name('download-all');
+    });
 
-});
+    // Payment Routes
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/', [PaymentController::class, 'index'])->name('index');
+        Route::get('/create', [PaymentController::class, 'create'])->name('create');
+        Route::post('/', [PaymentController::class, 'store'])->name('store');
+        Route::get('/success', [PaymentController::class, 'success'])->name('success');
+        Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
+        Route::get('/invoice/{paymentCode}', [PaymentController::class, 'downloadInvoice'])->name('download-invoice');
+        Route::get('/{id}/detail', [PaymentController::class, 'detail'])->name('detail');
+    });
 });
 
 // General Authenticated Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
+
+// Xendit Webhook Route (public - no auth required)
+Route::post('/webhook/xendit', [PaymentController::class, 'webhook'])->name('webhook.xendit');

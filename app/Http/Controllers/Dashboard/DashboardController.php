@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
+use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,6 +31,10 @@ class DashboardController extends Controller
             'pending_registrations' => Registration::where('status_pendaftaran', 'menunggu_diverifikasi')->count(),
             'approved_registrations' => Registration::where('status_pendaftaran', 'diterima')->count(),
             'rejected_registrations' => Registration::where('status_pendaftaran', 'ditolak')->count(),
+            'total_payments' => Payment::count(),
+            'success_payments' => Payment::whereIn('status', ['success', 'lunas'])->count(),
+            'pending_payments' => Payment::whereIn('status', ['pending', 'waiting_payment'])->count(),
+            'total_users' => User::count(),
         ];
 
         $recentRegistrations = Registration::with(['user', 'package'])
@@ -36,7 +42,12 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return view('dashboard.admin.index', compact('stats', 'recentRegistrations'));
+        $recentPayments = Payment::with(['user', 'registration'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard.admin.index', compact('stats', 'recentRegistrations', 'recentPayments'));
     }
 
     public function santriDashboard()
@@ -56,6 +67,26 @@ class DashboardController extends Controller
             $documentProgress = ($uploadedCount / 4) * 100;
         }
 
-        return view('dashboard.calon_santri.index', compact('registration', 'documentProgress'));
+        // Ambil data pembayaran
+        $payments = [];
+        $latestPayment = null;
+        $hasSuccessfulPayment = false;
+
+        if ($registration) {
+            $payments = Payment::where('registration_id', $registration->id)
+                             ->orderBy('created_at', 'desc')
+                             ->get();
+
+            $latestPayment = $payments->first();
+            $hasSuccessfulPayment = $payments->whereIn('status', ['success', 'lunas'])->isNotEmpty();
+        }
+
+        return view('dashboard.calon_santri.index', compact(
+            'registration',
+            'documentProgress',
+            'payments',
+            'latestPayment',
+            'hasSuccessfulPayment'
+        ));
     }
 }
