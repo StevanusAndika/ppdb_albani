@@ -74,6 +74,21 @@ class Payment extends Model
         return $statuses[$this->status] ?? $this->status;
     }
 
+    public function getStatusColorAttribute()
+    {
+        $colors = [
+            'pending' => 'warning',
+            'waiting_payment' => 'info',
+            'processing' => 'primary',
+            'success' => 'success',
+            'failed' => 'danger',
+            'expired' => 'secondary',
+            'lunas' => 'success'
+        ];
+
+        return $colors[$this->status] ?? 'secondary';
+    }
+
     public function getStatusIconAttribute()
     {
         $icons = [
@@ -113,5 +128,35 @@ class Payment extends Model
         return $this->registration &&
                $this->registration->status_pendaftaran !== 'belum_mendaftar' &&
                $this->registration->hasAllDocuments();
+    }
+
+    /**
+     * Get payment status for debugging
+     */
+    public function getDebugInfo()
+    {
+        return [
+            'id' => $this->id,
+            'payment_code' => $this->payment_code,
+            'xendit_id' => $this->xendit_id,
+            'xendit_external_id' => $this->xendit_external_id,
+            'status' => $this->status,
+            'payment_method' => $this->payment_method,
+            'amount' => $this->amount,
+            'paid_at' => $this->paid_at,
+            'created_at' => $this->created_at,
+            'registration_id' => $this->registration_id,
+            'user_id' => $this->user_id
+        ];
+    }
+
+    /**
+     * Scope untuk payment yang perlu di-check statusnya
+     */
+    public function scopeNeedStatusCheck($query)
+    {
+        return $query->where('payment_method', 'xendit')
+                    ->whereIn('status', ['pending', 'waiting_payment', 'processing'])
+                    ->whereNotNull('xendit_id');
     }
 }

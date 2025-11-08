@@ -27,10 +27,14 @@ class ContentSetting extends Model
         'ijazah_path',
         'kk_path',
         'pasfoto_path',
+        'faq_data',
+        'kegiatan_pesantren_data',
     ];
 
     protected $casts = [
         'program_unggulan_data' => 'array',
+        'faq_data' => 'array',
+        'kegiatan_pesantren_data' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -71,12 +75,39 @@ class ContentSetting extends Model
     {
         $programs = $this->program_unggulan_data ?? [];
 
-        // Jika masih menggunakan format lama (string), konversi ke array
         if (is_string($programs)) {
             $programs = json_decode($programs, true) ?? [];
         }
 
         return $programs;
+    }
+
+    /**
+     * Get FAQ data dengan format yang konsisten
+     */
+    public function getFaqAttribute(): array
+    {
+        $faqs = $this->faq_data ?? [];
+
+        if (is_string($faqs)) {
+            $faqs = json_decode($faqs, true) ?? [];
+        }
+
+        return $faqs;
+    }
+
+    /**
+     * Get kegiatan pesantren data dengan format yang konsisten
+     */
+    public function getKegiatanPesantrenAttribute(): array
+    {
+        $kegiatan = $this->kegiatan_pesantren_data ?? [];
+
+        if (is_string($kegiatan)) {
+            $kegiatan = json_decode($kegiatan, true) ?? [];
+        }
+
+        return $kegiatan;
     }
 
     /**
@@ -90,22 +121,6 @@ class ContentSetting extends Model
     }
 
     /**
-     * Update program unggulan by index
-     */
-    public function updateProgramUnggulan(int $index, array $programData): bool
-    {
-        $programs = $this->getProgramUnggulanAttribute();
-
-        if (isset($programs[$index])) {
-            $programs[$index] = $programData;
-            $this->update(['program_unggulan_data' => $programs]);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Delete program unggulan by index
      */
     public function deleteProgramUnggulan(int $index): bool
@@ -115,6 +130,74 @@ class ContentSetting extends Model
         if (isset($programs[$index])) {
             unset($programs[$index]);
             $this->update(['program_unggulan_data' => array_values($programs)]);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Add new FAQ
+     */
+    public function addFaq(array $faqData): void
+    {
+        $faqs = $this->getFaqAttribute();
+        $faqs[] = $faqData;
+        $this->update(['faq_data' => $faqs]);
+    }
+
+    /**
+     * Delete FAQ by index
+     */
+    public function deleteFaq(int $index): bool
+    {
+        $faqs = $this->getFaqAttribute();
+
+        if (isset($faqs[$index])) {
+            unset($faqs[$index]);
+            $this->update(['faq_data' => array_values($faqs)]);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Add new kegiatan pesantren
+     */
+    public function addKegiatanPesantren(array $kegiatanData): void
+    {
+        $kegiatan = $this->getKegiatanPesantrenAttribute();
+        $kegiatan[] = $kegiatanData;
+        $this->update(['kegiatan_pesantren_data' => $kegiatan]);
+    }
+
+    /**
+     * Update kegiatan pesantren by index
+     */
+    public function updateKegiatanPesantren(int $index, array $kegiatanData): bool
+    {
+        $kegiatan = $this->getKegiatanPesantrenAttribute();
+
+        if (isset($kegiatan[$index])) {
+            $kegiatan[$index] = $kegiatanData;
+            $this->update(['kegiatan_pesantren_data' => $kegiatan]);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Delete kegiatan pesantren by index
+     */
+    public function deleteKegiatanPesantren(int $index): bool
+    {
+        $kegiatan = $this->getKegiatanPesantrenAttribute();
+
+        if (isset($kegiatan[$index])) {
+            unset($kegiatan[$index]);
+            $this->update(['kegiatan_pesantren_data' => array_values($kegiatan)]);
             return true;
         }
 

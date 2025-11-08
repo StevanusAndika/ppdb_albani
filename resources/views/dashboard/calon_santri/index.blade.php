@@ -15,6 +15,8 @@
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
                 <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
+                <a href="{{ route('santri.faq.index') }}" class="text-primary hover:text-secondary font-medium">FAQ</a>
+                <a href="{{ route('santri.kegiatan.index') }}" class="text-primary hover:text-secondary font-medium">Kegiatan</a>
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
                     <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
@@ -36,6 +38,8 @@
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary">Dokumen</a>
                 <a href="{{ route('santri.payments.index') }}" class="text-primary">Pembayaran</a>
+                <a href="{{ route('santri.faq.index') }}" class="text-primary">FAQ</a>
+                <a href="{{ route('santri.kegiatan.index') }}" class="text-primary">Kegiatan</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full bg-primary text-white py-2 rounded-full mt-2">Logout</button>
@@ -89,6 +93,16 @@
                             Bayar Sekarang
                         </a>
                     @endif
+
+                    <!-- FAQ Quick Link -->
+                    <a href="{{ route('santri.faq.index') }}" class="bg-indigo-600 text-white px-4 py-1.5 rounded-full hover:bg-indigo-700 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-question-circle mr-1"></i> FAQ
+                    </a>
+
+                    <!-- Kegiatan Quick Link -->
+                    <a href="{{ route('santri.kegiatan.index') }}" class="bg-pink-600 text-white px-4 py-1.5 rounded-full hover:bg-pink-700 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-calendar-alt mr-1"></i> Kegiatan
+                    </a>
                 </div>
             </div>
         </div>
@@ -96,61 +110,218 @@
 
     <main class="max-w-7xl mx-auto py-6 px-4">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left: Profile Card -->
-            <div id="profile" class="bg-white rounded-xl shadow-md p-6">
-                <div class="flex items-center gap-4">
-                    <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-2xl text-primary"></i>
+            <!-- Left: Profile Card & Menu -->
+            <div class="space-y-6">
+                <!-- Profile Card -->
+                <div id="profile" class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-2xl text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-primary">{{ Auth::user()->name }}</h3>
+                            <p class="text-secondary text-sm">{{ Auth::user()->email }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-primary">{{ Auth::user()->name }}</h3>
-                        <p class="text-secondary text-sm">{{ Auth::user()->email }}</p>
-                    </div>
-                </div>
 
-                <div class="mt-6 space-y-2 text-sm text-secondary">
-                    <div class="flex justify-between"><span>Telepon</span><span class="font-medium">{{ Auth::user()->phone_number ?? '-' }}</span></div>
-                    <div class="flex justify-between"><span>Role</span><span class="font-medium text-green-600">{{ Auth::user()->role }}</span></div>
-                    <div class="flex justify-between">
-                        <span>Tanggal Daftar</span>
-                        <span class="font-medium">{{ Auth::user()->created_at->translatedFormat('d F Y') }}</span>
+                    <div class="mt-6 space-y-2 text-sm text-secondary">
+                        <div class="flex justify-between"><span>Telepon</span><span class="font-medium">{{ Auth::user()->phone_number ?? '-' }}</span></div>
+                        <div class="flex justify-between"><span>Role</span><span class="font-medium text-green-600">{{ Auth::user()->role }}</span></div>
+                        <div class="flex justify-between">
+                            <span>Tanggal Daftar</span>
+                            <span class="font-medium">{{ Auth::user()->created_at->translatedFormat('d F Y') }}</span>
+                        </div>
+                        @if($registration)
+                        <div class="flex justify-between">
+                            <span>Paket Dipilih</span>
+                            <span class="font-medium text-primary">{{ $registration->package->name }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total Biaya</span>
+                            <span class="font-medium text-primary">{{ $registration->formatted_total_biaya }}</span>
+                        </div>
+                        @endif
                     </div>
-                    @if($registration)
-                    <div class="flex justify-between">
-                        <span>Paket Dipilih</span>
-                        <span class="font-medium text-primary">{{ $registration->package->name }}</span>
+
+                    <div class="mt-6 flex gap-3">
+                        @if($registration)
+                            <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
+                                Edit Biodata
+                            </a>
+                            <a href="{{ route('santri.documents.index') }}" class="w-full text-center bg-secondary text-white py-2 rounded-full hover:bg-gray-600 transition duration-300">
+                                Kelola Dokumen
+                            </a>
+                        @else
+                            <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
+                                Isi Biodata
+                            </a>
+                        @endif
                     </div>
-                    <div class="flex justify-between">
-                        <span>Total Biaya</span>
-                        <span class="font-medium text-primary">{{ $registration->formatted_total_biaya }}</span>
+
+                    <!-- Download All Documents Button -->
+                    @if($registration && $registration->hasAllDocuments())
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <button onclick="downloadAllDocuments()" class="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-file-archive mr-2"></i> Download Semua Dokumen (ZIP)
+                        </button>
+                        <p class="text-xs text-gray-500 text-center mt-2">Download semua dokumen dalam satu file ZIP</p>
                     </div>
                     @endif
                 </div>
 
-                <div class="mt-6 flex gap-3">
-                    @if($registration)
-                        <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
-                            Edit Biodata
+                <!-- Quick Menu Card -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-primary mb-4">Menu Cepat</h3>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Biodata Card -->
+                        <a href="{{ route('santri.biodata.index') }}" class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-4 text-center hover:from-blue-600 hover:to-blue-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-user-edit text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">Biodata</span>
+                            </div>
                         </a>
-                        <a href="{{ route('santri.documents.index') }}" class="w-full text-center bg-secondary text-white py-2 rounded-full hover:bg-gray-600 transition duration-300">
-                            Kelola Dokumen
+
+                        <!-- Dokumen Card -->
+                        <a href="{{ route('santri.documents.index') }}" class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-4 text-center hover:from-green-600 hover:to-green-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-file-upload text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">Dokumen</span>
+                            </div>
                         </a>
+
+                        <!-- Pembayaran Card -->
+                        <a href="{{ route('santri.payments.index') }}" class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-4 text-center hover:from-purple-600 hover:to-purple-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-credit-card text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">Pembayaran</span>
+                            </div>
+                        </a>
+
+                        <!-- FAQ Card -->
+                        <a href="{{ route('santri.faq.index') }}" class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg p-4 text-center hover:from-indigo-600 hover:to-indigo-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-question-circle text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">FAQ</span>
+                            </div>
+                        </a>
+
+                        <!-- Kegiatan Card -->
+                        <a href="{{ route('santri.kegiatan.index') }}" class="bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-lg p-4 text-center hover:from-pink-600 hover:to-pink-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-calendar-alt text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">Kegiatan</span>
+                            </div>
+                        </a>
+
+                        <!-- Kontak Card -->
+                        <a href="https://wa.me/6287748115931" target="_blank" class="bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-lg p-4 text-center hover:from-teal-600 hover:to-teal-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-headset text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">Bantuan</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Progress Summary -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h4 class="font-semibold text-gray-700 mb-3">Ringkasan Progress</h4>
+                        <div class="space-y-3">
+                            @php
+                                $progressItems = [
+                                    'Biodata' => [
+                                        'completed' => (bool)$registration,
+                                        'route' => route('santri.biodata.index'),
+                                        'color' => 'blue'
+                                    ],
+                                    'Dokumen' => [
+                                        'completed' => $registration && $registration->hasAllDocuments(),
+                                        'progress' => $documentProgress ?? 0,
+                                        'route' => route('santri.documents.index'),
+                                        'color' => 'green'
+                                    ],
+                                    'Pembayaran' => [
+                                        'completed' => $hasSuccessfulPayment ?? false,
+                                        'route' => route('santri.payments.index'),
+                                        'color' => 'purple'
+                                    ]
+                                ];
+                            @endphp
+
+                            @foreach($progressItems as $label => $item)
+                            <a href="{{ $item['route'] }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition duration-300">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-{{ $item['color'] }}-500 mr-3"></div>
+                                    <span class="text-sm font-medium text-gray-700">{{ $label }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    @if(isset($item['progress']))
+                                        <span class="text-xs text-gray-500 mr-2">{{ $item['progress'] }}%</span>
+                                    @endif
+                                    @if($item['completed'])
+                                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                                    @else
+                                        <i class="fas fa-clock text-yellow-500 text-sm"></i>
+                                    @endif
+                                </div>
+                            </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kegiatan Quick Info -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-primary">Kegiatan Hari Ini</h3>
+                        <a href="{{ route('santri.kegiatan.index') }}" class="text-primary hover:text-secondary text-sm">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+
+                    @php
+                        $kegiatan = \App\Models\ContentSetting::getSettings()->kegiatan_pesantren ?? [];
+                        $todayKegiatan = array_slice($kegiatan, 0, 3); // Ambil 3 kegiatan pertama
+                    @endphp
+
+                    @if(count($todayKegiatan) > 0)
+                        <div class="space-y-3">
+                            @foreach($todayKegiatan as $index => $item)
+                            <div class="border-l-4 border-primary bg-blue-50 rounded-r-lg p-3">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="font-semibold text-sm text-primary">{{ $item['waktu'] }}</span>
+                                    <span class="bg-primary text-white text-xs px-2 py-1 rounded-full">{{ $loop->iteration }}</span>
+                                </div>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                                    @foreach(array_slice($item['kegiatan'], 0, 2) as $kegiatanItem)
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-primary text-xs mt-1 mr-2"></i>
+                                        <span>{{ Str::limit($kegiatanItem, 40) }}</span>
+                                    </li>
+                                    @endforeach
+                                    @if(count($item['kegiatan']) > 2)
+                                    <li class="text-primary text-xs font-medium">
+                                        +{{ count($item['kegiatan']) - 2 }} kegiatan lainnya
+                                    </li>
+                                    @endif
+                                </ul>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <a href="{{ route('santri.kegiatan.index') }}" class="inline-flex items-center text-primary hover:text-secondary text-sm font-medium">
+                                <span>Lihat Jadwal Lengkap</span>
+                                <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
                     @else
-                        <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
-                            Isi Biodata
-                        </a>
+                        <div class="text-center py-4 text-gray-500">
+                            <i class="fas fa-calendar-times text-2xl mb-2"></i>
+                            <p class="text-sm">Belum ada jadwal kegiatan</p>
+                        </div>
                     @endif
                 </div>
-
-                <!-- Download All Documents Button -->
-                @if($registration && $registration->hasAllDocuments())
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <button onclick="downloadAllDocuments()" class="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center">
-                        <i class="fas fa-file-archive mr-2"></i> Download Semua Dokumen (ZIP)
-                    </button>
-                    <p class="text-xs text-gray-500 text-center mt-2">Download semua dokumen dalam satu file ZIP</p>
-                </div>
-                @endif
             </div>
 
             <!-- Middle: Status & Steps -->
@@ -500,24 +671,59 @@
                             <p class="font-semibold">Riwayat Bayar</p>
                             <p class="text-sm opacity-75">Lihat status pembayaran</p>
                         </a>
-                        @if(!$hasSuccessfulPayment && $registration->hasAllDocuments())
-                        <a href="{{ route('santri.payments.create') }}" class="p-4 border-2 border-blue-500 rounded-lg text-center hover:bg-blue-500 hover:text-white transition duration-300">
-                            <i class="fas fa-credit-card text-2xl mb-2"></i>
-                            <p class="font-semibold">Bayar Sekarang</p>
-                            <p class="text-sm opacity-75">Selesaikan pembayaran</p>
+                        <a href="{{ route('santri.faq.index') }}" class="p-4 border-2 border-indigo-500 rounded-lg text-center hover:bg-indigo-500 hover:text-white transition duration-300">
+                            <i class="fas fa-question-circle text-2xl mb-2"></i>
+                            <p class="font-semibold">Bantuan FAQ</p>
+                            <p class="text-sm opacity-75">Temukan jawaban</p>
                         </a>
-                        @else
-                        <div class="p-4 border-2 border-gray-300 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-check-circle text-2xl mb-2 text-gray-400"></i>
-                            <p class="font-semibold text-gray-400">Pembayaran</p>
-                            <p class="text-sm opacity-75 text-gray-400">
-                                {{ $hasSuccessfulPayment ? 'Sudah Lunas' : 'Menunggu Dokumen' }}
-                            </p>
-                        </div>
-                        @endif
                     </div>
                 </div>
                 @endif
+
+                <!-- FAQ Quick Section -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-primary">Pertanyaan Umum</h3>
+                        <a href="{{ route('santri.faq.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
+                            Lihat Semua FAQ
+                        </a>
+                    </div>
+
+                    <div class="space-y-3">
+                        @php
+                            $faqs = \App\Models\ContentSetting::getSettings()->faq ?? [];
+                            $recentFaqs = array_slice($faqs, 0, 3); // Ambil 3 FAQ terbaru
+                        @endphp
+
+                        @if(count($recentFaqs) > 0)
+                            @foreach($recentFaqs as $index => $faq)
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition duration-300">
+                                <div class="flex items-start gap-3">
+                                    <div class="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1 flex-shrink-0">
+                                        {{ $index + 1 }}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800 mb-1">{{ $faq['pertanyaan'] }}</h4>
+                                        <p class="text-gray-600 text-sm line-clamp-2">{{ Str::limit($faq['jawaban'], 100) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        @else
+                            <div class="text-center py-4 text-gray-500">
+                                <i class="fas fa-question-circle text-2xl mb-2"></i>
+                                <p>Belum ada pertanyaan yang tersedia</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <a href="{{ route('santri.faq.index') }}" class="inline-flex items-center text-primary hover:text-secondary font-medium">
+                            <span>Lihat Semua Pertanyaan</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -525,13 +731,19 @@
     <!-- Footer (simple) -->
     <footer class="bg-primary text-white py-8 px-4 mt-6">
         <div class="max-w-7xl mx-auto text-center">
-            <p>&copy; 2025 PPDB Pesantren AI-Our'an Bani Syahid</p>
+            <p>&copy; 2025 PPDB Pesantren Al-Qur'an Bani Syahid</p>
         </div>
     </footer>
 
     <style>
         .step-number {
             @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
     </style>
 
@@ -609,6 +821,20 @@
                 });
             });
         }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     </script>
 </div>
 @endsection

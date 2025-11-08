@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class PasswordResetOtp extends Model
 {
@@ -53,5 +54,18 @@ class PasswordResetOtp extends Model
     public static function cleanupExpired(): void
     {
         static::where('expires_at', '<', now()->subHours(2))->delete();
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto cleanup saat model diakses
+        static::booted(function () {
+            static::cleanupExpired();
+        });
     }
 }

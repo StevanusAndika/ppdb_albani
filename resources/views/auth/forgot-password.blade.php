@@ -600,5 +600,73 @@ function initPasswordStrengthChecker() {
         checkPasswordStrength(passwordInput.value);
     }
 }
+
+// Di bagian scripts, tambahkan fungsi untuk cek cooldown
+function checkCooldown() {
+    const email = document.querySelector('input[name="email"]').value;
+
+    if (!email) return;
+
+    fetch('{{ route("password.check.cooldown") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const submitBtn = document.querySelector('#forgotPasswordForm button[type="submit"]');
+
+        if (!data.success) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fas fa-clock mr-2"></i>${data.message}`;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Update countdown display
+            startCooldownTimer(data.remaining_time);
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fas fa-key mr-2"></i>Kirim OTP via WhatsApp`;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    });
+}
+
+function startCooldownTimer(remainingTime) {
+    const submitBtn = document.querySelector('#forgotPasswordForm button[type="submit"]');
+    let timeLeft = remainingTime;
+
+    const timer = setInterval(() => {
+        timeLeft--;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fas fa-key mr-2"></i>Kirim OTP via WhatsApp`;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            return;
+        }
+
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        submitBtn.innerHTML = `<i class="fas fa-clock mr-2"></i>Tunggu ${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Event listener untuk input email
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.querySelector('input[name="email"]');
+    if (emailInput) {
+        emailInput.addEventListener('blur', checkCooldown);
+        emailInput.addEventListener('input', function() {
+            const submitBtn = document.querySelector('#forgotPasswordForm button[type="submit"]');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fas fa-key mr-2"></i>Kirim OTP via WhatsApp`;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+    }
+});
 </script>
 @endsection

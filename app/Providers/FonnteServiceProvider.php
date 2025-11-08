@@ -22,6 +22,11 @@ class FonnteServiceProvider extends ServiceProvider
                 {
                     $this->apiUrl = 'https://api.fonnte.com/send';
                     $this->token = env('FONNTE_TOKEN');
+
+                    // Validasi token
+                    if (empty($this->token)) {
+                        Log::error('Fonnte token is not set in environment variables');
+                    }
                 }
 
                 /**
@@ -33,7 +38,12 @@ class FonnteServiceProvider extends ServiceProvider
                         // Format nomor telepon (hapus +62 atau 0 di depan)
                         $formattedPhone = $this->formatPhoneNumber($phone);
 
-                        $response = Http::withHeaders([
+                        // Validasi nomor telepon
+                        if (empty($formattedPhone)) {
+                            return ['success' => false, 'message' => 'Nomor telepon tidak valid'];
+                        }
+
+                        $response = Http::timeout(30)->withHeaders([
                             'Authorization' => $this->token
                         ])->post($this->apiUrl, [
                             'target' => $formattedPhone,
@@ -52,16 +62,25 @@ class FonnteServiceProvider extends ServiceProvider
                         } else {
                             Log::error('Fonnte API error', [
                                 'phone' => $formattedPhone,
-                                'response' => $result
+                                'response' => $result,
+                                'status_code' => $response->status()
                             ]);
-                            return ['success' => false, 'message' => $result['message'] ?? 'Gagal mengirim pesan'];
+                            return [
+                                'success' => false,
+                                'message' => $result['message'] ?? 'Gagal mengirim pesan',
+                                'details' => $result
+                            ];
                         }
                     } catch (\Exception $e) {
                         Log::error('Fonnte service exception', [
                             'phone' => $phone,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
                         ]);
-                        return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
+                        return [
+                            'success' => false,
+                            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                        ];
                     }
                 }
 
@@ -73,14 +92,24 @@ class FonnteServiceProvider extends ServiceProvider
                     // Hapus karakter non-digit
                     $phone = preg_replace('/[^0-9]/', '', $phone);
 
+                    // Jika kosong setelah diformat
+                    if (empty($phone)) {
+                        return '';
+                    }
+
                     // Jika diawali dengan +62, hapus +
-                    if (strpos($phone, '62') === 0) {
+                    if (str_starts_with($phone, '62')) {
                         return $phone;
                     }
 
                     // Jika diawali dengan 0, ganti dengan 62
-                    if (strpos($phone, '0') === 0) {
+                    if (str_starts_with($phone, '0')) {
                         return '62' . substr($phone, 1);
+                    }
+
+                    // Jika kurang dari 10 digit, anggap tidak valid
+                    if (strlen($phone) < 10) {
+                        return '';
                     }
 
                     return $phone;
@@ -271,6 +300,26 @@ class FonnteServiceProvider extends ServiceProvider
                              . "Panitia PPDB";
 
                     return $this->sendMessage($phone, $message);
+                }
+
+                /**
+                 * Cek status koneksi API Fonnte
+                 */
+                public function checkConnection(): array
+                {
+                    try {
+                        $response = Http::timeout(10)->withHeaders([
+                            'Authorization' => $this->token
+                        ])->get('https://api.fonnte.com/me');
+
+                        if ($response->successful()) {
+                            return ['success' => true, 'message' => 'Koneksi API Fonnte berhasil'];
+                        } else {
+                            return ['success' => false, 'message' => 'Gagal terhubung ke API Fonnte'];
+                        }
+                    } catch (\Exception $e) {
+                        return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
+                    }
                 }
             };
         });

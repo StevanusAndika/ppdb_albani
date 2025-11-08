@@ -15,6 +15,9 @@ use App\Http\Controllers\Document\DocumentController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\FAQ\FAQController;
+use App\Http\Controllers\Kegiatan\KegiatanController;
+use App\Http\Controllers\Announcement\AnnouncementController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
@@ -48,6 +51,8 @@ Route::post('/reset-password', [PasswordResetController::class, 'reset'])
     ->name('password.update');
 Route::post('/resend-otp', [PasswordResetController::class, 'resendOtp'])
     ->name('password.resend.otp');
+Route::post('/check-password-cooldown', [PasswordResetController::class, 'checkCooldown'])
+    ->name('password.check.cooldown');
 
 // Socialite Routes
 Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])
@@ -63,14 +68,30 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
-
+// Announcement Routes
+Route::prefix('announcements')->name('announcements.')->group(function () {
+    Route::get('/', [AnnouncementController::class, 'index'])->name('index');
+    Route::post('/send-individual/{registration}', [AnnouncementController::class, 'sendIndividualMessage'])->name('send.individual');
+    Route::post('/send-bulk', [AnnouncementController::class, 'sendBulkMessage'])->name('send.bulk');
+    Route::post('/send-all-santri', [AnnouncementController::class, 'sendToAllSantri'])->name('send.all.santri');
+});
     // Content Management
     Route::prefix('content')->name('content.')->group(function () {
         Route::get('/', [KontenController::class, 'index'])->name('index');
         Route::put('/update', [KontenController::class, 'update'])->name('update');
         Route::delete('/file/{fileType}', [KontenController::class, 'deleteFile'])->name('file.delete');
+
+        // Program Unggulan Routes
         Route::post('/program/add', [KontenController::class, 'addProgram'])->name('program.add');
         Route::delete('/program/{index}', [KontenController::class, 'deleteProgram'])->name('program.delete');
+
+        // FAQ Routes
+        Route::post('/faq/add', [KontenController::class, 'addFaq'])->name('faq.add');
+        Route::delete('/faq/{index}', [KontenController::class, 'deleteFaq'])->name('faq.delete');
+
+        // Kegiatan Routes
+        Route::post('/kegiatan/add', [KontenController::class, 'addKegiatan'])->name('kegiatan.add');
+        Route::delete('/kegiatan/{index}', [KontenController::class, 'deleteKegiatan'])->name('kegiatan.delete');
     });
 
     // Settings
@@ -127,17 +148,32 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Transaction Management
     Route::prefix('transactions')->name('transactions.')->group(function () {
-        Route::get('/', [AdminPaymentController::class, 'index'])->name('index');
-        Route::get('/search', [AdminPaymentController::class, 'search'])->name('search');
-        Route::get('/{payment}', [AdminPaymentController::class, 'show'])->name('show');
-        Route::put('/{payment}/status', [AdminPaymentController::class, 'updateStatus'])->name('update-status');
-    });
+    Route::get('/', [AdminPaymentController::class, 'index'])->name('index');
+    Route::get('/search', [AdminPaymentController::class, 'search'])->name('search');
+    Route::get('/{payment}', [AdminPaymentController::class, 'show'])->name('show');
+    Route::put('/{payment}/status', [AdminPaymentController::class, 'updateStatus'])->name('update-status');
+    Route::post('/bulk-update', [AdminPaymentController::class, 'bulkUpdate'])->name('bulk-update');
+    Route::get('/export', [AdminPaymentController::class, 'export'])->name('export');
+
+    // Tambahkan route untuk manual sync
+    Route::post('/{payment}/manual-sync', [PaymentController::class, 'manualSync'])->name('manual-sync');
+});
+
 });
 
 // Santri Routes
 Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'santriDashboard'])->name('dashboard');
 
+    // FAQ Routes
+    Route::prefix('faq')->name('faq.')->group(function () {
+        Route::get('/', [FAQController::class, 'index'])->name('index');
+    });
+
+    // Kegiatan Routes
+    Route::prefix('kegiatan')->name('kegiatan.')->group(function () {
+        Route::get('/', [KegiatanController::class, 'index'])->name('index');
+    });
     // Biodata Routes
     Route::prefix('biodata')->name('biodata.')->group(function () {
         Route::get('/', [BiodataController::class, 'index'])->name('index');
@@ -159,15 +195,20 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
     });
 
     // Payment Routes
-    Route::prefix('payments')->name('payments.')->group(function () {
-        Route::get('/', [PaymentController::class, 'index'])->name('index');
-        Route::get('/create', [PaymentController::class, 'create'])->name('create');
-        Route::post('/', [PaymentController::class, 'store'])->name('store');
-        Route::get('/success', [PaymentController::class, 'success'])->name('success');
-        Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
-        Route::get('/invoice/{paymentCode}', [PaymentController::class, 'downloadInvoice'])->name('download-invoice');
-        Route::get('/{id}/detail', [PaymentController::class, 'detail'])->name('detail');
-    });
+   // Dalam group santri routes
+Route::prefix('payments')->name('payments.')->group(function () {
+    Route::get('/', [PaymentController::class, 'index'])->name('index');
+    Route::get('/create', [PaymentController::class, 'create'])->name('create');
+    Route::post('/', [PaymentController::class, 'store'])->name('store');
+    Route::get('/success', [PaymentController::class, 'success'])->name('success');
+    Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
+    Route::get('/invoice/{paymentCode}', [PaymentController::class, 'downloadInvoice'])->name('download-invoice');
+    Route::get('/{id}/detail', [PaymentController::class, 'detail'])->name('detail');
+    Route::get('/check-status/{paymentCode}', [PaymentController::class, 'checkStatus'])->name('check-status');
+    Route::get('/retry/{paymentCode}', [PaymentController::class, 'retryPayment'])->name('retry');
+    Route::get('/manual-sync/{paymentCode}', [PaymentController::class, 'manualSync'])->name('manual-sync');
+});
+
 });
 
 // General Authenticated Routes
@@ -175,5 +216,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-// Xendit Webhook Route (public - no auth required)
-Route::post('/webhook/xendit', [PaymentController::class, 'webhook'])->name('webhook.xendit');
+// Xendit Webhook Route (public - no auth required) - FIXED CSRF EXEMPTION
+Route::post('/webhook/xendit', [PaymentController::class, 'webhook'])
+    ->name('webhook.xendit')
+    ->withoutMiddleware(['web']);
+
+

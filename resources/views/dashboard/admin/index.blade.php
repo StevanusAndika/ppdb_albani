@@ -14,6 +14,8 @@
                 <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary hover:text-secondary font-medium">Profil</a>
                 <a href="{{ route('admin.registrations.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
                 <a href="#dokumen" class="text-primary hover:text-secondary font-medium">Dokumen</a>
+                <a href="#dokumen" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
+
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
                     <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
@@ -34,6 +36,8 @@
                 <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary">Profil</a>
                 <a href="{{ route('admin.registrations.index') }}" class="text-primary">Pendaftaran</a>
                 <a href="#dokumen" class="text-primary">Dokumen</a>
+                <a href="{{ route('admin.transactions.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
+
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-full mt-2">Logout</button>
@@ -232,10 +236,10 @@
                             <i class="fas fa-cogs text-2xl mb-2"></i>
                             <p>Pengaturan</p>
                         </a>
-                        <a href="#" class="bg-pink-500 hover:bg-pink-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                            <i class="fas fa-chart-bar text-2xl mb-2"></i>
-                            <p>Laporan</p>
-                        </a>
+                         <a href="{{ route('admin.announcements.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                                <i class="fas fa-bullhorn text-2xl mb-2"></i>
+                                <p>Pengumuman</p>
+                            </a>
                     </div>
                 </div>
             </div>

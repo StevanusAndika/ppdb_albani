@@ -4,16 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
-use App\Services\FonnteService;
 use Illuminate\Http\Request;
 
 class RegistrationController extends Controller
 {
     protected $fonnteService;
 
-    public function __construct(FonnteService $fonnteService)
+    public function __construct()
     {
-        $this->fonnteService = $fonnteService;
+        // Menggunakan service yang sudah didaftarkan di Service Provider
+        $this->fonnteService = app('fonnte');
     }
 
     public function index()

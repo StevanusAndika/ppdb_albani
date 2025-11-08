@@ -37,6 +37,76 @@
             margin-right: 15px;
             flex-shrink: 0;
         }
+        .faq-accordion {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .faq-item {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .faq-question:hover {
+            background-color: #f8fafc;
+        }
+        .faq-question.active {
+            background-color: #f0f9ff;
+            border-left: 4px solid #057572;
+        }
+        .faq-number {
+            background: #057572;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.875rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .faq-text {
+            flex: 1;
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 1rem;
+        }
+        .faq-icon {
+            transition: transform 0.3s ease;
+            color: #057572;
+        }
+        .faq-question.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        .faq-answer {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+        .faq-answer.active {
+            padding: 1.5rem;
+            max-height: 500px;
+        }
+        .faq-answer-content {
+            color: #4b5563;
+            line-height: 1.6;
+            border-left: 3px solid #d1d5db;
+            padding-left: 1rem;
+        }
         /* Perbaikan untuk navbar mobile */
         @media (max-width: 767px) {
             .nav-container {
@@ -59,6 +129,15 @@
                 border-radius: 0.75rem;
                 margin-bottom: 0.25rem;
             }
+            .faq-question {
+                padding: 1rem;
+            }
+            .faq-text {
+                font-size: 0.9rem;
+            }
+            .faq-answer.active {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -73,9 +152,11 @@
             <a href="#" class="text-primary hover:text-secondary font-medium transition duration-300">Beranda</a>
             <a href="#visi-misi" class="text-primary hover:text-secondary font-medium transition duration-300">Visi & Misi</a>
             <a href="#program" class="text-primary hover:text-secondary font-medium transition duration-300">Program</a>
+            <a href="#kegiatan" class="text-primary hover:text-secondary font-medium transition duration-300">Kegiatan</a>
             <a href="#alur-pendaftaran" class="text-primary hover:text-secondary font-medium transition duration-300">Alur Pendaftaran</a>
             <a href="#biaya" class="text-primary hover:text-secondary font-medium transition duration-300">Biaya</a>
             <a href="#persyaratan" class="text-primary hover:text-secondary font-medium transition duration-300">Persyaratan</a>
+            <a href="#faq" class="text-primary hover:text-secondary font-medium transition duration-300">FAQ</a>
             <a href="#" class="text-primary hover:text-secondary font-medium transition duration-300">Kontak</a>
 
             @auth
@@ -110,9 +191,11 @@
             <a href="#" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Beranda</a>
             <a href="#visi-misi" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Visi & Misi</a>
             <a href="#program" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Program</a>
+            <a href="#kegiatan" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Kegiatan</a>
             <a href="#alur-pendaftaran" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Alur Pendaftaran</a>
             <a href="#biaya" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Biaya</a>
             <a href="#persyaratan" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Persyaratan</a>
+            <a href="#faq" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">FAQ</a>
             <a href="#" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">Kontak</a>
 
             @auth
@@ -134,53 +217,54 @@
         </div>
     </div>
 </nav>
+
     <!-- Header Section -->
-   <!-- Header Section -->
-<header class="py-12 px-4 text-center">
-    <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
-        {{ $contentSettings->judul ?? 'PPDB' }}
-    </h1>
-    <h2 class="text-2xl md:text-3xl font-semibold text-primary mb-8">
-        {{ $contentSettings->tagline ?? 'Pesantren AI-Our\'an Bani Syahid 2025' }}
-    </h2>
+    <header class="py-12 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
+            {{ $contentSettings->judul ?? 'PPDB' }}
+        </h1>
+        <h2 class="text-2xl md:text-3xl font-semibold text-primary mb-8">
+            {{ $contentSettings->tagline ?? 'Pesantren AI-Our\'an Bani Syahid 2025' }}
+        </h2>
 
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
-        <p class="text-secondary text-lg mb-4">
-            {{ $contentSettings->deskripsi ?? 'Sistem Penerimaan Peserta Didik Baru yang modern, mudah, dan terpercaya. Untuk Masa Depan Yang Lebih Baik' }}
-        </p>
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
+            <p class="text-secondary text-lg mb-4">
+                {{ $contentSettings->deskripsi ?? 'Sistem Penerimaan Peserta Didik Baru yang modern, mudah, dan terpercaya. Untuk Masa Depan Yang Lebih Baik' }}
+            </p>
 
-        @auth
-            <!-- Jika user sudah login -->
-            @if(auth()->user()->isAdmin())
-                <a href="{{ route('admin.dashboard') }}">
-                    <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
-                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Admin
-                    </button>
-                </a>
-            @elseif(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
-                <a href="{{ route('santri.dashboard') }}">
-                    <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
-                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Santri
-                    </button>
-                </a>
+            @auth
+                <!-- Jika user sudah login -->
+                @if(auth()->user()->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}">
+                        <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Admin
+                        </button>
+                    </a>
+                @elseif(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
+                    <a href="{{ route('santri.dashboard') }}">
+                        <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Santri
+                        </button>
+                    </a>
+                @else
+                    <!-- Untuk role lainnya -->
+                    <a href="{{ route('dashboard') }}">
+                        <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
+                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                        </button>
+                    </a>
+                @endif
             @else
-                <!-- Untuk role lainnya -->
-                <a href="{{ route('dashboard') }}">
-                    <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
-                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
-                    </button>
-                </a>
-            @endif
-        @else
-            <!-- Jika user belum login -->
-            <a href="{{ route('register') }}">
-                <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
-                    <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
-                </button>
-            </a>
-        @endauth
-    </div>
-</header>
+                <!-- Jika user belum login -->
+
+                    <a href="https://wa.me/6287748115931?text=Halo,%20saya%20ingin%20mendaftar"
+                    class="bg-green-600 text-white px-6 py-2.5 rounded-full hover:bg-green-700 transition duration-300 font-semibold inline-flex items-center">
+                        <i class="fab fa-whatsapp mr-2"></i>Tanya via WhatsApp
+                    </a>
+                </div>
+            @endauth
+        </div>
+    </header>
 
     <!-- Visi & Misi Section -->
     <section id="visi-misi" class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
@@ -292,6 +376,157 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                         </ul>
                     </div>
                 @endforeach
+            </div>
+        </div>
+    </section>
+
+    <!-- Kegiatan Pesantren Section -->
+    <section id="kegiatan" class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Kegiatan Harian Pesantren</h2>
+            <p class="text-center text-secondary mb-12">
+                Jadwal rutin harian yang membentuk disiplin dan karakter Qur'ani santri
+            </p>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    @php
+                        $kegiatan = $contentSettings->kegiatan_pesantren ?? [];
+                    @endphp
+
+                    @if(count($kegiatan) > 0)
+                        @foreach(array_slice($kegiatan, 0, 5) as $index => $item)
+                        <div class="border-b border-gray-200 last:border-b-0">
+                            <div class="p-6 hover:bg-gray-50 transition duration-300">
+                                <div class="flex items-start">
+                                    <div class="bg-primary text-white rounded-lg px-4 py-2 text-sm font-semibold mr-4 flex-shrink-0">
+                                        {{ $item['waktu'] }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <ul class="space-y-2">
+                                            @foreach($item['kegiatan'] as $kegiatanItem)
+                                            <li class="flex items-start text-secondary">
+                                                <i class="fas fa-circle text-primary text-xs mt-2 mr-3"></i>
+                                                <span>{{ $kegiatanItem }}</span>
+                                            </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @else
+                        <div class="text-center py-12">
+                            <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-500">Belum Ada Jadwal Kegiatan</h3>
+                            <p class="text-gray-400 mt-2">Jadwal kegiatan sedang dalam proses persiapan</p>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="mt-8 text-center">
+                    <p class="text-secondary mb-4">Ingin melihat jadwal lengkap kegiatan harian? Login Terlebih Dahulu </p>
+                    @auth
+                        @if(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
+                        <a href="{{ route('santri.kegiatan.index') }}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition duration-300 inline-flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i> Lihat Jadwal Lengkap
+                        </a>
+                        @else
+                        <a href="{{ route('login') }}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition duration-300 inline-flex items-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Login untuk Melihat Jadwal
+                        </a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition duration-300 inline-flex items-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Login untuk Melihat Jadwal
+                        </a>
+                    @endauth
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-16 px-4 bg-white">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-primary mb-4">Pertanyaan yang Sering Diajukan</h2>
+            <p class="text-center text-secondary mb-12">
+                Temukan jawaban untuk pertanyaan umum seputar pendaftaran dan kehidupan di pesantren
+            </p>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="faq-accordion" id="faqAccordion">
+                    @php
+                        $faqs = $contentSettings->faq ?? [];
+                        $defaultFaqs = [
+                            [
+                                'pertanyaan' => 'Apa saja persyaratan pendaftaran santri baru?',
+                                'jawaban' => 'Persyaratan pendaftaran meliputi: fotokopi akta kelahiran, kartu keluarga, ijazah terakhir, pas foto, dan mengisi formulir pendaftaran.'
+                            ],
+                            [
+                                'pertanyaan' => 'Berapa biaya masuk pondok pesantren?',
+                                'jawaban' => 'Biaya masuk berbeda-beda sesuai program yang dipilih. Silakan hubungi admin untuk informasi detail mengenai biaya.'
+                            ],
+                            [
+                                'pertanyaan' => 'Apakah ada beasiswa untuk santri berprestasi?',
+                                'jawaban' => 'Ya, kami menyediakan beasiswa untuk santri yang berprestasi baik akademik maupun non-akademik.'
+                            ],
+                            [
+                                'pertanyaan' => 'Bagaimana sistem pembelajaran di pesantren?',
+                                'jawaban' => 'Sistem pembelajaran menggunakan metode talaqqi (pengajian langsung) dan diskusi kitab kuning, dengan fokus pada tahfidz Al-Qur\'an dan penguasaan ilmu agama.'
+                            ]
+                        ];
+                        $displayFaqs = !empty($faqs) ? $faqs : $defaultFaqs;
+                    @endphp
+
+                    @if(count($displayFaqs) > 0)
+                        @foreach($displayFaqs as $index => $faq)
+                        <div class="faq-item" data-faq-index="{{ $index }}">
+                            <div class="faq-question" onclick="toggleFAQ({{ $index }})">
+                                <div class="faq-number">{{ $index + 1 }}</div>
+                                <div class="faq-text">{{ $faq['pertanyaan'] ?? 'Pertanyaan tidak tersedia' }}</div>
+                                <div class="faq-icon">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            <div class="faq-answer" id="answer-{{ $index }}">
+                                <div class="faq-answer-content">
+                                    {!! nl2br(e($faq['jawaban'] ?? 'Jawaban tidak tersedia')) !!}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    @else
+                        <div class="text-center py-12">
+                            <i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 mb-2">Belum Ada FAQ</h3>
+                            <p class="text-gray-500">Belum ada pertanyaan yang tersedia saat ini.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- FAQ Call to Action -->
+                <div class="mt-8 text-center">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                        <div class="flex items-center justify-center mb-4">
+                            <i class="fas fa-question-circle text-blue-500 text-2xl mr-3"></i>
+                            <h3 class="text-lg font-semibold text-blue-800">Masih Punya Pertanyaan?</h3>
+                        </div>
+                        <p class="text-blue-700 mb-4">Jika pertanyaan Anda tidak terjawab di FAQ, jangan ragu untuk menghubungi kami.</p>
+                        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+
+
+                            @auth
+                                @if(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
+                                <a href="{{ route('santri.faq.index') }}" class="bg-indigo-500 text-white px-6 py-2 rounded-lg hover:bg-indigo-600 transition duration-300 inline-flex items-center justify-center">
+                                    <i class="fas fa-list mr-2"></i> FAQ Lengkap
+                                </a>
+                                @endif
+                            @endauth
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -506,7 +741,7 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                         <li><a href="#alur-pendaftaran" class="hover:text-accent transition duration-300">Alur Pendaftaran</a></li>
                         <li><a href="#biaya" class="hover:text-accent transition duration-300">Biaya Pendidikan</a></li>
                         <li><a href="#persyaratan" class="hover:text-accent transition duration-300">Persyaratan</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Pengumuman</a></li>
+                        <li><a href="#faq" class="hover:text-accent transition duration-300">FAQ</a></li>
                     </ul>
                 </div>
 
@@ -520,8 +755,8 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                            class="hover:text-accent transition duration-300">
                            Alamat
                         </a>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Telepon</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Email</a></li>
+                        <li><a href="tel:+6287748115931" class="hover:text-accent transition duration-300">Telepon: +62 877-4811-5931</a></li>
+                        <li><a href="https://wa.me/6287748115931" target="_blank" class="hover:text-accent transition duration-300">WhatsApp</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Sosial Media</a></li>
                     </ul>
                 </div>
@@ -538,6 +773,49 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
         document.getElementById('mobile-menu-button').addEventListener('click', function() {
             const mobileMenu = document.getElementById('mobile-menu');
             mobileMenu.classList.toggle('hidden');
+        });
+
+        // FAQ Accordion Functionality
+        function toggleFAQ(index) {
+            const answer = document.getElementById(`answer-${index}`);
+            const question = document.querySelector(`[data-faq-index="${index}"] .faq-question`);
+
+            // Toggle active class
+            question.classList.toggle('active');
+            answer.classList.toggle('active');
+
+            // Close other FAQs
+            document.querySelectorAll('.faq-item').forEach((item, i) => {
+                if (i !== index) {
+                    const otherAnswer = document.getElementById(`answer-${i}`);
+                    const otherQuestion = item.querySelector('.faq-question');
+                    otherQuestion.classList.remove('active');
+                    otherAnswer.classList.remove('active');
+                }
+            });
+        }
+
+        // Auto-open first FAQ on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Open first FAQ by default
+            const firstFAQ = document.querySelector('[data-faq-index="0"]');
+            if (firstFAQ) {
+                toggleFAQ(0);
+            }
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
     </script>
 </body>

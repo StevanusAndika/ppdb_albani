@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register commands untuk Laravel 11+
+        $this->commands([
+            
+        ]);
     }
 
     /**

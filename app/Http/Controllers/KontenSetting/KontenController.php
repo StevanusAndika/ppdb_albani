@@ -28,12 +28,23 @@ class KontenController extends Controller
             'misi_judul' => 'nullable|string|max:255',
             'misi_deskripsi' => 'nullable|string',
 
-            // Program Unggulan - array validation
+            // Program Unggulan
             'program_unggulan' => 'nullable|array',
             'program_unggulan.*.nama' => 'nullable|string|max:255',
             'program_unggulan.*.target' => 'nullable|string',
             'program_unggulan.*.metode' => 'nullable|string',
             'program_unggulan.*.evaluasi' => 'nullable|string',
+
+            // FAQ
+            'faq' => 'nullable|array',
+            'faq.*.pertanyaan' => 'nullable|string|max:500',
+            'faq.*.jawaban' => 'nullable|string',
+
+            // Kegiatan Pesantren
+            'kegiatan_pesantren' => 'nullable|array',
+            'kegiatan_pesantren.*.waktu' => 'nullable|string|max:255',
+            'kegiatan_pesantren.*.kegiatan' => 'nullable|array',
+            'kegiatan_pesantren.*.kegiatan.*' => 'nullable|string',
 
             'alur_pendaftaran_judul' => 'nullable|string|max:255',
             'alur_pendaftaran_deskripsi' => 'nullable|string',
@@ -73,6 +84,34 @@ class KontenController extends Controller
                     }
                 }
                 $data['program_unggulan_data'] = $programs;
+            }
+
+            // Handle FAQ data
+            if ($request->has('faq')) {
+                $faqs = [];
+                foreach ($request->faq as $faq) {
+                    if (!empty($faq['pertanyaan']) || !empty($faq['jawaban'])) {
+                        $faqs[] = [
+                            'pertanyaan' => $faq['pertanyaan'] ?? '',
+                            'jawaban' => $faq['jawaban'] ?? '',
+                        ];
+                    }
+                }
+                $data['faq_data'] = $faqs;
+            }
+
+            // Handle kegiatan pesantren data
+            if ($request->has('kegiatan_pesantren')) {
+                $kegiatan = [];
+                foreach ($request->kegiatan_pesantren as $item) {
+                    if (!empty($item['waktu']) || !empty($item['kegiatan'])) {
+                        $kegiatan[] = [
+                            'waktu' => $item['waktu'] ?? '',
+                            'kegiatan' => array_filter($item['kegiatan'] ?? []),
+                        ];
+                    }
+                }
+                $data['kegiatan_pesantren_data'] = $kegiatan;
             }
 
             // Handle file uploads
@@ -185,6 +224,119 @@ class KontenController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus program: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add new FAQ via AJAX
+     */
+    public function addFaq(Request $request)
+    {
+        $request->validate([
+            'pertanyaan' => 'required|string|max:500',
+            'jawaban' => 'required|string',
+        ]);
+
+        try {
+            $settings = ContentSetting::getSettings();
+            $settings->addFaq($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FAQ berhasil ditambahkan.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan FAQ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete FAQ via AJAX
+     */
+    public function deleteFaq($index)
+    {
+        try {
+            $settings = ContentSetting::getSettings();
+            $success = $settings->deleteFaq((int)$index);
+
+            if ($success) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'FAQ berhasil dihapus.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'FAQ tidak ditemukan.'
+            ], 404);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus FAQ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Add new kegiatan pesantren via AJAX
+     */
+    public function addKegiatan(Request $request)
+    {
+        $request->validate([
+            'waktu' => 'required|string|max:255',
+            'kegiatan' => 'required|array',
+            'kegiatan.*' => 'string',
+        ]);
+
+        try {
+            $settings = ContentSetting::getSettings();
+            $settings->addKegiatanPesantren($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kegiatan pesantren berhasil ditambahkan.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan kegiatan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete kegiatan pesantren via AJAX
+     */
+    public function deleteKegiatan($index)
+    {
+        try {
+            $settings = ContentSetting::getSettings();
+            $success = $settings->deleteKegiatanPesantren((int)$index);
+
+            if ($success) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Kegiatan pesantren berhasil dihapus.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Kegiatan tidak ditemukan.'
+            ], 404);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus kegiatan: ' . $e->getMessage()
             ], 500);
         }
     }

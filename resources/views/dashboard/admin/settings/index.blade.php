@@ -48,18 +48,6 @@
         .mobile-menu-button {
             padding: 0.5rem;
         }
-        .mobile-menu {
-            border-radius: 1rem;
-            margin-top: 0.75rem;
-            padding: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        .mobile-menu-item {
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            margin-bottom: 0.25rem;
-        }
-        /* Perbaikan untuk tabs di mobile */
         .tabs-container {
             overflow-x: auto;
         }
@@ -77,39 +65,27 @@
             margin-right: 0.25rem;
         }
     }
-    /* Pastikan menu desktop selalu visible */
-    .desktop-menu {
-        display: flex !important;
-    }
-    @media (max-width: 767px) {
-        .desktop-menu {
-            display: none !important;
-        }
-    }
 </style>
 @endsection
 
 @section('content')
-<div class="min-h-screen bg-gray-50 font-sans">
+<div class="min-h-screen bg-gray-50 font-sans full-width-page">
     <!-- Navbar -->
     <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
         <div class="container mx-auto flex justify-between items-center">
             <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
 
-            <!-- Desktop menu - SELALU VISIBLE di desktop -->
-            <div class="desktop-menu flex space-x-6 items-center">
-                <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium transition duration-300">Beranda</a>
-                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium transition duration-300">Dashboard</a>
-                <a href="{{ route('admin.settings.index') }}" class="text-primary hover:text-secondary font-medium transition duration-300 bg-primary/10 px-3 py-1 rounded-full">Pengaturan</a>
-                <form action="{{ route('logout') }}" method="POST">
+            <div class="hidden md:flex space-x-6 items-center desktop-menu">
+                <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
+                <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary hover:text-secondary font-medium">Profil</a>
+                <a href="{{ route('admin.registrations.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
+                <a href="#dokumen" class="text-primary hover:text-secondary font-medium">Dokumen</a>
+                <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">
-                        Logout
-                    </button>
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
                 </form>
             </div>
 
-            <!-- Mobile menu button - hanya visible di mobile -->
             <div class="md:hidden flex items-center">
                 <button id="mobile-menu-button" class="text-primary focus:outline-none mobile-menu-button">
                     <i class="fas fa-bars text-xl"></i>
@@ -117,23 +93,16 @@
             </div>
         </div>
 
-        <!-- Mobile menu - hanya untuk mobile -->
-        <div id="mobile-menu" class="hidden md:hidden mt-2 mobile-menu bg-white">
-            <div class="flex flex-col space-y-1">
-                <a href="{{ url('/') }}" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">
-                    <i class="fas fa-home mr-2"></i>Beranda
-                </a>
-                <a href="{{ route('admin.dashboard') }}" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300">
-                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
-                </a>
-                <a href="{{ route('admin.settings.index') }}" class="mobile-menu-item text-primary hover:bg-primary/10 hover:text-secondary transition duration-300 bg-primary/10">
-                    <i class="fas fa-cog mr-2"></i>Pengaturan
-                </a>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white p-4 rounded-xl shadow-lg">
+            <div class="flex flex-col space-y-2">
+                <a href="{{ url('/') }}" class="text-primary">Beranda</a>
+                <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary">Profil</a>
+                <a href="{{ route('admin.registrations.index') }}" class="text-primary">Pendaftaran</a>
+                <a href="#dokumen" class="text-primary">Dokumen</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="w-full mobile-menu-item bg-red-500 text-white py-2 rounded-full hover:bg-red-600 transition duration-300 text-center">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                    </button>
+                    <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-full mt-2">Logout</button>
                 </form>
             </div>
         </div>
@@ -328,17 +297,19 @@
             <p>&copy; 2025 PPDB Pesantren AI-Our'an Bani Syahid</p>
         </div>
     </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) mobileMenu.classList.toggle('hidden');
+        });
+    </script>
 </div>
 @endsection
 
 @section('scripts')
 <script>
-    // Mobile menu toggle
-    document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenu) mobileMenu.classList.toggle('hidden');
-    });
-
     // Tab functionality
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-button');

@@ -41,10 +41,16 @@ return [
     //     'redirect' => env('GITHUB_CLIENT_REDIRECT'),
     // ],
 
-'google' => [
+    'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_CLIENT_REDIRECT'),
+    ],
+
+    // Tambahkan konfigurasi Fonnte di sini
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN'),
+        'url' => env('FONNTE_URL', 'https://api.fonnte.com'),
     ],
 
 ];
