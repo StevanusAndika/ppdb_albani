@@ -152,17 +152,18 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans">
     <!-- Navbar -->
-    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
+     <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
 
-            <div class="hidden md:flex space-x-6 items-center desktop-menu">
+            <div class="md:flex space-x-6 items-center desktop-menu">
                 <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="{{ route('santri.dashboard') }}#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
+                <a href="#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
                 <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
-                <a href="{{ route('santri.faq.index') }}" class="text-primary hover:text-secondary font-medium font-bold border-b-2 border-primary">FAQ</a>
+                <a href="{{ route('santri.faq.index') }}" class="text-primary hover:text-secondary font-medium">FAQ</a>
+                <a href="{{ route('santri.kegiatan.index') }}" class="text-primary hover:text-secondary font-medium">Kegiatan</a>
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
                     <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
@@ -180,11 +181,12 @@
         <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white p-4 rounded-xl shadow-lg">
             <div class="flex flex-col space-y-2">
                 <a href="{{ url('/') }}" class="text-primary">Beranda</a>
-                <a href="{{ route('santri.dashboard') }}#profile" class="text-primary">Profil</a>
+                <a href="#profile" class="text-primary">Profil</a>
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary">Dokumen</a>
                 <a href="{{ route('santri.payments.index') }}" class="text-primary">Pembayaran</a>
-                <a href="{{ route('santri.faq.index') }}" class="text-primary font-bold">FAQ</a>
+                <a href="{{ route('santri.faq.index') }}" class="text-primary">FAQ</a>
+                <a href="{{ route('santri.kegiatan.index') }}" class="text-primary">Kegiatan</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full bg-primary text-white py-2 rounded-full mt-2">Logout</button>
@@ -257,7 +259,7 @@
         </div>
 
         <!-- Help Section -->
-        
+
     </main>
 
     <!-- Footer -->

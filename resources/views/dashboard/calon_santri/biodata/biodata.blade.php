@@ -1,78 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Formulir Biodata Santri - Pondok Pesantren Bani Syahid')
-
-@section('styles')
-<style>
-    .card-container {
-        @apply bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100;
-    }
-    .section-title {
-        @apply text-xl font-bold text-primary mb-4 pb-3 border-b-2 border-primary/20 flex items-center gap-3;
-    }
-    .subsection-title {
-        @apply text-lg font-semibold text-primary mb-3 flex items-center gap-2;
-    }
-    .form-grid {
-        @apply grid grid-cols-1 md:grid-cols-2 gap-4;
-    }
-    .form-group {
-        @apply space-y-2;
-    }
-    .form-label {
-        @apply block text-sm font-semibold text-gray-700;
-    }
-    .form-label-required:after {
-        content: " *";
-        @apply text-red-500;
-    }
-    .form-input {
-        @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 bg-white;
-    }
-    .form-select {
-        @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 bg-white;
-    }
-    .form-textarea {
-        @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 resize-none bg-white;
-    }
-    .package-card {
-        @apply border-2 border-gray-200 rounded-xl p-5 cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-lg bg-white;
-    }
-    .package-card.selected {
-        @apply border-primary bg-primary/5 shadow-lg;
-    }
-    .price-item {
-        @apply flex justify-between py-2 border-b border-gray-100 text-sm;
-    }
-    .price-total {
-        @apply flex justify-between text-base font-bold mt-3 pt-3 border-t-2 border-primary/30;
-    }
-    .btn-primary {
-        @apply bg-primary text-white px-6 py-3 rounded-xl hover:bg-secondary transition duration-300 font-semibold flex items-center justify-center gap-2;
-    }
-    .btn-secondary {
-        @apply bg-gray-500 text-white px-6 py-3 rounded-xl hover:bg-gray-600 transition duration-300 font-semibold flex items-center justify-center gap-2;
-    }
-    .info-card {
-        @apply bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6;
-    }
-    .error-message {
-        @apply text-red-500 text-sm mt-1 flex items-center gap-1;
-    }
-    .step-indicator {
-        @apply flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm font-bold;
-    }
-    .progress-bar {
-        @apply w-full bg-gray-200 rounded-full h-2;
-    }
-    .progress-fill {
-        @apply bg-primary h-2 rounded-full transition-all duration-500;
-    }
-    .step-number {
-        @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm;
-    }
-</style>
-@endsection
+@section('title', 'Biodata Pendaftaran - Pondok Pesantren Bani Syahid')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page">
@@ -83,12 +11,13 @@
 
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
                 <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
-                <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
+                <a href="{{ route('santri.dashboard') }}" class="text-primary hover:text-secondary font-medium">Dashboard</a>
+                <a href="{{ route('santri.settings.index') }}" class="text-primary hover:text-secondary font-medium">Pengaturan</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
+                <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600  text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300">Logout</button>
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
                 </form>
             </div>
 
@@ -103,9 +32,10 @@
         <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white p-4 rounded-xl shadow-lg">
             <div class="flex flex-col space-y-2">
                 <a href="{{ url('/') }}" class="text-primary">Beranda</a>
-                <a href="#profile" class="text-primary">Profil</a>
-                <a href="{{ route('santri.biodata.index') }}" class="text-primary">Pendaftaran</a>
+                <a href="{{ route('santri.dashboard') }}" class="text-primary">Dashboard</a>
+                <a href="{{ route('santri.settings.index') }}" class="text-primary">Pengaturan</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary">Dokumen</a>
+                <a href="{{ route('santri.payments.index') }}" class="text-primary">Pembayaran</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full bg-primary text-white py-2 rounded-full mt-2">Logout</button>
@@ -114,831 +44,840 @@
         </div>
     </nav>
 
-    <!-- Header Hero -->
+    <!-- Header -->
     <header class="py-6 px-4 text-center">
-        <h1 class="text-2xl md:text-3xl font-extrabold text-primary mb-2">Formulir Biodata Santri</h1>
-        <p class="text-secondary">Lengkapi data diri Anda dengan benar dan lengkap</p>
-
-        <!-- Progress Steps -->
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mt-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <!-- Step 1: Buat Akun -->
-                <div class="p-4 border-2 border-green-500 bg-green-50 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <div class="step-number bg-green-500 text-white">1</div>
-                        <div>
-                            <h4 class="font-semibold text-green-800">Buat Akun</h4>
-                            <p class="text-sm text-green-600">Selesai</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 2: Isi Biodata -->
-                <div class="p-4 border-2 border-primary bg-primary/5 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <div class="step-number bg-primary text-white">2</div>
-                        <div>
-                            <h4 class="font-semibold text-primary">Isi Biodata</h4>
-                            <p class="text-sm text-primary">Sedang Berlangsung</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Upload Dokumen -->
-                <div class="p-4 border-2 border-gray-300 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <div class="step-number bg-gray-300 text-gray-600">3</div>
-                        <div>
-                            <h4 class="font-semibold text-gray-600">Upload Dokumen</h4>
-                            <p class="text-sm text-gray-500">Menunggu</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 4: Verifikasi -->
-                <div class="p-4 border-2 border-gray-300 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <div class="step-number bg-gray-300 text-gray-600">4</div>
-                        <div>
-                            <h4 class="font-semibold text-gray-600">Verifikasi</h4>
-                            <p class="text-sm text-gray-500">Menunggu</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="mt-4">
-                <div class="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>Progress Keseluruhan</span>
-                    <span id="overallProgress">25%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-primary h-3 rounded-full transition-all duration-300" style="width: 25%"></div>
-                </div>
-            </div>
-        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-2">Formulir Biodata Pendaftaran</h1>
+        <p class="text-secondary max-w-2xl mx-auto">Lengkapi data diri Anda dengan benar untuk proses pendaftaran santri baru Pondok Pesantren Bani Syahid</p>
     </header>
 
     <main class="max-w-6xl mx-auto py-6 px-4">
-        @if($errors->any())
-        <div class="info-card mb-6">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-triangle text-blue-500 text-lg mt-0.5 mr-3"></i>
-                <div>
-                    <p class="font-semibold text-blue-800">Perhatian!</p>
-                    <p class="text-blue-600">Terdapat kesalahan dalam pengisian form. Silakan periksa kembali data Anda.</p>
-                </div>
+        <!-- Alert Messages -->
+        @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>{{ session('success') }}</span>
             </div>
         </div>
         @endif
 
-        <form id="biodataForm" method="POST" action="{{ route('santri.biodata.store') }}" enctype="multipart/form-data">
+        @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span>Terjadi kesalahan dalam pengisian form. Silakan periksa kembali data Anda.</span>
+            </div>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        <form id="biodataForm" action="{{ route('santri.biodata.store') }}" method="POST" class="space-y-8">
             @csrf
 
-            <!-- Section 1: Pilihan Paket -->
-            <div class="card-container">
-                <h2 class="section-title">
-                    <i class="fas fa-box text-primary"></i>
-                    Pilihan Paket
+            <!-- Section 1: Paket dan Program Unggulan -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
+                    <i class="fas fa-box mr-2"></i>Paket & Program Unggulan
                 </h2>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    @foreach($packages as $package)
-                    <div class="package-card {{ (old('package_id') == $package->id || ($registration && $registration->package_id == $package->id)) ? 'selected' : '' }}"
-                         onclick="selectPackage({{ $package->id }})">
-                        <div class="flex items-start">
-                            <input type="radio" name="package_id" value="{{ $package->id }}"
-                                   id="package_{{ $package->id }}"
-                                   {{ (old('package_id') == $package->id || ($registration && $registration->package_id == $package->id)) ? 'checked' : '' }}
-                                   class="mt-1 mr-3">
-                            <div class="flex-1">
-                                <label for="package_{{ $package->id }}" class="text-lg font-bold text-primary cursor-pointer block mb-2">
-                                    {{ $package->name }}
-                                </label>
-                                <p class="text-gray-600 text-sm mb-3">{{ $package->description }}</p>
-                                <span class="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
-                                    {{ $package->type_label }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @error('package_id')
-                    <p class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ $message }}
-                    </p>
-                @enderror
-
-                <!-- Detail Biaya -->
-                <div id="priceDetails" class="bg-gray-50 rounded-xl p-4 {{ ($registration && $registration->package) ? '' : 'hidden' }}">
-                    <h3 class="subsection-title">
-                        <i class="fas fa-receipt text-primary"></i>
-                        Detail Biaya
-                    </h3>
-                    <div id="priceList" class="space-y-1">
-                        @if($registration && $registration->package)
-                            @foreach($registration->package->activePrices as $price)
-                            <div class="price-item">
-                                <span class="text-gray-700">{{ $price->item_name }}</span>
-                                <span class="font-semibold text-primary">Rp {{ number_format($price->amount, 0, ',', '.') }}</span>
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Paket Pendaftaran -->
+                    <div>
+                        <label for="package_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Paket Pendaftaran <span class="text-red-500">*</span>
+                        </label>
+                        <select name="package_id" id="package_id" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
+                            <option value="">Pilih Paket</option>
+                            @foreach($packages as $package)
+                                <option value="{{ $package->id }}"
+                                    {{ old('package_id', $registration->package_id ?? '') == $package->id ? 'selected' : '' }}
+                                    data-package="{{ $package->id }}">
+                                    {{ $package->name }} - Rp {{ number_format($package->totalAmount, 0, ',', '.') }}
+                                </option>
                             @endforeach
-                        @endif
+                        </select>
                     </div>
-                    <div id="priceTotal" class="price-total">
-                        <span class="text-gray-800">Total Biaya</span>
-                        <span class="text-primary">
-                            @if($registration && $registration->package)
-                                Rp {{ number_format($registration->package->total_amount, 0, ',', '.') }}
-                            @endif
-                        </span>
+
+                    <!-- Program Unggulan -->
+                    <div>
+                        <label for="program_unggulan_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Program Unggulan <span class="text-red-500">*</span>
+                        </label>
+                        <select name="program_unggulan_id" id="program_unggulan_id" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
+                            <option value="">Pilih Program Unggulan</option>
+                            @foreach($programUnggulan as $index => $program)
+                                <option value="{{ $program['nama'] }}"
+                                    {{ old('program_unggulan_id', $registration->program_unggulan_id ?? '') == $program['nama'] ? 'selected' : '' }}>
+                                    {{ $program['nama'] }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
+
+                <!-- Detail Harga Paket -->
+                <!-- Detail Harga Paket -->
+<div id="packageDetails" class="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm hidden">
+    <div class="flex items-center justify-between mb-4">
+        <h4 class="font-bold text-blue-800 text-lg">
+            <i class="fas fa-receipt mr-2"></i>Rincian Biaya Paket
+        </h4>
+        <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">
+            <i class="fas fa-info-circle mr-1"></i>Detail
+        </span>
+    </div>
+
+    <!-- Price list container -->
+    <div id="priceList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2"></div>
+
+    <!-- Total section -->
+    <div class="pt-4 border-t border-blue-300 bg-white rounded-lg p-4 shadow-sm">
+        <div class="flex justify-between items-center">
+            <span class="text-blue-900 font-bold text-lg">Total Biaya:</span>
+            <span id="totalAmount" class="text-green-600 font-bold text-xl">Rp 0</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-2 text-center">
+            <i class="fas fa-clock mr-1"></i>Biaya dapat berubah sesuai kebijakan pesantren
+        </p>
+    </div>
+</div>
             </div>
 
-            <!-- Section 2: Data Pribadi Santri -->
-            <div class="card-container">
-                <h2 class="section-title">
-                    <i class="fas fa-user text-primary"></i>
-                    Data Pribadi Santri
+            <!-- Section 2: Data Pribadi -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
+                    <i class="fas fa-user mr-2"></i>Data Pribadi Santri
                 </h2>
 
-                <div class="form-grid">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Nama Lengkap -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Nama Lengkap</label>
-                        <input type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $registration->nama_lengkap ?? '') }}"
-                               class="form-input" placeholder="Masukkan nama lengkap" required>
-                        @error('nama_lengkap')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div class="md:col-span-2">
+                        <label for="nama_lengkap" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nama Lengkap <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nama_lengkap" id="nama_lengkap" required
+                            value="{{ old('nama_lengkap', $registration->nama_lengkap ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Masukkan nama lengkap">
                     </div>
 
                     <!-- NIK -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">NIK</label>
-                        <input type="text" name="nik" value="{{ old('nik', $registration->nik ?? '') }}"
-                               class="form-input" placeholder="Masukkan 16 digit NIK" maxlength="16" required>
-                        @error('nik')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div>
+                        <label for="nik" class="block text-sm font-medium text-gray-700 mb-2">
+                            NIK <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nik" id="nik" required maxlength="16"
+                            value="{{ old('nik', $registration->nik ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="16 digit NIK">
                     </div>
 
                     <!-- Tempat Lahir -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Tempat Lahir</label>
-                        <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $registration->tempat_lahir ?? '') }}"
-                               class="form-input" placeholder="Kota tempat lahir" required>
-                        @error('tempat_lahir')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div>
+                        <label for="tempat_lahir" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tempat Lahir <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="tempat_lahir" id="tempat_lahir" required
+                            value="{{ old('tempat_lahir', $registration->tempat_lahir ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Kota tempat lahir">
                     </div>
 
                     <!-- Tanggal Lahir -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Tanggal Lahir</label>
-                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $registration->tanggal_lahir ?? '') }}"
-                               class="form-input" required>
-                        @error('tanggal_lahir')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div>
+                        <label for="tanggal_lahir" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tanggal Lahir <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="tanggal_lahir" id="tanggal_lahir" required
+                            value="{{ old('tanggal_lahir', $registration && $registration->tanggal_lahir ? $registration->tanggal_lahir->format('Y-m-d') : '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
                     </div>
 
                     <!-- Jenis Kelamin -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Jenis Kelamin</label>
-                        <select name="jenis_kelamin" class="form-select" required>
+                    <div>
+                        <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700 mb-2">
+                            Jenis Kelamin <span class="text-red-500">*</span>
+                        </label>
+                        <select name="jenis_kelamin" id="jenis_kelamin" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
                             <option value="">Pilih Jenis Kelamin</option>
                             <option value="laki-laki" {{ old('jenis_kelamin', $registration->jenis_kelamin ?? '') == 'laki-laki' ? 'selected' : '' }}>Laki-laki</option>
                             <option value="perempuan" {{ old('jenis_kelamin', $registration->jenis_kelamin ?? '') == 'perempuan' ? 'selected' : '' }}>Perempuan</option>
                         </select>
-                        @error('jenis_kelamin')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Alamat Tinggal -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
+                    <i class="fas fa-home mr-2"></i>Alamat Tinggal
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Alamat Lengkap -->
+                    <div class="md:col-span-2 lg:col-span-4">
+                        <label for="alamat_tinggal" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alamat Lengkap <span class="text-red-500">*</span>
+                        </label>
+                        <textarea name="alamat_tinggal" id="alamat_tinggal" required rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Masukkan alamat lengkap">{{ old('alamat_tinggal', $registration->alamat_tinggal ?? '') }}</textarea>
                     </div>
 
-                    <!-- Agama -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Agama</label>
-                        <select name="agama" class="form-select" required>
+                    <!-- RT & RW -->
+                    <div class="grid grid-cols-2 gap-4 md:col-span-2 lg:col-span-4">
+                        <div>
+                            <label for="rt" class="block text-sm font-medium text-gray-700 mb-2">
+                                RT
+                            </label>
+                            <input type="text" name="rt" id="rt" maxlength="3"
+                                value="{{ old('rt', $registration->rt ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="000">
+                        </div>
+                        <div>
+                            <label for="rw" class="block text-sm font-medium text-gray-700 mb-2">
+                                RW
+                            </label>
+                            <input type="text" name="rw" id="rw" maxlength="3"
+                                value="{{ old('rw', $registration->rw ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="000">
+                        </div>
+                    </div>
+
+                    <!-- Kecamatan, Kelurahan, Kota, Kode Pos -->
+                    <div>
+                        <label for="kecamatan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kecamatan <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kecamatan" id="kecamatan" required
+                            value="{{ old('kecamatan', $registration->kecamatan ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nama kecamatan">
+                    </div>
+
+                    <div>
+                        <label for="kelurahan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kelurahan <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kelurahan" id="kelurahan" required
+                            value="{{ old('kelurahan', $registration->kelurahan ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nama kelurahan">
+                    </div>
+
+                    <div>
+                        <label for="kota" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kota <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kota" id="kota" required
+                            value="{{ old('kota', $registration->kota ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nama kota">
+                    </div>
+
+                    <div>
+                        <label for="kode_pos" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kode Pos <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kode_pos" id="kode_pos" required maxlength="5"
+                            value="{{ old('kode_pos', $registration->kode_pos ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="12345">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Data Orang Tua -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
+                    <i class="fas fa-users mr-2"></i>Data Orang Tua
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Data Ibu -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Ibu Kandung</h3>
+
+                        <div>
+                            <label for="nama_ibu_kandung" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Ibu Kandung <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nama_ibu_kandung" id="nama_ibu_kandung" required
+                                value="{{ old('nama_ibu_kandung', $registration->nama_ibu_kandung ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Nama lengkap ibu kandung">
+                        </div>
+
+                        <div>
+                            <label for="pekerjaan_ibu" class="block text-sm font-medium text-gray-700 mb-2">
+                                Pekerjaan Ibu <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="pekerjaan_ibu" id="pekerjaan_ibu" required
+                                value="{{ old('pekerjaan_ibu', $registration->pekerjaan_ibu ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Pekerjaan ibu (jika ibu rumah tangga, isi 'Ibu Rumah Tangga')">
+                        </div>
+
+                        <div>
+                            <label for="penghasilan_ibu" class="block text-sm font-medium text-gray-700 mb-2">
+                                Penghasilan Ibu
+                            </label>
+                            <input type="number" name="penghasilan_ibu" id="penghasilan_ibu"
+                                value="{{ old('penghasilan_ibu', $registration->penghasilan_ibu ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Isi 0 jika tidak memiliki penghasilan">
+                        </div>
+                    </div>
+
+                    <!-- Data Ayah -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Ayah Kandung</h3>
+
+                        <div>
+                            <label for="nama_ayah_kandung" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Ayah Kandung <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nama_ayah_kandung" id="nama_ayah_kandung" required
+                                value="{{ old('nama_ayah_kandung', $registration->nama_ayah_kandung ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Nama lengkap ayah kandung">
+                        </div>
+
+                        <div>
+                            <label for="pekerjaan_ayah" class="block text-sm font-medium text-gray-700 mb-2">
+                                Pekerjaan Ayah <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="pekerjaan_ayah" id="pekerjaan_ayah" required
+                                value="{{ old('pekerjaan_ayah', $registration->pekerjaan_ayah ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Pekerjaan ayah (jika tidak bekerja, isi 'Tidak Bekerja')">
+                        </div>
+
+                        <div>
+                            <label for="penghasilan_ayah" class="block text-sm font-medium text-gray-700 mb-2">
+                                Penghasilan Ayah
+                            </label>
+                            <input type="number" name="penghasilan_ayah" id="penghasilan_ayah"
+                                value="{{ old('penghasilan_ayah', $registration->penghasilan_ayah ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Isi 0 jika tidak memiliki penghasilan">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informasi Tambahan Orang Tua -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div>
+                        <label for="nomor_telpon_orang_tua" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Telepon Orang Tua <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nomor_telpon_orang_tua" id="nomor_telpon_orang_tua" required
+                            value="{{ old('nomor_telpon_orang_tua', $registration->nomor_telpon_orang_tua ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="08xxxxxxxxxx">
+                    </div>
+
+                    <div>
+                        <label for="agama" class="block text-sm font-medium text-gray-700 mb-2">
+                            Agama <span class="text-red-500">*</span>
+                        </label>
+                        <select name="agama" id="agama" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
                             <option value="">Pilih Agama</option>
                             <option value="islam" {{ old('agama', $registration->agama ?? '') == 'islam' ? 'selected' : '' }}>Islam</option>
-                            <option value="kristen" {{ old('agama', $registration->agama ?? '') == 'kristen' ? 'selected' : '' }}>Kristen</option>
+                            {{-- <option value="kristen" {{ old('agama', $registration->agama ?? '') == 'kristen' ? 'selected' : '' }}>Kristen</option>
                             <option value="katolik" {{ old('agama', $registration->agama ?? '') == 'katolik' ? 'selected' : '' }}>Katolik</option>
                             <option value="hindu" {{ old('agama', $registration->agama ?? '') == 'hindu' ? 'selected' : '' }}>Hindu</option>
                             <option value="buddha" {{ old('agama', $registration->agama ?? '') == 'buddha' ? 'selected' : '' }}>Buddha</option>
-                            <option value="konghucu" {{ old('agama', $registration->agama ?? '') == 'konghucu' ? 'selected' : '' }}>Konghucu</option>
+                            <option value="konghucu" {{ old('agama', $registration->agama ?? '') == 'konghucu' ? 'selected' : '' }}>Konghucu</option> --}}
                         </select>
-                        @error('agama')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="status_orang_tua" class="block text-sm font-medium text-gray-700 mb-2">
+                            Status Orang Tua <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status_orang_tua" id="status_orang_tua" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
+                            <option value="">Pilih Status</option>
+                            <option value="lengkap" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'lengkap' ? 'selected' : '' }}>Lengkap</option>
+                            <option value="cerai_hidup" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'cerai_hidup' ? 'selected' : '' }}>Cerai Hidup</option>
+                            <option value="cerai_mati" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'cerai_mati' ? 'selected' : '' }}>Cerai Mati</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5: Pendidikan Terakhir -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
+                    <i class="fas fa-graduation-cap mr-2"></i>Pendidikan Terakhir Calon Santri
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Jenjang Pendidikan -->
+                    <div>
+                        <label for="jenjang_pendidikan_terakhir" class="block text-sm font-medium text-gray-700 mb-2">
+                            Jenjang Pendidikan <span class="text-red-500">*</span>
+                        </label>
+                        <select name="jenjang_pendidikan_terakhir" id="jenjang_pendidikan_terakhir" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
+                            <option value="">Pilih Jenjang</option>
+                            @foreach($jenjangPendidikan as $jenjang)
+                                <option value="{{ $jenjang }}"
+                                    {{ old('jenjang_pendidikan_terakhir', $registration->jenjang_pendidikan_terakhir ?? '') == $jenjang ? 'selected' : '' }}>
+                                    {{ $jenjang }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- NIS/NISN/NSP -->
+                    <div>
+                        <label for="nis_nisn_nsp" class="block text-sm font-medium text-gray-700 mb-2">
+                            NIS/NISN/NSP
+                        </label>
+                        <input type="text" name="nis_nisn_nsp" id="nis_nisn_nsp"
+                            value="{{ old('nis_nisn_nsp', $registration->nis_nisn_nsp ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nomor induk siswa">
                     </div>
 
                     <!-- Status Pernikahan -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Status Pernikahan</label>
-                        <select name="status_pernikahan" class="form-select" required>
+                    <div>
+                        <label for="status_pernikahan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Status Pernikahan <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status_pernikahan" id="status_pernikahan" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
                             <option value="">Pilih Status</option>
-                            <option value="belum_menikah" {{ old('status_pernikahan', $registration->status_pernikahan ?? '') == 'belum_menikah' ? 'selected' : '' }}>Belum Menikah</option>
                             <option value="menikah" {{ old('status_pernikahan', $registration->status_pernikahan ?? '') == 'menikah' ? 'selected' : '' }}>Menikah</option>
+                            <option value="belum_menikah" {{ old('status_pernikahan', $registration->status_pernikahan ?? '') == 'belum_menikah' ? 'selected' : '' }}>Belum Menikah</option>
                         </select>
-                        @error('status_pernikahan')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
                     </div>
 
-                    <!-- Kebangsaan -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kebangsaan</label>
-                        <select name="kebangsaan" class="form-select" required>
-                            <option value="">Pilih Kebangsaan</option>
-                            <option value="WNI" {{ old('kebangsaan', $registration->kebangsaan ?? '') == 'WNI' ? 'selected' : '' }}>WNI</option>
-                            <option value="WNA" {{ old('kebangsaan', $registration->kebangsaan ?? '') == 'WNA' ? 'selected' : '' }}>WNA</option>
-                        </select>
-                        @error('kebangsaan')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <!-- Nama Sekolah -->
+                    <div class="md:col-span-2">
+                        <label for="nama_sekolah_terakhir" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nama Sekolah Terakhir <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nama_sekolah_terakhir" id="nama_sekolah_terakhir" required
+                            value="{{ old('nama_sekolah_terakhir', $registration->nama_sekolah_terakhir ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nama sekolah terakhir">
                     </div>
 
+                    <!-- Alamat Sekolah -->
+                    <div class="md:col-span-2 lg:col-span-3">
+                        <label for="alamat_sekolah_terakhir" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alamat Sekolah Terakhir <span class="text-red-500">*</span>
+                        </label>
+                        <textarea name="alamat_sekolah_terakhir" id="alamat_sekolah_terakhir" required rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Alamat lengkap sekolah terakhir">{{ old('alamat_sekolah_terakhir', $registration->alamat_sekolah_terakhir ?? '') }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Data Kesehatan -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
+                    <i class="fas fa-heartbeat mr-2"></i>Data Kesehatan
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Golongan Darah -->
-                    <div class="form-group">
-                        <label class="form-label">Golongan Darah</label>
-                        <select name="golongan_darah" class="form-select">
+                    <div>
+                        <label for="golongan_darah" class="block text-sm font-medium text-gray-700 mb-2">
+                            Golongan Darah
+                        </label>
+                        <select name="golongan_darah" id="golongan_darah"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
                             <option value="">Pilih Golongan Darah</option>
                             <option value="A" {{ old('golongan_darah', $registration->golongan_darah ?? '') == 'A' ? 'selected' : '' }}>A</option>
                             <option value="B" {{ old('golongan_darah', $registration->golongan_darah ?? '') == 'B' ? 'selected' : '' }}>B</option>
                             <option value="AB" {{ old('golongan_darah', $registration->golongan_darah ?? '') == 'AB' ? 'selected' : '' }}>AB</option>
                             <option value="O" {{ old('golongan_darah', $registration->golongan_darah ?? '') == 'O' ? 'selected' : '' }}>O</option>
                         </select>
-                        @error('golongan_darah')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
                     </div>
 
-                    <!-- NIS/NISN/NSP -->
-                    <div class="form-group">
-                        <label class="form-label">NIS/NISN/NSP</label>
-                        <input type="text" name="nis_nisn_nsp" value="{{ old('nis_nisn_nsp', $registration->nis_nisn_nsp ?? '') }}"
-                               class="form-input" placeholder="Nomor Induk Siswa">
-                        @error('nis_nisn_nsp')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Jenjang Pendidikan Terakhir -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Jenjang Pendidikan Terakhir</label>
-                        <input type="text" name="jenjang_pendidikan_terakhir" value="{{ old('jenjang_pendidikan_terakhir', $registration->jenjang_pendidikan_terakhir ?? '') }}"
-                               class="form-input" placeholder="Contoh: SMA, SMP, SD" required>
-                        @error('jenjang_pendidikan_terakhir')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Nama Sekolah Terakhir -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Nama Sekolah Terakhir</label>
-                        <input type="text" name="nama_sekolah_terakhir" value="{{ old('nama_sekolah_terakhir', $registration->nama_sekolah_terakhir ?? '') }}"
-                               class="form-input" placeholder="Nama sekolah terakhir" required>
-                        @error('nama_sekolah_terakhir')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-                </div>
-
-                <!-- Alamat Sekolah Terakhir -->
-                <div class="form-group mt-4">
-                    <label class="form-label form-label-required">Alamat Sekolah Terakhir</label>
-                    <textarea name="alamat_sekolah_terakhir" rows="2" class="form-textarea"
-                              placeholder="Alamat lengkap sekolah terakhir" required>{{ old('alamat_sekolah_terakhir', $registration->alamat_sekolah_terakhir ?? '') }}</textarea>
-                    @error('alamat_sekolah_terakhir')
-                        <p class="error-message">
-                            <i class="fas fa-exclamation-circle"></i>
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-            </div>
-
-            <!-- Section 3: Alamat Tinggal -->
-            <div class="card-container">
-                <h2 class="section-title">
-                    <i class="fas fa-home text-primary"></i>
-                    Alamat Tinggal
-                </h2>
-
-                <div class="form-group mb-4">
-                    <label class="form-label form-label-required">Alamat Tinggal</label>
-                    <textarea name="alamat_tinggal" rows="3" class="form-textarea"
-                              placeholder="Alamat lengkap tempat tinggal" required>{{ old('alamat_tinggal', $registration->alamat_tinggal ?? '') }}</textarea>
-                    @error('alamat_tinggal')
-                        <p class="error-message">
-                            <i class="fas fa-exclamation-circle"></i>
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div class="form-grid">
-                    <!-- RT -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">RT</label>
-                        <input type="text" name="rt" value="{{ old('rt', $registration->rt ?? '') }}"
-                               class="form-input" placeholder="001" maxlength="3" required>
-                        @error('rt')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- RW -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">RW</label>
-                        <input type="text" name="rw" value="{{ old('rw', $registration->rw ?? '') }}"
-                               class="form-input" placeholder="002" maxlength="3" required>
-                        @error('rw')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Kelurahan -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kelurahan</label>
-                        <input type="text" name="kelurahan" value="{{ old('kelurahan', $registration->kelurahan ?? '') }}"
-                               class="form-input" placeholder="Nama kelurahan" required>
-                        @error('kelurahan')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Kecamatan -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kecamatan</label>
-                        <input type="text" name="kecamatan" value="{{ old('kecamatan', $registration->kecamatan ?? '') }}"
-                               class="form-input" placeholder="Nama kecamatan" required>
-                        @error('kecamatan')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Kota -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kota</label>
-                        <input type="text" name="kota" value="{{ old('kota', $registration->kota ?? '') }}"
-                               class="form-input" placeholder="Nama kota" required>
-                        @error('kota')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Kode Pos -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kode Pos</label>
-                        <input type="text" name="kode_pos" value="{{ old('kode_pos', $registration->kode_pos ?? '') }}"
-                               class="form-input" placeholder="12345" maxlength="5" required>
-                        @error('kode_pos')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section 4: Data Orang Tua -->
-            <div class="card-container">
-                <h2 class="section-title">
-                    <i class="fas fa-users text-primary"></i>
-                    Data Orang Tua
-                </h2>
-
-                <div class="form-grid">
-                    <!-- Nama Ayah Kandung -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Nama Ayah Kandung</label>
-                        <input type="text" name="nama_ayah_kandung" value="{{ old('nama_ayah_kandung', $registration->nama_ayah_kandung ?? '') }}"
-                               class="form-input" placeholder="Nama lengkap ayah" required>
-                        @error('nama_ayah_kandung')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Nama Ibu Kandung -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Nama Ibu Kandung</label>
-                        <input type="text" name="nama_ibu_kandung" value="{{ old('nama_ibu_kandung', $registration->nama_ibu_kandung ?? '') }}"
-                               class="form-input" placeholder="Nama lengkap ibu" required>
-                        @error('nama_ibu_kandung')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Pekerjaan Ayah -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Pekerjaan Ayah</label>
-                        <input type="text" name="pekerjaan_ayah" value="{{ old('pekerjaan_ayah', $registration->pekerjaan_ayah ?? '') }}"
-                               class="form-input" placeholder="Pekerjaan ayah" required>
-                        @error('pekerjaan_ayah')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Pekerjaan Ibu -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Pekerjaan Ibu</label>
-                        <input type="text" name="pekerjaan_ibu" value="{{ old('pekerjaan_ibu', $registration->pekerjaan_ibu ?? '') }}"
-                               class="form-input" placeholder="Pekerjaan ibu" required>
-                        @error('pekerjaan_ibu')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Penghasilan Ayah -->
-                    <div class="form-group">
-                        <label class="form-label">Penghasilan Ayah (Rp)</label>
-                        <input type="number" name="penghasilan_ayah" value="{{ old('penghasilan_ayah', $registration->penghasilan_ayah ?? '') }}"
-                               class="form-input" placeholder="0" min="0" step="1000">
-                        @error('penghasilan_ayah')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Penghasilan Ibu -->
-                    <div class="form-group">
-                        <label class="form-label">Penghasilan Ibu (Rp)</label>
-                        <input type="number" name="penghasilan_ibu" value="{{ old('penghasilan_ibu', $registration->penghasilan_ibu ?? '') }}"
-                               class="form-input" placeholder="0" min="0" step="1000">
-                        @error('penghasilan_ibu')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Status Orang Tua -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Status Orang Tua</label>
-                        <select name="status_orang_tua" class="form-select" required>
-                            <option value="">Pilih Status</option>
-                            <option value="lengkap" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'lengkap' ? 'selected' : '' }}>Lengkap</option>
-                            <option value="cerai_hidup" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'cerai_hidup' ? 'selected' : '' }}>Cerai Hidup</option>
-                            <option value="cerai_mati" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'cerai_mati' ? 'selected' : '' }}>Cerai Mati</option>
+                    <!-- Kebangsaan -->
+                    <div>
+                        <label for="kebangsaan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kebangsaan <span class="text-red-500">*</span>
+                        </label>
+                        <select name="kebangsaan" id="kebangsaan" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
+                            <option value="">Pilih Kebangsaan</option>
+                            <option value="WNI" {{ old('kebangsaan', $registration->kebangsaan ?? '') == 'WNI' ? 'selected' : '' }}>WNI</option>
+                            <option value="WNA" {{ old('kebangsaan', $registration->kebangsaan ?? '') == 'WNA' ? 'selected' : '' }}>WNA</option>
                         </select>
-                        @error('status_orang_tua')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
                     </div>
 
-                    <!-- Nomor Telepon Orang Tua -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Nomor Telepon Orang Tua</label>
-                        <input type="text" name="nomor_telpon_orang_tua" value="{{ old('nomor_telpon_orang_tua', $registration->nomor_telpon_orang_tua ?? '') }}"
-                               class="form-input" placeholder="081234567890" required>
-                        @error('nomor_telpon_orang_tua')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section 5: Data Kesehatan -->
-            <div class="card-container">
-                <h2 class="section-title">
-                    <i class="fas fa-heartbeat text-primary"></i>
-                    Data Kesehatan
-                </h2>
-
-                <div class="form-grid">
                     <!-- Alergi Obat -->
-                    <div class="form-group">
-                        <label class="form-label">Alergi Obat</label>
-                        <input type="text" name="alergi_obat" value="{{ old('alergi_obat', $registration->alergi_obat ?? '') }}"
-                               class="form-input" placeholder="Jenis alergi obat (jika ada)">
-                        @error('alergi_obat')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div class="md:col-span-2">
+                        <label for="alergi_obat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alergi Obat
+                        </label>
+                        <input type="text" name="alergi_obat" id="alergi_obat"
+                            value="{{ old('alergi_obat', $registration->alergi_obat ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Jenis alergi obat (jika ada)">
                     </div>
 
                     <!-- Penyakit Kronis -->
-                    <div class="form-group">
-                        <label class="form-label">Penyakit Kronis</label>
-                        <input type="text" name="penyakit_kronis" value="{{ old('penyakit_kronis', $registration->penyakit_kronis ?? '') }}"
-                               class="form-input" placeholder="Penyakit kronis (jika ada)">
-                        @error('penyakit_kronis')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div class="md:col-span-2 lg:col-span-4">
+                        <label for="penyakit_kronis" class="block text-sm font-medium text-gray-700 mb-2">
+                            Penyakit Kronis
+                        </label>
+                        <textarea name="penyakit_kronis" id="penyakit_kronis" rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Riwayat penyakit kronis (jika ada)">{{ old('penyakit_kronis', $registration->penyakit_kronis ?? '') }}</textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- Section 6: Data Wali -->
-            <div class="card-container">
-                <h2 class="section-title">
-                    <i class="fas fa-user-shield text-primary"></i>
-                    Data Wali
+            <!-- Section 7: Data Wali -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
+                    <i class="fas fa-user-friends mr-2"></i>Data Wali
                 </h2>
 
-                <div class="form-grid">
-                    <!-- Nama Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Nama Wali</label>
-                        <input type="text" name="nama_wali" value="{{ old('nama_wali', $registration->nama_wali ?? '') }}"
-                               class="form-input" placeholder="Nama lengkap wali" required>
-                        @error('nama_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Data Wali -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="nama_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Wali <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nama_wali" id="nama_wali" required
+                                value="{{ old('nama_wali', $registration->nama_wali ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Nama lengkap wali">
+                        </div>
+
+                        <div>
+                            <label for="nomor_telpon_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nomor Telepon Wali <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nomor_telpon_wali" id="nomor_telpon_wali" required
+                                value="{{ old('nomor_telpon_wali', $registration->nomor_telpon_wali ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="08xxxxxxxxxx">
+                        </div>
                     </div>
 
-                    <!-- Nomor Telepon Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Nomor Telepon Wali</label>
-                        <input type="text" name="nomor_telpon_wali" value="{{ old('nomor_telpon_wali', $registration->nomor_telpon_wali ?? '') }}"
-                               class="form-input" placeholder="081234567890" required>
-                        @error('nomor_telpon_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <!-- Alamat Wali -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="alamat_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                                Alamat Wali <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="alamat_wali" id="alamat_wali" required rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="Alamat lengkap wali">{{ old('alamat_wali', $registration->alamat_wali ?? '') }}</textarea>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Alamat Wali -->
-                <div class="form-group mb-4">
-                    <label class="form-label form-label-required">Alamat Wali</label>
-                    <textarea name="alamat_wali" rows="3" class="form-textarea"
-                              placeholder="Alamat lengkap wali" required>{{ old('alamat_wali', $registration->alamat_wali ?? '') }}</textarea>
-                    @error('alamat_wali')
-                        <p class="error-message">
-                            <i class="fas fa-exclamation-circle"></i>
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <div class="form-grid">
-                    <!-- RT Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">RT Wali</label>
-                        <input type="text" name="rt_wali" value="{{ old('rt_wali', $registration->rt_wali ?? '') }}"
-                               class="form-input" placeholder="001" maxlength="3" required>
-                        @error('rt_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                <!-- Detail Alamat Wali -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                    <div class="grid grid-cols-2 gap-4 md:col-span-2 lg:col-span-4">
+                        <div>
+                            <label for="rt_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                                RT Wali
+                            </label>
+                            <input type="text" name="rt_wali" id="rt_wali" maxlength="3"
+                                value="{{ old('rt_wali', $registration->rt_wali ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="000">
+                        </div>
+                        <div>
+                            <label for="rw_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                                RW Wali
+                            </label>
+                            <input type="text" name="rw_wali" id="rw_wali" maxlength="3"
+                                value="{{ old('rw_wali', $registration->rw_wali ?? '') }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                                placeholder="000">
+                        </div>
                     </div>
 
-                    <!-- RW Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">RW Wali</label>
-                        <input type="text" name="rw_wali" value="{{ old('rw_wali', $registration->rw_wali ?? '') }}"
-                               class="form-input" placeholder="002" maxlength="3" required>
-                        @error('rw_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div>
+                        <label for="kecamatan_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kecamatan Wali <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kecamatan_wali" id="kecamatan_wali" required
+                            value="{{ old('kecamatan_wali', $registration->kecamatan_wali ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nama kecamatan">
                     </div>
 
-                    <!-- Kelurahan Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kelurahan Wali</label>
-                        <input type="text" name="kelurahan_wali" value="{{ old('kelurahan_wali', $registration->kelurahan_wali ?? '') }}"
-                               class="form-input" placeholder="Nama kelurahan" required>
-                        @error('kelurahan_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div>
+                        <label for="kelurahan_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kelurahan Wali <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kelurahan_wali" id="kelurahan_wali" required
+                            value="{{ old('kelurahan_wali', $registration->kelurahan_wali ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nama kelurahan">
                     </div>
 
-                    <!-- Kecamatan Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kecamatan Wali</label>
-                        <input type="text" name="kecamatan_wali" value="{{ old('kecamatan_wali', $registration->kecamatan_wali ?? '') }}"
-                               class="form-input" placeholder="Nama kecamatan" required>
-                        @error('kecamatan_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div>
+                        <label for="kota_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kota Wali <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kota_wali" id="kota_wali" required
+                            value="{{ old('kota_wali', $registration->kota_wali ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="Nama kota">
                     </div>
 
-                    <!-- Kota Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kota Wali</label>
-                        <input type="text" name="kota_wali" value="{{ old('kota_wali', $registration->kota_wali ?? '') }}"
-                               class="form-input" placeholder="Nama kota" required>
-                        @error('kota_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Kode Pos Wali -->
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Kode Pos Wali</label>
-                        <input type="text" name="kode_pos_wali" value="{{ old('kode_pos_wali', $registration->kode_pos_wali ?? '') }}"
-                               class="form-input" placeholder="12345" maxlength="5" required>
-                        @error('kode_pos_wali')
-                            <p class="error-message">
-                                <i class="fas fa-exclamation-circle"></i>
-                                {{ $message }}
-                            </p>
-                        @enderror
+                    <div>
+                        <label for="kode_pos_wali" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kode Pos Wali <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kode_pos_wali" id="kode_pos_wali" required maxlength="5"
+                            value="{{ old('kode_pos_wali', $registration->kode_pos_wali ?? '') }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
+                            placeholder="12345">
                     </div>
                 </div>
             </div>
 
-            <!-- Tombol Aksi -->
-            <div class="card-container">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t-2 border-gray-200">
-                    <button type="button" onclick="window.history.back()" class="btn-secondary w-full sm:w-auto">
-                        <i class="fas fa-arrow-left"></i>Kembali ke Dashboard
-                    </button>
-                    <button type="submit" class="btn-primary w-full sm:w-auto">
-                        <i class="fas fa-save"></i>{{ $registration ? 'Perbarui Biodata' : 'Simpan Biodata' }}
-                    </button>
+            <!-- Submit Button -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm text-gray-600">
+                        <p><span class="text-red-500">*</span> Menandakan field wajib diisi</p>
+                        <p>Pastikan semua data yang Anda masukkan sudah benar sebelum menyimpan</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <a href="{{ route('santri.dashboard') }}"
+                           class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-300 font-medium">
+                            Kembali ke Dashboard
+                        </a>
+                        <button type="submit"
+                                class="px-8 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition duration-300 font-medium flex items-center">
+                            <i class="fas fa-save mr-2"></i>
+                            Simpan Biodata
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-primary text-white py-6 px-4 mt-8">
-        <div class="max-w-6xl mx-auto text-center">
-            <p>&copy; 2025 PPDB Pesantren AI-Our'an Bani Syahid</p>
+    <footer class="bg-primary text-white py-8 px-4 mt-8">
+        <div class="max-w-7xl mx-auto text-center">
+            <p>&copy; 2025 PPDB Pesantren Al-Qur'an Bani Syahid</p>
         </div>
     </footer>
 </div>
-@endsection
 
-@section('scripts')
+<!-- JavaScript -->
 <script>
-    function selectPackage(packageId) {
-        // Update radio button
-        document.querySelector(`input[value="${packageId}"]`).checked = true;
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu) mobileMenu.classList.toggle('hidden');
+    });
 
-        // Update card styles
-        document.querySelectorAll('.package-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        event.currentTarget.classList.add('selected');
+    // Package selection handler - PERBAIKAN INI
+   // Package selection handler - PERBAIKAN INI
+// Package selection handler - PERBAIKAN UNTUK item_name
+document.getElementById('package_id').addEventListener('change', function() {
+    const packageId = this.value;
+    const packageDetails = document.getElementById('packageDetails');
+    const priceList = document.getElementById('priceList');
+    const totalAmount = document.getElementById('totalAmount');
 
-        // Load package prices
-        loadPackagePrices(packageId);
-    }
+    if (packageId) {
+        // Show loading
+        packageDetails.classList.remove('hidden');
+        priceList.innerHTML = '<div class="text-gray-500 flex items-center justify-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat detail harga...</div>';
 
-    function loadPackagePrices(packageId) {
+        // Fetch package prices
         fetch(`/santri/biodata/package/${packageId}/prices`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
+
+
                 if (data.success) {
-                    const priceList = document.getElementById('priceList');
-                    const priceTotal = document.getElementById('priceTotal');
-                    const priceDetails = document.getElementById('priceDetails');
-
                     priceList.innerHTML = '';
-                    data.prices.forEach(price => {
-                        const priceItem = document.createElement('div');
-                        priceItem.className = 'price-item';
-                        priceItem.innerHTML = `
-                            <span class="text-gray-700">${price.item_name}</span>
-                            <span class="font-semibold text-primary">Rp ${new Intl.NumberFormat('id-ID').format(price.amount)}</span>
+
+                    // Check if prices array exists and has items
+                    if (data.prices && data.prices.length > 0) {
+                        // Tambahkan header
+                        const header = document.createElement('div');
+                        header.className = 'grid grid-cols-2 gap-4 text-sm font-semibold text-blue-800 border-b border-blue-300 pb-2 mb-3';
+                        header.innerHTML = `
+                            <span>Item Biaya</span>
+                            <span class="text-right">Jumlah</span>
                         `;
-                        priceList.appendChild(priceItem);
-                    });
+                        priceList.appendChild(header);
 
-                    priceTotal.innerHTML = `
-                        <span class="text-gray-800">Total Biaya</span>
-                        <span class="text-primary">${data.formatted_total}</span>
-                    `;
+                        data.prices.forEach(price => {
+                            const priceItem = document.createElement('div');
+                            priceItem.className = 'grid grid-cols-2 gap-4 text-sm py-3 border-b border-gray-200 last:border-b-0 hover:bg-blue-50 px-2 rounded';
 
-                    priceDetails.classList.remove('hidden');
+                            // Gunakan item_name dari response
+                            const itemName = price.item_name || price.name || 'Biaya';
+                            const itemDescription = price.description ?
+                                `<div class="text-xs text-gray-500 mt-1">${price.description}</div>` : '';
+
+                            priceItem.innerHTML = `
+                                <div>
+                                    <div class="text-gray-700 font-medium">${itemName}</div>
+                                    ${itemDescription}
+                                </div>
+                                <div class="text-right font-semibold text-green-600">${price.formatted_amount}</div>
+                            `;
+                            priceList.appendChild(priceItem);
+                        });
+                    } else {
+                        priceList.innerHTML = '<div class="text-yellow-500 text-sm text-center py-4"><i class="fas fa-info-circle mr-2"></i>Tidak ada detail harga tersedia</div>';
+                    }
+
+                    // Set total amount
+                    totalAmount.textContent = data.formatted_total;
+
+                } else {
+                    priceList.innerHTML = '<div class="text-red-500 text-sm text-center py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat detail harga: ' + (data.message || 'Unknown error') + '</div>';
+                    totalAmount.textContent = 'Rp 0';
                 }
             })
             .catch(error => {
-                // Handle error silently
+
+                priceList.innerHTML = '<div class="text-red-500 text-sm text-center py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Terjadi kesalahan saat memuat data: ' + error.message + '</div>';
+                totalAmount.textContent = 'Rp 0';
             });
+    } else {
+        packageDetails.classList.add('hidden');
+    }
+});
+    // Format number inputs
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value) {
+                this.value = parseFloat(this.value).toLocaleString('id-ID');
+            }
+        });
+
+        input.addEventListener('focus', function() {
+            if (this.value) {
+                this.value = this.value.replace(/\./g, '');
+            }
+        });
+    });
+
+    // NIK validation
+    document.getElementById('nik').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').substring(0, 16);
+    });
+
+    // Kode Pos validation
+    document.getElementById('kode_pos').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').substring(0, 5);
+    });
+
+    document.getElementById('kode_pos_wali').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').substring(0, 5);
+    });
+
+    // RT/RW validation
+    document.querySelectorAll('input[name="rt"], input[name="rw"], input[name="rt_wali"], input[name="rw_wali"]').forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 3);
+        });
+    });
+
+    // Phone number validation
+    document.querySelectorAll('input[name="nomor_telpon_orang_tua"], input[name="nomor_telpon_wali"]').forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 15);
+        });
+    });
+
+    // Form submission handler
+    document.getElementById('biodataForm').addEventListener('submit', function(e) {
+        const requiredFields = this.querySelectorAll('[required]');
+        let isValid = true;
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('border-red-500');
+            } else {
+                field.classList.remove('border-red-500');
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            alert('Harap lengkapi semua field yang wajib diisi!');
+        }
+    });
+
+    // Initialize package details if already selected
+    const selectedPackage = document.getElementById('package_id');
+    if (selectedPackage && selectedPackage.value) {
+        selectedPackage.dispatchEvent(new Event('change'));
     }
 
-    // Form submission handling
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu) mobileMenu.classList.toggle('hidden');
-        });
+    // Auto-format tanggal untuk placeholder
+    document.getElementById('tanggal_lahir').addEventListener('focus', function() {
+        if (!this.value) {
+            this.type = 'date';
+        }
+    });
 
-        // Form submission
-        document.getElementById('biodataForm').addEventListener('submit', function(e) {
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
-            submitButton.disabled = true;
-        });
-
-        // Auto-select package if only one exists
-        const packages = document.querySelectorAll('input[name="package_id"]');
-        if (packages.length === 1) {
-            packages[0].checked = true;
-            const packageCard = packages[0].closest('.package-card');
-            if (packageCard) {
-                packageCard.classList.add('selected');
-                loadPackagePrices(packages[0].value);
-            }
+    document.getElementById('tanggal_lahir').addEventListener('blur', function() {
+        if (!this.value) {
+            this.type = 'text';
+            this.placeholder = 'dd/mm/yyyy';
         }
     });
 </script>
+
+<style>
+    .full-width-page {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        ring: 2px;
+    }
+
+    .border-red-500 {
+        border-color: #ef4444;
+    }
+</style>
 @endsection

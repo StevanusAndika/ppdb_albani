@@ -14,7 +14,7 @@ class SettingController extends Controller
     public function index()
     {
         $user = Auth::user();
-        return view('dashboard.santri.settings.index', compact('user'));
+        return view('dashboard.calon_santri.settings.index', compact('user'));
     }
 
     public function updateProfile(Request $request)

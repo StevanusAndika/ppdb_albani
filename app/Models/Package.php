@@ -12,36 +12,46 @@ class Package extends Model
     protected $fillable = [
         'name',
         'description',
-        'type',
+        'total_amount',
         'is_active'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'total_amount' => 'decimal:2',
+        'is_active' => 'boolean'
     ];
 
-    public function prices()
-    {
-        return $this->hasMany(Price::class)->orderBy('order');
-    }
+    protected $appends = ['formatted_total_amount'];
 
-    public function activePrices()
-    {
-        return $this->hasMany(Price::class)->where('is_active', true)->orderBy('order');
-    }
-
-    public function getTotalAmountAttribute()
-    {
-        return $this->activePrices->sum('amount');
-    }
-
+    /**
+     * Get formatted total amount
+     */
     public function getFormattedTotalAmountAttribute()
     {
-        return 'Rp.' . number_format($this->total_amount, 0, ',', '.');
+        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
     }
 
-    public function getTypeLabelAttribute()
+    /**
+     * Relationship with Prices
+     */
+    public function prices()
     {
-        return $this->type === 'takhossus' ? 'Takhossus Pesantren' : 'Plus Sekolah';
+        return $this->hasMany(Price::class);
+    }
+
+    /**
+     * Relationship with active prices
+     */
+    public function activePrices()
+    {
+        return $this->hasMany(Price::class)->active()->ordered();
+    }
+
+    /**
+     * Scope active packages
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

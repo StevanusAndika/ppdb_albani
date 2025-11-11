@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use DNS2D;
 
 class Registration extends Model
 {
@@ -16,6 +17,7 @@ class Registration extends Model
         'package_id',
         'nama_lengkap',
         'nik',
+        'program_unggulan_id',
         'tempat_lahir',
         'tanggal_lahir',
         'jenis_kelamin',
@@ -69,7 +71,7 @@ class Registration extends Model
         'dilihat_pada' => 'datetime',
     ];
 
-    protected $appends = ['status_label', 'total_biaya', 'formatted_total_biaya'];
+    protected $appends = ['status_label', 'total_biaya', 'formatted_total_biaya', 'qr_code_url'];
 
     protected static function boot()
     {
@@ -81,8 +83,14 @@ class Registration extends Model
             }
         });
 
+        static::created(function ($registration) {
+            // Generate QR Code otomatis setelah registrasi dibuat
+            $registration->generateQrCode();
+        });
+
         static::deleting(function ($registration) {
             $registration->deleteAllDocuments();
+            $registration->deleteQrCode();
         });
     }
 
@@ -248,6 +256,101 @@ class Registration extends Model
             'percentage' => ($uploaded / $total) * 100
         ];
     }
+
+    /**
+     * Generate QR Code untuk id_pendaftaran
+     */
+    public function generateQrCode()
+    {
+        try {
+            // Pastikan directory qr-codes exists
+            if (!Storage::disk('public')->exists('qr-codes')) {
+                Storage::disk('public')->makeDirectory('qr-codes');
+            }
+
+            // URL yang akan di-encode dalam QR Code
+            $qrCodeUrl = route('barcode.show', $this->id_pendaftaran);
+
+            // Generate QR Code sebagai PNG
+            $qrCode = DNS2D::getBarcodePNG(
+                $qrCodeUrl,
+                'QRCODE',
+                8, // Ukuran lebih besar untuk QR Code
+                8,
+                array(0,0,0),
+                true
+            );
+
+            // Simpan ke storage
+            $filename = 'qr-codes/' . $this->id_pendaftaran . '.png';
+            Storage::disk('public')->put($filename, base64_decode($qrCode));
+
+            return $filename;
+        } catch (\Exception $e) {
+            \Log::error('Error generating QR Code: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get QR Code URL
+     */
+    public function getQrCodeUrlAttribute()
+    {
+        $filename = 'qr-codes/' . $this->id_pendaftaran . '.png';
+
+        if (Storage::disk('public')->exists($filename)) {
+            return Storage::disk('public')->url($filename);
+        }
+
+        // Generate jika belum ada
+        $generated = $this->generateQrCode();
+        return $generated ? Storage::disk('public')->url($generated) : null;
+    }
+
+    /**
+     * Get QR Code path for download
+     */
+    public function getQrCodePathAttribute()
+    {
+        $filename = 'qr-codes/' . $this->id_pendaftaran . '.png';
+        return Storage::disk('public')->path($filename);
+    }
+
+    /**
+     * Check if QR Code exists
+     */
+    public function hasQrCode()
+    {
+        $filename = 'qr-codes/' . $this->id_pendaftaran . '.png';
+        return Storage::disk('public')->exists($filename);
+    }
+
+    /**
+     * Delete QR Code file
+     */
+    public function deleteQrCode()
+    {
+        $filename = 'qr-codes/' . $this->id_pendaftaran . '.png';
+        if (Storage::disk('public')->exists($filename)) {
+            Storage::disk('public')->delete($filename);
+        }
+    }
+
+    /**
+     * Get QR Code information URL
+     */
+    public function getQrCodeInfoUrlAttribute()
+    {
+        return route('barcode.show', $this->id_pendaftaran);
+    }
+
+    /**
+     * ALIAS METHOD untuk kompatibilitas - HAPUS METHOD INI JIKA SUDAH TIDAK DIPERLUKAN
+     * Method ini hanya untuk backward compatibility
+     */
+    public function hasBarcode()
+    {
+        return $this->hasQrCode();
+    }
 }
-
-

@@ -11,7 +11,7 @@ class Price extends Model
 
     protected $fillable = [
         'package_id',
-        'item_name',
+        'item_name', // Diubah dari 'name' menjadi 'item_name'
         'description',
         'amount',
         'order',
@@ -20,28 +20,48 @@ class Price extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'is_active' => 'boolean',
+        'is_active' => 'boolean'
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
+    protected $appends = ['formatted_amount'];
 
-        static::creating(function ($price) {
-            if (is_null($price->order)) {
-                $maxOrder = static::where('package_id', $price->package_id)->max('order');
-                $price->order = $maxOrder ? $maxOrder + 1 : 1;
-            }
-        });
+    /**
+     * Get formatted amount
+     */
+    public function getFormattedAmountAttribute()
+    {
+        return 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
 
+    /**
+     * Get name attribute (alias untuk item_name untuk kompatibilitas)
+     */
+    public function getNameAttribute()
+    {
+        return $this->item_name;
+    }
+
+    /**
+     * Relationship with Package
+     */
     public function package()
     {
         return $this->belongsTo(Package::class);
     }
 
-    public function getFormattedAmountAttribute()
+    /**
+     * Scope active prices
+     */
+    public function scopeActive($query)
     {
-        return 'Rp.' . number_format($this->amount, 0, ',', '.');
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope ordered
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('order');
     }
 }

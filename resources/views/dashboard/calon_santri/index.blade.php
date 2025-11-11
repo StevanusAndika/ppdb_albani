@@ -12,6 +12,7 @@
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
                 <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
                 <a href="#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
+                <a href="{{ route('santri.settings.index') }}" class="text-primary hover:text-secondary font-medium">Pengaturan</a>
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
                 <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
@@ -35,6 +36,7 @@
             <div class="flex flex-col space-y-2">
                 <a href="{{ url('/') }}" class="text-primary">Beranda</a>
                 <a href="#profile" class="text-primary">Profil</a>
+                <a href="{{ route('santri.settings.index') }}" class="text-primary">Pengaturan</a>
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary">Pendaftaran</a>
                 <a href="{{ route('santri.documents.index') }}" class="text-primary">Dokumen</a>
                 <a href="{{ route('santri.payments.index') }}" class="text-primary">Pembayaran</a>
@@ -103,6 +105,11 @@
                     <a href="{{ route('santri.kegiatan.index') }}" class="bg-pink-600 text-white px-4 py-1.5 rounded-full hover:bg-pink-700 transition duration-300 flex items-center justify-center">
                         <i class="fas fa-calendar-alt mr-1"></i> Kegiatan
                     </a>
+
+                    <!-- Settings Quick Link -->
+                    <a href="{{ route('santri.settings.index') }}" class="bg-gray-600 text-white px-4 py-1.5 rounded-full hover:bg-gray-700 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-cog mr-1"></i> Settings
+                    </a>
                 </div>
             </div>
         </div>
@@ -158,6 +165,14 @@
                         @endif
                     </div>
 
+                    <!-- TAMBAHKAN TOMBOL SETTINGS -->
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <a href="{{ route('santri.settings.index') }}" class="w-full bg-gray-600 text-white py-2 rounded-full hover:bg-gray-700 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-cog mr-2"></i> Pengaturan Akun
+                        </a>
+                        <p class="text-xs text-gray-500 text-center mt-2">Kelola profil, email, dan koneksi Google</p>
+                    </div>
+
                     <!-- Download All Documents Button -->
                     @if($registration && $registration->hasAllDocuments())
                     <div class="mt-4 pt-4 border-t border-gray-200">
@@ -198,6 +213,14 @@
                             </div>
                         </a>
 
+                        <!-- Settings Card - TAMBAHKAN INI -->
+                        <a href="{{ route('santri.settings.index') }}" class="bg-gradient-to-br from-gray-600 to-gray-700 text-white rounded-lg p-4 text-center hover:from-gray-700 hover:to-gray-800 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-cog text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">Pengaturan</span>
+                            </div>
+                        </a>
+
                         <!-- FAQ Card -->
                         <a href="{{ route('santri.faq.index') }}" class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg p-4 text-center hover:from-indigo-600 hover:to-indigo-700 transition duration-300 transform hover:scale-105">
                             <div class="flex flex-col items-center">
@@ -211,14 +234,6 @@
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-calendar-alt text-2xl mb-2"></i>
                                 <span class="font-semibold text-sm">Kegiatan</span>
-                            </div>
-                        </a>
-
-                        <!-- Kontak Card -->
-                        <a href="https://wa.me/6287748115931" target="_blank" class="bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-lg p-4 text-center hover:from-teal-600 hover:to-teal-700 transition duration-300 transform hover:scale-105">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-headset text-2xl mb-2"></i>
-                                <span class="font-semibold text-sm">Bantuan</span>
                             </div>
                         </a>
                     </div>
@@ -244,6 +259,11 @@
                                         'completed' => $hasSuccessfulPayment ?? false,
                                         'route' => route('santri.payments.index'),
                                         'color' => 'purple'
+                                    ],
+                                    'Pengaturan' => [
+                                        'completed' => true, // Always complete since user can access settings
+                                        'route' => route('santri.settings.index'),
+                                        'color' => 'gray'
                                     ]
                                 ];
                             @endphp
@@ -651,7 +671,7 @@
                     @endif
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- AKSI CEPAT SECTION -->
                 @if($registration)
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-xl font-bold text-primary mb-4">Aksi Cepat</h3>
@@ -671,13 +691,95 @@
                             <p class="font-semibold">Riwayat Bayar</p>
                             <p class="text-sm opacity-75">Lihat status pembayaran</p>
                         </a>
-                        <a href="{{ route('santri.faq.index') }}" class="p-4 border-2 border-indigo-500 rounded-lg text-center hover:bg-indigo-500 hover:text-white transition duration-300">
-                            <i class="fas fa-question-circle text-2xl mb-2"></i>
-                            <p class="font-semibold">Bantuan FAQ</p>
-                            <p class="text-sm opacity-75">Temukan jawaban</p>
+                        <a href="{{ route('santri.settings.index') }}" class="p-4 border-2 border-gray-500 rounded-lg text-center hover:bg-gray-500 hover:text-white transition duration-300">
+                            <i class="fas fa-cog text-2xl mb-2"></i>
+                            <p class="font-semibold">Pengaturan</p>
+                            <p class="text-sm opacity-75">Kelola akun & profil</p>
                         </a>
                     </div>
                 </div>
+                @endif
+
+                <!-- QR CODE SECTION -->
+                @if($registration)
+                    @if($registration->hasQrCode())
+                    <div class="bg-white rounded-xl shadow-md p-6 qr-fade-in">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-primary">QR Code Pendaftaran</h3>
+                            <div class="flex gap-2">
+                                <a href="{{ route('barcode.download', $registration->id_pendaftaran) }}"
+                                   class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center">
+                                    <i class="fas fa-download mr-2"></i> Download QR Code
+                                </a>
+                                <a href="{{ route('barcode.show', $registration->id_pendaftaran) }}"
+                                   target="_blank"
+                                   class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300 flex items-center">
+                                    <i class="fas fa-external-link-alt mr-2"></i> Lihat Halaman
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="text-center p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                            <img src="{{ $registration->qr_code_url }}"
+                                 alt="QR Code {{ $registration->id_pendaftaran }}"
+                                 class="h-48 w-48 mx-auto mb-4 object-contain">
+                            <p class="text-sm text-gray-600 mb-2">
+                                <strong>ID Pendaftaran:</strong> {{ $registration->id_pendaftaran }}
+                            </p>
+                            <p class="text-xs text-gray-500 mb-3">
+                                Scan QR Code ini untuk melihat informasi lengkap calon santri
+                            </p>
+
+                            <!-- Quick Actions untuk QR Code -->
+                            <div class="flex justify-center gap-3 mt-4">
+                                <a href="{{ route('barcode.download', $registration->id_pendaftaran) }}"
+                                   class="inline-flex items-center px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300 text-sm">
+                                    <i class="fas fa-download mr-1"></i> Download
+                                </a>
+                                <a href="{{ route('barcode.show', $registration->id_pendaftaran) }}"
+                                   target="_blank"
+                                   class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 text-sm">
+                                    <i class="fas fa-eye mr-1"></i> Lihat Halaman
+                                </a>
+                                <button onclick="shareQrCode('{{ $registration->id_pendaftaran }}')"
+                                        class="inline-flex items-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition duration-300 text-sm">
+                                    <i class="fas fa-share-alt mr-1"></i> Share
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Informasi QR Code -->
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-blue-800">Cara Menggunakan QR Code</p>
+                                    <ul class="text-xs text-blue-700 mt-1 space-y-1">
+                                        <li>• Download QR Code untuk dicetak atau disimpan</li>
+                                        <li>• Scan dengan kamera/QR Scanner untuk melihat informasi</li>
+                                        <li>• QR Code dapat diakses publik tanpa login</li>
+                                        <li>• Gunakan untuk verifikasi oleh admin</li>
+                                        <li>• Compatible dengan semua QR scanner apps</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <!-- Jika QR Code belum ada, tampilkan tombol generate -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="text-center py-6">
+                            <i class="fas fa-qrcode text-4xl text-gray-300 mb-3"></i>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">QR Code Belum Tersedia</h3>
+                            <p class="text-gray-500 text-sm mb-4">Generate QR Code untuk ID pendaftaran Anda</p>
+                            <form action="{{ route('santri.biodata.index') }}" method="GET">
+                                <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition duration-300">
+                                    Generate QR Code
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endif
                 @endif
 
                 <!-- FAQ Quick Section -->
@@ -744,6 +846,13 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+        .qr-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 
@@ -819,6 +928,95 @@
                     text: error.message || 'Terjadi kesalahan saat mendownload file ZIP',
                     confirmButtonText: 'Mengerti'
                 });
+            });
+        }
+
+        // Function untuk share QR Code
+        function shareQrCode(idPendaftaran) {
+            const qrCodeUrl = `{{ url('/barcode') }}/${idPendaftaran}`;
+
+            if (navigator.share) {
+                // Web Share API (mobile)
+                navigator.share({
+                    title: 'QR Code Pendaftaran - ' + idPendaftaran,
+                    text: 'Scan QR Code untuk melihat informasi calon santri',
+                    url: qrCodeUrl
+                })
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil Dibagikan!',
+                        text: 'QR Code berhasil dibagikan',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch((error) => {
+                    console.log('Error sharing:', error);
+                    fallbackShare(qrCodeUrl);
+                });
+            } else {
+                fallbackShare(qrCodeUrl);
+            }
+        }
+
+        // Fallback untuk browser yang tidak support Web Share API
+        function fallbackShare(qrCodeUrl) {
+            navigator.clipboard.writeText(qrCodeUrl)
+                .then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Link Disalin!',
+                        text: 'Link QR Code telah disalin ke clipboard',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch((err) => {
+                    // Fallback jika clipboard tidak support
+                    const tempInput = document.createElement('input');
+                    tempInput.value = qrCodeUrl;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Link Disalin!',
+                        text: 'Link QR Code telah disalin ke clipboard',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                });
+        }
+
+        // Function untuk preview QR Code dalam modal
+        function previewQrCode(idPendaftaran) {
+            const qrCodeUrl = `{{ route('barcode.image', ':id') }}`.replace(':id', idPendaftaran);
+            const infoUrl = `{{ route('barcode.show', ':id') }}`.replace(':id', idPendaftaran);
+
+            Swal.fire({
+                title: 'QR Code Pendaftaran',
+                html: `
+                    <div class="text-center">
+                        <img src="${qrCodeUrl}" alt="QR Code" class="h-48 w-48 mx-auto mb-4 object-contain">
+                        <p class="text-sm text-gray-600 mb-2">ID: <strong>${idPendaftaran}</strong></p>
+                        <p class="text-xs text-gray-500">Scan QR Code untuk melihat informasi lengkap</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Lihat Halaman',
+                cancelButtonText: 'Download',
+                showCloseButton: true,
+                reverseButtons: true,
+                width: '500px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open(infoUrl, '_blank');
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = `{{ route('barcode.download', ':id') }}`.replace(':id', idPendaftaran);
+                }
             });
         }
 

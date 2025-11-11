@@ -13,8 +13,9 @@
                 <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
                 <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary hover:text-secondary font-medium">Profil</a>
                 <a href="{{ route('admin.registrations.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
-                <a href="#dokumen" class="text-primary hover:text-secondary font-medium">Dokumen</a>
-                <a href="#dokumen" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
+                <a href="{{ route('admin.transactions.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
+                <!-- TAMBAHKAN LINK ANNOUNCEMENT -->
+                <a href="{{ route('admin.announcements.index') }}" class="text-primary hover:text-secondary font-medium">Pengumuman</a>
 
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
@@ -35,8 +36,9 @@
                 <a href="{{ url('/') }}" class="text-primary">Beranda</a>
                 <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary">Profil</a>
                 <a href="{{ route('admin.registrations.index') }}" class="text-primary">Pendaftaran</a>
-                <a href="#dokumen" class="text-primary">Dokumen</a>
-                <a href="{{ route('admin.transactions.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
+                <a href="{{ route('admin.transactions.index') }}" class="text-primary">Pembayaran</a>
+                <!-- TAMBAHKAN LINK ANNOUNCEMENT MOBILE -->
+                <a href="{{ route('admin.announcements.index') }}" class="text-primary">Pengumuman</a>
 
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
@@ -85,6 +87,9 @@
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Selamat Datang, {{ Auth::user()->name }}!</h2>
                     <p class="text-gray-600">Anda login sebagai <span class="font-semibold text-blue-600">{{ Auth::user()->role }}</span></p>
                     <p class="text-gray-600 mt-2">Total <span class="font-semibold">{{ $stats['total_registrations'] }}</span> pendaftaran telah masuk ke sistem.</p>
+                    @if(isset($stats['eligible_for_announcement']))
+                    <p class="text-gray-600"><span class="font-semibold">{{ $stats['eligible_for_announcement'] }}</span> calon santri siap menerima pengumuman kelulusan.</p>
+                    @endif
                 </div>
 
                 <!-- Stats Cards -->
@@ -137,6 +142,35 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Additional Stats Cards untuk Announcement -->
+                @if(isset($stats['eligible_for_announcement']) && isset($stats['sent_announcements']))
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-teal-500 rounded-md p-3">
+                                <i class="fas fa-bullhorn text-white text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Siap Diumumkan</p>
+                                <p class="text-2xl font-semibold text-gray-900">{{ $stats['eligible_for_announcement'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                                <i class="fas fa-paper-plane text-white text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Pengumuman Terkirim</p>
+                                <p class="text-2xl font-semibold text-gray-900">{{ $stats['sent_announcements'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <!-- Recent Registrations -->
                 <div class="bg-white rounded-xl shadow-md p-6">
@@ -201,6 +235,37 @@
                     @endif
                 </div>
 
+                <!-- Recent Announcements -->
+                @if(isset($recentAnnouncements) && $recentAnnouncements->count() > 0)
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Pengumuman Terbaru</h3>
+                        <a href="{{ route('admin.announcements.index') }}" class="text-primary hover:text-secondary text-sm font-medium">Lihat Semua</a>
+                    </div>
+
+                    <div class="space-y-4">
+                        @foreach($recentAnnouncements as $announcement)
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800">{{ $announcement->registration->nama_lengkap }}</h4>
+                                    <p class="text-sm text-gray-600 mt-1">{{ Str::limit($announcement->message, 100) }}</p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="text-xs text-gray-500">
+                                            {{ $announcement->sent_at->format('d M Y H:i') }}
+                                        </span>
+                                        <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                            Terkirim
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                <!-- Di bagian Quick Actions -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
@@ -213,17 +278,18 @@
                             <i class="fas fa-clipboard-list text-2xl mb-2"></i>
                             <p>Kelola Pendaftaran</p>
                         </a>
-                        <!-- TAMBAHKAN INI: Link ke halaman transaksi -->
                         <a href="{{ route('admin.transactions.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                                <i class="fas fa-credit-card text-2xl mb-2"></i>
-                                <p>Kelola Transaksi</p>
-                            </a>
-                            <a href="{{ route('admin.billing.packages.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                            <i class="fas fa-box text-2xl mb-2"></i>
-                            <p>Kelola Paket</p>
+                            <i class="fas fa-credit-card text-2xl mb-2"></i>
+                            <p>Kelola Transaksi</p>
+                        </a>
+                        <!-- TAMBAHKAN ANNOUNCEMENT -->
+                        <a href="{{ route('admin.announcements.index') }}" class="bg-teal-500 hover:bg-teal-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                            <i class="fas fa-bullhorn text-2xl mb-2"></i>
+                            <p>Pengumuman</p>
                         </a>
                     </div>
                 </div>
+
                 <!-- Additional Quick Actions -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Kelola Konten Website</h3>
@@ -236,10 +302,10 @@
                             <i class="fas fa-cogs text-2xl mb-2"></i>
                             <p>Pengaturan</p>
                         </a>
-                         <a href="{{ route('admin.announcements.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                                <i class="fas fa-bullhorn text-2xl mb-2"></i>
-                                <p>Pengumuman</p>
-                            </a>
+                        <a href="{{ route('admin.billing.packages.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                            <i class="fas fa-box text-2xl mb-2"></i>
+                            <p>Kelola Paket</p>
+                        </a>
                     </div>
                 </div>
             </div>

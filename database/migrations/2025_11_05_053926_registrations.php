@@ -21,8 +21,8 @@ return new class extends Migration
             $table->date('tanggal_lahir');
             $table->enum('jenis_kelamin', ['laki-laki', 'perempuan']);
             $table->text('alamat_tinggal');
-            $table->string('rt', 3);
-            $table->string('rw', 3);
+            $table->string('rt', 3)->nullable();
+            $table->string('rw', 3)->nullable();
             $table->string('kecamatan');
             $table->string('kelurahan');
             $table->string('kota');
@@ -51,8 +51,8 @@ return new class extends Migration
             // Data Wali
             $table->string('nama_wali');
             $table->text('alamat_wali');
-            $table->string('rt_wali', 3);
-            $table->string('rw_wali', 3);
+            $table->string('rt_wali', 3)->nullable();
+            $table->string('rw_wali', 3)->nullable();
             $table->string('kecamatan_wali');
             $table->string('kelurahan_wali');
             $table->string('kota_wali');
