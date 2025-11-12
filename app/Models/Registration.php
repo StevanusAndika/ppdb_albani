@@ -127,7 +127,7 @@ class Registration extends Model
 
     public function package()
     {
-        return $this->belongsTo(Package::class);
+        return $this->belongsTo(Package::class, 'package_id');
     }
 
     public function getStatusLabelAttribute()
@@ -146,12 +146,42 @@ class Registration extends Model
 
     public function getTotalBiayaAttribute()
     {
-        return $this->package->total_amount ?? 0;
+        // Jika package sudah diload via relationship
+        if ($this->relationLoaded('package') && $this->package) {
+            // Cek jika package memiliki total_amount
+            if (isset($this->package->total_amount) && $this->package->total_amount > 0) {
+                return $this->package->total_amount;
+            }
+
+            // Jika tidak, hitung dari prices
+            if ($this->package->relationLoaded('prices')) {
+                return $this->package->prices->where('is_active', true)->sum('amount');
+            } else {
+                return $this->package->prices()->active()->sum('amount');
+            }
+        }
+
+        // Jika belum, load manual
+        if ($this->package_id) {
+            $package = Package::with(['prices' => function($query) {
+                $query->active();
+            }])->find($this->package_id);
+
+            if ($package) {
+                if (isset($package->total_amount) && $package->total_amount > 0) {
+                    return $package->total_amount;
+                }
+                return $package->prices->sum('amount');
+            }
+        }
+
+        return 0;
     }
 
     public function getFormattedTotalBiayaAttribute()
     {
-        return 'Rp ' . number_format($this->total_biaya, 0, ',', '.');
+        $total = $this->total_biaya;
+        return 'Rp ' . number_format($total, 0, ',', '.');
     }
 
     public function markAsSeen()
@@ -352,5 +382,12 @@ class Registration extends Model
     public function hasBarcode()
     {
         return $this->hasQrCode();
+    }
+
+    // Di dalam model Registration.php
+    public function programUnggulan()
+    {
+        // Ganti 'ProgramUnggulan' dengan nama model yang sesuai
+        return $this->belongsTo(ContentSetting::class, 'program_unggulan_id');
     }
 }

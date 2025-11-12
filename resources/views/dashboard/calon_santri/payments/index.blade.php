@@ -76,6 +76,7 @@
                         <tr class="bg-gray-50 border-b">
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Kode Pembayaran</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Paket</th>
+                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Program Unggulan</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Jumlah</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Metode</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Status</th>
@@ -85,13 +86,26 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @foreach($payments as $payment)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50"
+                            @if($payment->isPending())
+                            data-payment-pending="true"
+                            data-payment-code="{{ $payment->payment_code }}"
+                            @endif>
                             <td class="py-4 px-4">
                                 <div class="font-medium text-gray-900">{{ $payment->payment_code }}</div>
                                 <div class="text-sm text-gray-500">{{ $payment->registration->id_pendaftaran }}</div>
                             </td>
                             <td class="py-4 px-4">
-                                <span class="text-sm text-gray-700">{{ $payment->registration->package->name }}</span>
+                                <span class="text-sm text-gray-700">{{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="text-sm text-gray-700">
+                                    @if($payment->registration->programUnggulan && $payment->registration->programUnggulan->judul)
+                                        {{ $payment->registration->programUnggulan->judul }}
+                                    @else
+                                        Tidak ada program unggulan
+                                    @endif
+                                </span>
                             </td>
                             <td class="py-4 px-4">
                                 <div class="font-semibold text-primary">{{ $payment->formatted_amount }}</div>
@@ -117,6 +131,14 @@
                                     Kedaluarsa: {{ $payment->expired_at->translatedFormat('d M Y H:i') }}
                                 </div>
                                 @endif
+
+                                <!-- Auto Sync Indicator -->
+                                @if($payment->isPending())
+                                <div class="text-xs text-blue-600 mt-1 flex items-center">
+                                    <i class="fas fa-sync-alt fa-spin mr-1"></i>
+                                    Auto sync aktif
+                                </div>
+                                @endif
                             </td>
                             <td class="py-4 px-4 text-sm text-gray-500">
                                 <div>{{ $payment->created_at->translatedFormat('d F Y') }}</div>
@@ -130,7 +152,7 @@
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-2">
                                     @if($payment->payment_method === 'xendit' && $payment->isPending() && $payment->xendit_response)
-                                    <a href="{{ $payment->xendit_response['invoice_url'] }}"
+                                    <a href="{{ $payment->xendit_response['invoice_url'] ?? '#' }}"
                                        target="_blank"
                                        class="text-blue-600 hover:text-blue-900 transition duration-200 p-2 rounded-full hover:bg-blue-50"
                                        title="Lanjutkan Pembayaran">
@@ -142,9 +164,21 @@
                                     <a href="{{ route('santri.payments.download-invoice', $payment->payment_code) }}"
                                        target="_blank"
                                        class="text-green-600 hover:text-green-900 transition duration-200 p-2 rounded-full hover:bg-green-50"
-                                       title="Download Invoice">
-                                        <i class="fas fa-receipt"></i>
+                                       title="Download Invoice PDF">
+                                        <i class="fas fa-file-pdf"></i>
                                     </a>
+                                    @endif
+
+                                    <!-- Manual Sync Button -->
+                                    @if($payment->payment_method === 'xendit' && $payment->isPending())
+                                    <form action="{{ route('santri.payments.manual-sync', $payment->payment_code) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                class="text-orange-600 hover:text-orange-900 transition duration-200 p-2 rounded-full hover:bg-orange-50"
+                                                title="Sinkronisasi Status Sekarang">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </form>
                                     @endif
 
                                     <!-- Detail Button -->
@@ -153,6 +187,15 @@
                                             title="Detail Pembayaran">
                                         <i class="fas fa-info-circle"></i>
                                     </button>
+
+                                    <!-- Retry Button untuk payment expired -->
+                                    @if($payment->status === 'expired' && !$hasSuccessfulPayment)
+                                    <a href="{{ route('santri.payments.retry', $payment->payment_code) }}"
+                                       class="text-red-600 hover:text-red-900 transition duration-200 p-2 rounded-full hover:bg-red-50"
+                                       title="Coba Lagi">
+                                        <i class="fas fa-redo-alt"></i>
+                                    </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -218,8 +261,12 @@
                         <span>Pembayaran cash akan diverifikasi admin dalam 1x24 jam</span>
                     </div>
                     <div class="flex items-start">
-                        <i class="fas fa-receipt text-purple-500 mt-1 mr-3"></i>
-                        <span>Download invoice setelah pembayaran berhasil</span>
+                        <i class="fas fa-file-pdf text-purple-500 mt-1 mr-3"></i>
+                        <span>Download invoice PDF setelah pembayaran berhasil</span>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-sync-alt text-orange-500 mt-1 mr-3"></i>
+                        <span>Status pembayaran online diperiksa otomatis setiap 30 detik</span>
                     </div>
                 </div>
             </div>
@@ -266,6 +313,65 @@
 </div>
 
 <script>
+// Auto sync untuk pembayaran pending
+function autoSyncPayments() {
+    const pendingPayments = document.querySelectorAll('[data-payment-pending]');
+
+    pendingPayments.forEach(paymentElement => {
+        const paymentCode = paymentElement.getAttribute('data-payment-code');
+
+        // Check status setiap 30 detik untuk payment pending
+        setInterval(() => {
+            checkPaymentStatus(paymentCode);
+        }, 30000);
+    });
+}
+
+// Function untuk check status payment
+function checkPaymentStatus(paymentCode) {
+    fetch(`/santri/payments/check-status/${paymentCode}`, {
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.status_updated) {
+                // Jika status berubah, refresh halaman
+                showStatusUpdateNotification();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking payment status:', error);
+    });
+}
+
+// Show notification ketika status berubah
+function showStatusUpdateNotification() {
+    // Buat notifikasi
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-sync-alt mr-2"></i>
+            <span>Status pembayaran diperbarui. Halaman akan refresh...</span>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Hapus notifikasi setelah 3 detik
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
 function showPaymentDetail(paymentId) {
     // Show loading
     const modal = document.getElementById('paymentDetailModal');
@@ -307,7 +413,7 @@ function showPaymentDetail(paymentId) {
 }
 
 function hidePaymentDetail() {
-    document.getElementById('paymentDetailModal').class.add('hidden');
+    document.getElementById('paymentDetailModal').classList.add('hidden');
 }
 
 // Close modal when clicking outside
@@ -317,11 +423,23 @@ document.getElementById('paymentDetailModal').addEventListener('click', function
     }
 });
 
+// Jalankan auto sync ketika halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    autoSyncPayments();
+
+    // Juga check status setiap 60 detik untuk semua payment
+    setInterval(() => {
+        const pendingPayments = document.querySelectorAll('[data-payment-pending]');
+        pendingPayments.forEach(paymentElement => {
+            const paymentCode = paymentElement.getAttribute('data-payment-code');
+            checkPaymentStatus(paymentCode);
+        });
+    }, 60000);
+});
+
 // Auto refresh page every 30 seconds if there are pending payments
 @if($payments->whereIn('status', ['pending', 'waiting_payment', 'processing'])->count() > 0)
-setTimeout(() => {
-    window.location.reload();
-}, 30000);
+// Auto sync sudah aktif, tidak perlu refresh halaman otomatis
 @endif
 </script>
 @endsection

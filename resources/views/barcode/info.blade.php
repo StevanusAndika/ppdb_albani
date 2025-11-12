@@ -195,7 +195,7 @@
 
         <!-- Footer -->
         <div class="text-center text-white/80">
-            <p>© 2024 Pondok Pesantren Bani Syahid. All rights reserved.</p>
+            <p>© 2025 Pondok Pesantren Bani Syahid. All rights reserved.</p>
             <p class="text-sm mt-1">Halaman ini dapat diakses dengan scan barcode</p>
         </div>
     </div>

@@ -5,9 +5,9 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page">
     <!-- Navbar -->
-    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
+    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
+            <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
 
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
                 <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
@@ -25,7 +25,7 @@
             </div>
 
             <div class="md:hidden flex items-center">
-                <button id="mobile-menu-button" class="text-primary focus:outline-none">
+                <button id="mobile-menu-button" class="text-primary focus:outline-none mobile-menu-button">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
@@ -44,7 +44,7 @@
                 <a href="{{ route('santri.kegiatan.index') }}" class="text-primary">Kegiatan</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="w-full bg-primary text-white py-2 rounded-full mt-2">Logout</button>
+                    <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-full mt-2">Logout</button>
                 </form>
             </div>
         </div>
@@ -54,67 +54,9 @@
     <header class="py-8 px-4 text-center">
         <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Dashboard Santri</h1>
         <p class="text-secondary">Halo, <span class="font-semibold">{{ Auth::user()->name }}</span> — Selamat datang di panel pendaftaran.</p>
-
-        <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mt-6">
-            <div class="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-4">
-                <div>
-                    <h2 class="text-xl font-bold text-primary">Status Akun</h2>
-                    <p class="text-secondary mt-1">Anda login sebagai <span class="font-semibold text-green-600">Calon Santri</span></p>
-                    @if($registration)
-                    <p class="text-sm text-gray-600 mt-1">ID Pendaftaran: <span class="font-mono font-bold">{{ $registration->id_pendaftaran }}</span></p>
-                    @endif
-                </div>
-
-                <div class="flex gap-3">
-                    @if($registration)
-                        <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300 flex items-center justify-center">
-                            Lihat Biodata
-                        </a>
-                    @else
-                        <a href="{{ route('santri.biodata.index') }}" class="bg-emerald-600 text-white px-4 py-1.5 rounded-full hover:bg-emerald-700 transition duration-300 flex items-center justify-center">
-                            Mulai Pendaftaran
-                        </a>
-                    @endif
-
-                    @if($registration && $registration->hasAllDocuments())
-                        <a href="{{ route('santri.documents.index') }}" class="bg-green-600 text-white px-4 py-1.5 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
-                            Dokumen Lengkap
-                        </a>
-                    @elseif($registration)
-                        <a href="{{ route('santri.documents.index') }}" class="bg-orange-500 text-white px-4 py-1.5 rounded-full hover:bg-orange-600 transition duration-300 flex items-center justify-center">
-                            Lengkapi Dokumen
-                        </a>
-                    @endif
-
-                    @if($registration && $hasSuccessfulPayment)
-                        <a href="{{ route('santri.payments.index') }}" class="bg-purple-600 text-white px-4 py-1.5 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center">
-                            Pembayaran Selesai
-                        </a>
-                    @elseif($registration && $registration->hasAllDocuments())
-                        <a href="{{ route('santri.payments.create') }}" class="bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center">
-                            Bayar Sekarang
-                        </a>
-                    @endif
-
-                    <!-- FAQ Quick Link -->
-                    <a href="{{ route('santri.faq.index') }}" class="bg-indigo-600 text-white px-4 py-1.5 rounded-full hover:bg-indigo-700 transition duration-300 flex items-center justify-center">
-                        <i class="fas fa-question-circle mr-1"></i> FAQ
-                    </a>
-
-                    <!-- Kegiatan Quick Link -->
-                    <a href="{{ route('santri.kegiatan.index') }}" class="bg-pink-600 text-white px-4 py-1.5 rounded-full hover:bg-pink-700 transition duration-300 flex items-center justify-center">
-                        <i class="fas fa-calendar-alt mr-1"></i> Kegiatan
-                    </a>
-
-                    <!-- Settings Quick Link -->
-                    <a href="{{ route('santri.settings.index') }}" class="bg-gray-600 text-white px-4 py-1.5 rounded-full hover:bg-gray-700 transition duration-300 flex items-center justify-center">
-                        <i class="fas fa-cog mr-1"></i> Settings
-                    </a>
-                </div>
-            </div>
-        </div>
     </header>
 
+    <!-- Main Content -->
     <main class="max-w-7xl mx-auto py-6 px-4">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left: Profile Card & Menu -->
@@ -141,11 +83,7 @@
                         @if($registration)
                         <div class="flex justify-between">
                             <span>Paket Dipilih</span>
-                            <span class="font-medium text-primary">{{ $registration->package->name }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Total Biaya</span>
-                            <span class="font-medium text-primary">{{ $registration->formatted_total_biaya }}</span>
+                            <span class="font-medium text-primary">{{ $registration->package->name ?? '-' }}</span>
                         </div>
                         @endif
                     </div>
@@ -155,9 +93,6 @@
                             <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
                                 Edit Biodata
                             </a>
-                            <a href="{{ route('santri.documents.index') }}" class="w-full text-center bg-secondary text-white py-2 rounded-full hover:bg-gray-600 transition duration-300">
-                                Kelola Dokumen
-                            </a>
                         @else
                             <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
                                 Isi Biodata
@@ -165,7 +100,7 @@
                         @endif
                     </div>
 
-                    <!-- TAMBAHKAN TOMBOL SETTINGS -->
+                    <!-- Settings Button -->
                     <div class="mt-4 pt-4 border-t border-gray-200">
                         <a href="{{ route('santri.settings.index') }}" class="w-full bg-gray-600 text-white py-2 rounded-full hover:bg-gray-700 transition duration-300 flex items-center justify-center">
                             <i class="fas fa-cog mr-2"></i> Pengaturan Akun
@@ -177,9 +112,8 @@
                     @if($registration && $registration->hasAllDocuments())
                     <div class="mt-4 pt-4 border-t border-gray-200">
                         <button onclick="downloadAllDocuments()" class="w-full bg-purple-600 text-white py-2 rounded-full hover:bg-purple-700 transition duration-300 flex items-center justify-center">
-                            <i class="fas fa-file-archive mr-2"></i> Download Semua Dokumen (ZIP)
+                            <i class="fas fa-file-archive mr-2"></i> Download Semua Dokumen
                         </button>
-                        <p class="text-xs text-gray-500 text-center mt-2">Download semua dokumen dalam satu file ZIP</p>
                     </div>
                     @endif
                 </div>
@@ -213,7 +147,7 @@
                             </div>
                         </a>
 
-                        <!-- Settings Card - TAMBAHKAN INI -->
+                        <!-- Settings Card -->
                         <a href="{{ route('santri.settings.index') }}" class="bg-gradient-to-br from-gray-600 to-gray-700 text-white rounded-lg p-4 text-center hover:from-gray-700 hover:to-gray-800 transition duration-300 transform hover:scale-105">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-cog text-2xl mb-2"></i>
@@ -237,171 +171,193 @@
                             </div>
                         </a>
                     </div>
-
-                    <!-- Progress Summary -->
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <h4 class="font-semibold text-gray-700 mb-3">Ringkasan Progress</h4>
-                        <div class="space-y-3">
-                            @php
-                                $progressItems = [
-                                    'Biodata' => [
-                                        'completed' => (bool)$registration,
-                                        'route' => route('santri.biodata.index'),
-                                        'color' => 'blue'
-                                    ],
-                                    'Dokumen' => [
-                                        'completed' => $registration && $registration->hasAllDocuments(),
-                                        'progress' => $documentProgress ?? 0,
-                                        'route' => route('santri.documents.index'),
-                                        'color' => 'green'
-                                    ],
-                                    'Pembayaran' => [
-                                        'completed' => $hasSuccessfulPayment ?? false,
-                                        'route' => route('santri.payments.index'),
-                                        'color' => 'purple'
-                                    ],
-                                    'Pengaturan' => [
-                                        'completed' => true, // Always complete since user can access settings
-                                        'route' => route('santri.settings.index'),
-                                        'color' => 'gray'
-                                    ]
-                                ];
-                            @endphp
-
-                            @foreach($progressItems as $label => $item)
-                            <a href="{{ $item['route'] }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition duration-300">
-                                <div class="flex items-center">
-                                    <div class="w-3 h-3 rounded-full bg-{{ $item['color'] }}-500 mr-3"></div>
-                                    <span class="text-sm font-medium text-gray-700">{{ $label }}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    @if(isset($item['progress']))
-                                        <span class="text-xs text-gray-500 mr-2">{{ $item['progress'] }}%</span>
-                                    @endif
-                                    @if($item['completed'])
-                                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
-                                    @else
-                                        <i class="fas fa-clock text-yellow-500 text-sm"></i>
-                                    @endif
-                                </div>
-                            </a>
-                            @endforeach
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Kegiatan Quick Info -->
+                <!-- Progress Summary -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-primary">Kegiatan Hari Ini</h3>
-                        <a href="{{ route('santri.kegiatan.index') }}" class="text-primary hover:text-secondary text-sm">
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
-                    </div>
+                    <h4 class="font-semibold text-gray-700 mb-3">Ringkasan Progress</h4>
+                    <div class="space-y-3">
+                        @php
+                            $progressItems = [
+                                'Biodata' => [
+                                    'completed' => (bool)$registration,
+                                    'route' => route('santri.biodata.index'),
+                                    'color' => 'blue'
+                                ],
+                                'Dokumen' => [
+                                    'completed' => $registration && $registration->hasAllDocuments(),
+                                    'progress' => $documentProgress ?? 0,
+                                    'route' => route('santri.documents.index'),
+                                    'color' => 'green'
+                                ],
+                                'Pembayaran' => [
+                                    'completed' => $hasSuccessfulPayment ?? false,
+                                    'route' => route('santri.payments.index'),
+                                    'color' => 'purple'
+                                ],
+                                'Pengaturan' => [
+                                    'completed' => true,
+                                    'route' => route('santri.settings.index'),
+                                    'color' => 'gray'
+                                ]
+                            ];
+                        @endphp
 
-                    @php
-                        $kegiatan = \App\Models\ContentSetting::getSettings()->kegiatan_pesantren ?? [];
-                        $todayKegiatan = array_slice($kegiatan, 0, 3); // Ambil 3 kegiatan pertama
-                    @endphp
-
-                    @if(count($todayKegiatan) > 0)
-                        <div class="space-y-3">
-                            @foreach($todayKegiatan as $index => $item)
-                            <div class="border-l-4 border-primary bg-blue-50 rounded-r-lg p-3">
-                                <div class="flex justify-between items-start mb-1">
-                                    <span class="font-semibold text-sm text-primary">{{ $item['waktu'] }}</span>
-                                    <span class="bg-primary text-white text-xs px-2 py-1 rounded-full">{{ $loop->iteration }}</span>
-                                </div>
-                                <ul class="text-xs text-gray-600 space-y-1">
-                                    @foreach(array_slice($item['kegiatan'], 0, 2) as $kegiatanItem)
-                                    <li class="flex items-start">
-                                        <i class="fas fa-circle text-primary text-xs mt-1 mr-2"></i>
-                                        <span>{{ Str::limit($kegiatanItem, 40) }}</span>
-                                    </li>
-                                    @endforeach
-                                    @if(count($item['kegiatan']) > 2)
-                                    <li class="text-primary text-xs font-medium">
-                                        +{{ count($item['kegiatan']) - 2 }} kegiatan lainnya
-                                    </li>
-                                    @endif
-                                </ul>
+                        @foreach($progressItems as $label => $item)
+                        <a href="{{ $item['route'] }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition duration-300">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-{{ $item['color'] }}-500 mr-3"></div>
+                                <span class="text-sm font-medium text-gray-700">{{ $label }}</span>
                             </div>
-                            @endforeach
-                        </div>
-
-                        <div class="mt-4 text-center">
-                            <a href="{{ route('santri.kegiatan.index') }}" class="inline-flex items-center text-primary hover:text-secondary text-sm font-medium">
-                                <span>Lihat Jadwal Lengkap</span>
-                                <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
-                    @else
-                        <div class="text-center py-4 text-gray-500">
-                            <i class="fas fa-calendar-times text-2xl mb-2"></i>
-                            <p class="text-sm">Belum ada jadwal kegiatan</p>
-                        </div>
-                    @endif
+                            <div class="flex items-center">
+                                @if(isset($item['progress']))
+                                    <span class="text-xs text-gray-500 mr-2">{{ $item['progress'] }}%</span>
+                                @endif
+                                @if($item['completed'])
+                                    <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                                @else
+                                    <i class="fas fa-clock text-yellow-500 text-sm"></i>
+                                @endif
+                            </div>
+                        </a>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
-            <!-- Middle: Status & Steps -->
+            <!-- Right: Main Content -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- Status Pendaftaran -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-xl font-bold text-primary mb-3">Status Pendaftaran</h3>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <p class="text-secondary items-center">Status saat ini:</p>
-                            <div>
+                <!-- Status Summary Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Biodata Card -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                                <i class="fas fa-user-edit text-white text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Biodata</p>
                                 @if($registration)
-                                    @php
-                                        $statusColors = [
-                                            'belum_mendaftar' => 'bg-gray-100 text-gray-800',
-                                            'telah_mengisi' => 'bg-blue-100 text-blue-800',
-                                            'telah_dilihat' => 'bg-yellow-100 text-yellow-800',
-                                            'menunggu_diverifikasi' => 'bg-orange-100 text-orange-800',
-                                            'ditolak' => 'bg-red-100 text-red-800',
-                                            'diterima' => 'bg-green-100 text-green-800'
-                                        ];
-                                        $statusIcons = [
-                                            'belum_mendaftar' => 'fa-clock',
-                                            'telah_mengisi' => 'fa-edit',
-                                            'telah_dilihat' => 'fa-eye',
-                                            'menunggu_diverifikasi' => 'fa-hourglass-half',
-                                            'ditolak' => 'fa-times-circle',
-                                            'diterima' => 'fa-check-circle'
-                                        ];
-                                    @endphp
-                                    <div class="px-3 py-2 rounded-full text-sm font-medium {{ $statusColors[$registration->status_pendaftaran] ?? 'bg-gray-100 text-gray-800' }} items-center">
-                                        <i class="fas {{ $statusIcons[$registration->status_pendaftaran] ?? 'fa-question-circle' }} mr-2"></i>
-                                        {{ $registration->status_label }}
-                                    </div>
+                                    <p class="text-lg font-semibold text-gray-900">Lengkap</p>
                                 @else
-                                    <div class="px-3 py-2 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 items-center">
-                                        <i class="fas fa-clock mr-2"></i>Belum Mendaftar
-                                    </div>
+                                    <p class="text-lg font-semibold text-gray-900">Belum</p>
                                 @endif
                             </div>
                         </div>
-                        <div>
-                            @if($registration && $registration->status_pendaftaran == 'ditolak')
-                                <a href="{{ route('santri.biodata.index') }}" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition duration-300">
-                                    Perbaiki Data
-                                </a>
-                            @elseif(!$registration)
-                                <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300">
-                                    Mulai Pendaftaran
-                                </a>
-                            @else
-                                <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300">
-                                    Lihat Detail
-                                </a>
-                            @endif
+                    </div>
+
+                    <!-- Dokumen Card -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                                <i class="fas fa-file-alt text-white text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Dokumen</p>
+                                @if($registration && $registration->hasAllDocuments())
+                                    <p class="text-lg font-semibold text-gray-900">Lengkap</p>
+                                @elseif($registration)
+                                    <p class="text-lg font-semibold text-gray-900">{{ round($documentProgress) }}%</p>
+                                @else
+                                    <p class="text-lg font-semibold text-gray-900">Belum</p>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Pembayaran Card -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                                <i class="fas fa-credit-card text-white text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Pembayaran</p>
+                                @if($hasSuccessfulPayment)
+                                    <p class="text-lg font-semibold text-gray-900">Lunas</p>
+                                @elseif($registration && $registration->hasAllDocuments())
+                                    <p class="text-lg font-semibold text-gray-900">Siap Bayar</p>
+                                @else
+                                    <p class="text-lg font-semibold text-gray-900">Menunggu</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Card -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-orange-500 rounded-md p-3">
+                                <i class="fas fa-chart-line text-white text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Progress</p>
+                                <p class="text-lg font-semibold text-gray-900">{{ $totalProgress }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Pendaftaran Detail -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-primary">Status Pendaftaran</h3>
+                        @if($registration)
+                            <div class="flex gap-2">
+                                @if($registration->status_pendaftaran == 'ditolak')
+                                    <a href="{{ route('santri.biodata.index') }}" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition duration-300 text-sm">
+                                        Perbaiki Data
+                                    </a>
+                                @endif
+                                <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300 text-sm">
+                                    Lihat Detail
+                                </a>
+                            </div>
+                        @else
+                            <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300 text-sm">
+                                Mulai Pendaftaran
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        @if($registration)
+                            @php
+                                $statusColors = [
+                                    'belum_mendaftar' => 'bg-gray-100 text-gray-800',
+                                    'telah_mengisi' => 'bg-blue-100 text-blue-800',
+                                    'telah_dilihat' => 'bg-yellow-100 text-yellow-800',
+                                    'menunggu_diverifikasi' => 'bg-orange-100 text-orange-800',
+                                    'ditolak' => 'bg-red-100 text-red-800',
+                                    'diterima' => 'bg-green-100 text-green-800'
+                                ];
+                                $statusIcons = [
+                                    'belum_mendaftar' => 'fa-clock',
+                                    'telah_mengisi' => 'fa-edit',
+                                    'telah_dilihat' => 'fa-eye',
+                                    'menunggu_diverifikasi' => 'fa-hourglass-half',
+                                    'ditolak' => 'fa-times-circle',
+                                    'diterima' => 'fa-check-circle'
+                                ];
+                            @endphp
+                            <div class="px-4 py-3 rounded-full text-base font-medium {{ $statusColors[$registration->status_pendaftaran] ?? 'bg-gray-100 text-gray-800' }} flex items-center">
+                                <i class="fas {{ $statusIcons[$registration->status_pendaftaran] ?? 'fa-question-circle' }} mr-3"></i>
+                                {{ $registration->status_label }}
+                            </div>
+                            @if($registration)
+                                <div class="text-sm text-gray-600">
+                                    ID: <span class="font-mono font-bold">{{ $registration->id_pendaftaran }}</span>
+                                </div>
+                            @endif
+                        @else
+                            <div class="px-4 py-3 rounded-full text-base font-medium bg-yellow-100 text-yellow-800 flex items-center">
+                                <i class="fas fa-clock mr-3"></i>Belum Mendaftar
+                            </div>
+                        @endif
+                    </div>
+
                     @if($registration && $registration->status_pendaftaran == 'ditolak' && $registration->catatan_admin)
-                    <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                         <div class="flex items-start">
                             <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-3"></i>
                             <div>
@@ -413,8 +369,8 @@
                     @endif
                 </div>
 
-                <!-- Progress Pendaftaran -->
-                <div id="pendaftaran" class="bg-white rounded-xl shadow-md p-6">
+                <!-- Progress Steps -->
+                <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-xl font-bold text-primary mb-4">Progress Pendaftaran</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Step 1: Buat Akun -->
@@ -451,7 +407,7 @@
                                         @if($registration && $registration->hasAllDocuments())
                                             Lengkap
                                         @elseif($registration)
-                                            {{ round($documentProgress) }}% Selesai
+                                            {{ round($documentProgress) }}%
                                         @else
                                             Belum
                                         @endif
@@ -485,15 +441,7 @@
                     <div class="mt-6">
                         <div class="flex justify-between text-sm text-gray-600 mb-1">
                             <span>Progress Keseluruhan</span>
-                            <span>
-                                @php
-                                    $totalProgress = 25; // Step 1 always complete
-                                    if ($registration) $totalProgress += 25; // Step 2
-                                    if ($registration->hasAllDocuments()) $totalProgress += 25; // Step 3
-                                    if ($hasSuccessfulPayment) $totalProgress += 25; // Step 4
-                                @endphp
-                                {{ $totalProgress }}%
-                            </span>
+                            <span>{{ $totalProgress }}%</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-3">
                             <div class="bg-primary h-3 rounded-full transition-all duration-300"
@@ -503,89 +451,14 @@
                     @endif
                 </div>
 
-                <!-- Status Pembayaran -->
-                @if($registration && $registration->hasAllDocuments())
+                <!-- Dokumen Section -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-primary">Status Pembayaran</h3>
-                        <div class="flex gap-2">
-                            <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
-                                Riwayat Pembayaran
-                            </a>
-                            @if(!$hasSuccessfulPayment)
-                            <a href="{{ route('santri.payments.create') }}" class="bg-primary text-white px-3 py-1 rounded-full hover:bg-secondary transition duration-300 text-sm flex items-center">
-                                <i class="fas fa-credit-card mr-1"></i> Bayar Sekarang
-                            </a>
-                            @endif
-                        </div>
-                    </div>
-
-                    @if($latestPayment)
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h4 class="font-semibold text-blue-800">Pembayaran Terakhir</h4>
-                                <p class="text-blue-600 text-sm">Kode: {{ $latestPayment->payment_code }}</p>
-                                <p class="text-blue-600 text-sm">Jumlah: {{ $latestPayment->formatted_amount }}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ $latestPayment->status_color }}">
-                                    {{ $latestPayment->status_label }}
-                                </span>
-                                <p class="text-blue-600 text-sm mt-1">{{ $latestPayment->created_at->format('d/m/Y H:i') }}</p>
-                            </div>
-                        </div>
-
-                        @if($latestPayment->payment_method === 'cash' && $latestPayment->isPending())
-                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <div class="flex items-start">
-                                <i class="fas fa-info-circle text-yellow-500 mt-1 mr-3"></i>
-                                <div>
-                                    <p class="font-medium text-yellow-800">Instruksi Pembayaran Cash</p>
-                                    <p class="text-yellow-700 text-sm mt-1">
-                                        Silakan datang ke Pesantren Al-Qur'an Bani Syahid untuk melakukan pembayaran kepada admin.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-
-                        @if($latestPayment->payment_method === 'xendit' && $latestPayment->isPending() && $latestPayment->xendit_response)
-                        <div class="mt-3">
-                            <a href="{{ $latestPayment->xendit_response['invoice_url'] }}"
-                               target="_blank"
-                               class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300 font-semibold text-center block">
-                                Lanjutkan Pembayaran Online
-                            </a>
-                        </div>
-                        @endif
-                    </div>
-                    @else
-                    <div class="text-center py-6">
-                        <i class="fas fa-credit-card text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">Belum ada pembayaran</p>
-                        <a href="{{ route('santri.payments.create') }}" class="inline-block mt-3 bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition duration-300">
-                            Buat Pembayaran Pertama
-                        </a>
-                    </div>
-                    @endif
-
-                    @if($payments->count() > 1)
-                    <div class="mt-4">
-                        <p class="text-sm text-gray-600">Total riwayat pembayaran: {{ $payments->count() }}</p>
-                    </div>
-                    @endif
-                </div>
-                @endif
-
-                <!-- Dokumen Section -->
-                <div id="dokumen" class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-primary">Kelengkapan Dokumen</h3>
                         <div class="flex gap-2">
                             @if($registration && $registration->hasAllDocuments())
                             <button onclick="downloadAllDocuments()" class="bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-700 transition duration-300 text-sm flex items-center">
-                                <i class="fas fa-file-archive mr-1"></i> Download ZIP
+                                <i class="fas fa-file-archive mr-1"></i> Download Semua Data ZIP
                             </button>
                             @endif
                             <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
@@ -634,17 +507,6 @@
                             <div class="text-xs mt-1 {{ $doc['uploaded'] ? 'text-green-600' : 'text-gray-500' }}">
                                 {{ $doc['uploaded'] ? '✓ Terunggah' : 'Belum diunggah' }}
                             </div>
-                            @if($doc['uploaded'])
-                            <div class="mt-2 flex justify-center gap-1">
-                                <a href="{{ route('santri.documents.file', $type) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs">
-                                    <i class="fas fa-eye"></i> Lihat
-                                </a>
-                                <span class="text-gray-300">|</span>
-                                <button onclick="downloadSingleDocument('{{ $type }}')" class="text-green-600 hover:text-green-800 text-xs">
-                                    <i class="fas fa-download"></i> Download
-                                </button>
-                            </div>
-                            @endif
                         </div>
                         @endforeach
                     </div>
@@ -671,8 +533,52 @@
                     @endif
                 </div>
 
-                <!-- AKSI CEPAT SECTION -->
-                @if($registration)
+                <!-- Status Pembayaran -->
+                @if($registration && $registration->hasAllDocuments())
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-primary">Status Pembayaran</h3>
+                        <div class="flex gap-2">
+                            <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
+                                Riwayat Pembayaran
+                            </a>
+                            @if(!$hasSuccessfulPayment)
+                            <a href="{{ route('santri.payments.create') }}" class="bg-primary text-white px-3 py-1 rounded-full hover:bg-secondary transition duration-300 text-sm">
+                                Bayar Sekarang
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($latestPayment)
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-blue-800">Pembayaran Terakhir</h4>
+                                <p class="text-blue-600 text-sm">Kode: {{ $latestPayment->payment_code }}</p>
+                                <p class="text-blue-600 text-sm">Jumlah: {{ $latestPayment->formatted_amount }}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ $latestPayment->status_color }}">
+                                    {{ $latestPayment->status_label }}
+                                </span>
+                                <p class="text-blue-600 text-sm mt-1">{{ $latestPayment->created_at->format('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <div class="text-center py-6">
+                        <i class="fas fa-credit-card text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Belum ada pembayaran</p>
+                        <a href="{{ route('santri.payments.create') }}" class="inline-block mt-3 bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition duration-300">
+                           Bayar Sekarang
+                        </a>
+                    </div>
+                    @endif
+                </div>
+                @endif
+
+                <!-- Quick Actions -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-xl font-bold text-primary mb-4">Aksi Cepat</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -698,139 +604,11 @@
                         </a>
                     </div>
                 </div>
-                @endif
-
-                <!-- QR CODE SECTION -->
-                @if($registration)
-                    @if($registration->hasQrCode())
-                    <div class="bg-white rounded-xl shadow-md p-6 qr-fade-in">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold text-primary">QR Code Pendaftaran</h3>
-                            <div class="flex gap-2">
-                                <a href="{{ route('barcode.download', $registration->id_pendaftaran) }}"
-                                   class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center">
-                                    <i class="fas fa-download mr-2"></i> Download QR Code
-                                </a>
-                                <a href="{{ route('barcode.show', $registration->id_pendaftaran) }}"
-                                   target="_blank"
-                                   class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300 flex items-center">
-                                    <i class="fas fa-external-link-alt mr-2"></i> Lihat Halaman
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="text-center p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
-                            <img src="{{ $registration->qr_code_url }}"
-                                 alt="QR Code {{ $registration->id_pendaftaran }}"
-                                 class="h-48 w-48 mx-auto mb-4 object-contain">
-                            <p class="text-sm text-gray-600 mb-2">
-                                <strong>ID Pendaftaran:</strong> {{ $registration->id_pendaftaran }}
-                            </p>
-                            <p class="text-xs text-gray-500 mb-3">
-                                Scan QR Code ini untuk melihat informasi lengkap calon santri
-                            </p>
-
-                            <!-- Quick Actions untuk QR Code -->
-                            <div class="flex justify-center gap-3 mt-4">
-                                <a href="{{ route('barcode.download', $registration->id_pendaftaran) }}"
-                                   class="inline-flex items-center px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300 text-sm">
-                                    <i class="fas fa-download mr-1"></i> Download
-                                </a>
-                                <a href="{{ route('barcode.show', $registration->id_pendaftaran) }}"
-                                   target="_blank"
-                                   class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 text-sm">
-                                    <i class="fas fa-eye mr-1"></i> Lihat Halaman
-                                </a>
-                                <button onclick="shareQrCode('{{ $registration->id_pendaftaran }}')"
-                                        class="inline-flex items-center px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition duration-300 text-sm">
-                                    <i class="fas fa-share-alt mr-1"></i> Share
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Informasi QR Code -->
-                        <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <div class="flex items-start">
-                                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
-                                <div>
-                                    <p class="text-sm font-medium text-blue-800">Cara Menggunakan QR Code</p>
-                                    <ul class="text-xs text-blue-700 mt-1 space-y-1">
-                                        <li>• Download QR Code untuk dicetak atau disimpan</li>
-                                        <li>• Scan dengan kamera/QR Scanner untuk melihat informasi</li>
-                                        <li>• QR Code dapat diakses publik tanpa login</li>
-                                        <li>• Gunakan untuk verifikasi oleh admin</li>
-                                        <li>• Compatible dengan semua QR scanner apps</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @else
-                    <!-- Jika QR Code belum ada, tampilkan tombol generate -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="text-center py-6">
-                            <i class="fas fa-qrcode text-4xl text-gray-300 mb-3"></i>
-                            <h3 class="text-lg font-semibold text-gray-700 mb-2">QR Code Belum Tersedia</h3>
-                            <p class="text-gray-500 text-sm mb-4">Generate QR Code untuk ID pendaftaran Anda</p>
-                            <form action="{{ route('santri.biodata.index') }}" method="GET">
-                                <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition duration-300">
-                                    Generate QR Code
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    @endif
-                @endif
-
-                <!-- FAQ Quick Section -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-primary">Pertanyaan Umum</h3>
-                        <a href="{{ route('santri.faq.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
-                            Lihat Semua FAQ
-                        </a>
-                    </div>
-
-                    <div class="space-y-3">
-                        @php
-                            $faqs = \App\Models\ContentSetting::getSettings()->faq ?? [];
-                            $recentFaqs = array_slice($faqs, 0, 3); // Ambil 3 FAQ terbaru
-                        @endphp
-
-                        @if(count($recentFaqs) > 0)
-                            @foreach($recentFaqs as $index => $faq)
-                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition duration-300">
-                                <div class="flex items-start gap-3">
-                                    <div class="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1 flex-shrink-0">
-                                        {{ $index + 1 }}
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-800 mb-1">{{ $faq['pertanyaan'] }}</h4>
-                                        <p class="text-gray-600 text-sm line-clamp-2">{{ Str::limit($faq['jawaban'], 100) }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            @endforeach
-                        @else
-                            <div class="text-center py-4 text-gray-500">
-                                <i class="fas fa-question-circle text-2xl mb-2"></i>
-                                <p>Belum ada pertanyaan yang tersedia</p>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="mt-4 text-center">
-                        <a href="{{ route('santri.faq.index') }}" class="inline-flex items-center text-primary hover:text-secondary font-medium">
-                            <span>Lihat Semua Pertanyaan</span>
-                            <i class="fas fa-arrow-right ml-2"></i>
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </main>
 
-    <!-- Footer (simple) -->
+    <!-- Footer -->
     <footer class="bg-primary text-white py-8 px-4 mt-6">
         <div class="max-w-7xl mx-auto text-center">
             <p>&copy; 2025 PPDB Pesantren Al-Qur'an Bani Syahid</p>
@@ -839,7 +617,14 @@
 
     <style>
         .step-number {
-            @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.875rem;
         }
         .line-clamp-2 {
             display: -webkit-box;
@@ -863,19 +648,8 @@
             if (mobileMenu) mobileMenu.classList.toggle('hidden');
         });
 
-        // Download single document
-        function downloadSingleDocument(documentType) {
-            const link = document.createElement('a');
-            link.href = `/santri/documents/download/${documentType}`;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
         // Download all documents as ZIP
         function downloadAllDocuments() {
-            // Show loading
             Swal.fire({
                 title: 'Mempersiapkan File...',
                 text: 'Sedang membuat file ZIP dari semua dokumen',
@@ -885,12 +659,10 @@
                 }
             });
 
-            // Create a temporary link to trigger download
             const link = document.createElement('a');
             link.href = `/santri/documents/download-all`;
             link.target = '_blank';
 
-            // Try download with fetch for error handling
             fetch(`/santri/documents/download-all`, {
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -898,15 +670,12 @@
             })
             .then(response => {
                 Swal.close();
-
                 if (!response.ok) {
-                    // If response not ok, try to parse error message
                     return response.json().then(errorData => {
                         throw new Error(errorData.message || 'Download gagal');
                     });
                 }
 
-                // If response ok, trigger download
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -928,95 +697,6 @@
                     text: error.message || 'Terjadi kesalahan saat mendownload file ZIP',
                     confirmButtonText: 'Mengerti'
                 });
-            });
-        }
-
-        // Function untuk share QR Code
-        function shareQrCode(idPendaftaran) {
-            const qrCodeUrl = `{{ url('/barcode') }}/${idPendaftaran}`;
-
-            if (navigator.share) {
-                // Web Share API (mobile)
-                navigator.share({
-                    title: 'QR Code Pendaftaran - ' + idPendaftaran,
-                    text: 'Scan QR Code untuk melihat informasi calon santri',
-                    url: qrCodeUrl
-                })
-                .then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil Dibagikan!',
-                        text: 'QR Code berhasil dibagikan',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                })
-                .catch((error) => {
-                    console.log('Error sharing:', error);
-                    fallbackShare(qrCodeUrl);
-                });
-            } else {
-                fallbackShare(qrCodeUrl);
-            }
-        }
-
-        // Fallback untuk browser yang tidak support Web Share API
-        function fallbackShare(qrCodeUrl) {
-            navigator.clipboard.writeText(qrCodeUrl)
-                .then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Link Disalin!',
-                        text: 'Link QR Code telah disalin ke clipboard',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                })
-                .catch((err) => {
-                    // Fallback jika clipboard tidak support
-                    const tempInput = document.createElement('input');
-                    tempInput.value = qrCodeUrl;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Link Disalin!',
-                        text: 'Link QR Code telah disalin ke clipboard',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                });
-        }
-
-        // Function untuk preview QR Code dalam modal
-        function previewQrCode(idPendaftaran) {
-            const qrCodeUrl = `{{ route('barcode.image', ':id') }}`.replace(':id', idPendaftaran);
-            const infoUrl = `{{ route('barcode.show', ':id') }}`.replace(':id', idPendaftaran);
-
-            Swal.fire({
-                title: 'QR Code Pendaftaran',
-                html: `
-                    <div class="text-center">
-                        <img src="${qrCodeUrl}" alt="QR Code" class="h-48 w-48 mx-auto mb-4 object-contain">
-                        <p class="text-sm text-gray-600 mb-2">ID: <strong>${idPendaftaran}</strong></p>
-                        <p class="text-xs text-gray-500">Scan QR Code untuk melihat informasi lengkap</p>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Lihat Halaman',
-                cancelButtonText: 'Download',
-                showCloseButton: true,
-                reverseButtons: true,
-                width: '500px'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.open(infoUrl, '_blank');
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    window.location.href = `{{ route('barcode.download', ':id') }}`.replace(':id', idPendaftaran);
-                }
             });
         }
 

@@ -80,6 +80,78 @@ class RegistrationController extends Controller
             ], 500);
         }
     }
+    /**
+ * Download invoice as PDF
+ */
+public function downloadInvoicePdf($paymentCode)
+{
+    $payment = Payment::where('payment_code', $paymentCode)
+                     ->with([
+                         'user',
+                         'registration',
+                         'registration.package',
+                         'registration.programUnggulan'
+                     ])
+                     ->firstOrFail();
+
+    // Validasi ownership untuk santri
+    if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
+        abort(403, 'Unauthorized');
+    }
+
+    if (!$payment->isPaid()) {
+        return back()->with('error', 'Invoice hanya tersedia untuk pembayaran yang berhasil.');
+    }
+
+    // Load package prices for detailed breakdown
+    $packagePrices = Price::where('package_id', $payment->registration->package_id)
+                         ->active()
+                         ->ordered()
+                         ->get();
+
+    $data = [
+        'payment' => $payment,
+        'packagePrices' => $packagePrices,
+    ];
+
+    $pdf = \PDF::loadView('dashboard.calon_santri.payments.invoice-pdf', $data);
+
+    $filename = "Invoice-{$payment->payment_code}.pdf";
+
+    return $pdf->download($filename);
+}
+
+/**
+ * Display invoice page (HTML)
+ */
+    public function downloadInvoice($paymentCode)
+    {
+        $payment = Payment::where('payment_code', $paymentCode)
+                        ->with([
+                            'user',
+                            'registration',
+                            'registration.package',
+                            'registration.programUnggulan'
+                        ])
+                        ->firstOrFail();
+
+        // Validasi ownership untuk santri
+        if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        if (!$payment->isPaid()) {
+            return back()->with('error', 'Invoice hanya tersedia untuk pembayaran yang berhasil.');
+        }
+
+        // Load package prices for detailed breakdown
+        $packagePrices = Price::where('package_id', $payment->registration->package_id)
+                            ->active()
+                            ->ordered()
+                            ->get();
+
+        return view('dashboard.calon_santri.payments.invoice', compact('payment', 'packagePrices'));
+    }
 
     public function sendNotification(Request $request, Registration $registration)
     {

@@ -134,7 +134,7 @@ class FonnteServiceProvider extends ServiceProvider
                  */
                 public function sendRegistrationRejection(string $phone, string $namaSantri, string $alasan): array
                 {
-                    $message = "PEMBERITAHUAN PENOLAKAN PENDAFTARAN\n\n"
+                    $message = "PEMBERITAHUAN KETIDAKSESUAIAN DATA PENDAFTARAN\n\n"
                              . "Kepada Yth. Orang Tua/Wali Santri {$namaSantri},\n\n"
                              . "Dengan hormat, kami sampaikan bahwa pendaftaran calon santri *{$namaSantri}* "
                              . "tidak dapat kami terima dengan alasan:\n\n"
@@ -151,6 +151,7 @@ class FonnteServiceProvider extends ServiceProvider
                     return $this->sendMessage($phone, $message);
                 }
 
+
                 /**
                  * Kirim notifikasi pembayaran berhasil
                  */
@@ -158,7 +159,7 @@ class FonnteServiceProvider extends ServiceProvider
                 {
                     $message = "PEMBAYARAN BERHASIL ✅\n\n"
                              . "Halo {$namaSantri},\n\n"
-                             . "Pembayaran pendaftaran santri Anda telah BERHASIL.\n\n"
+                             . "Pembayaran Dengan Metode Online Untuk pendaftaran santri Anda telah BERHASIL.\n\n"
                              . "📋 Detail Pembayaran:\n"
                              . "• ID Pembayaran: {$paymentCode}\n"
                              . "• Paket: {$packageName}\n"

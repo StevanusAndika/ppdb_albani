@@ -11,7 +11,7 @@ class Price extends Model
 
     protected $fillable = [
         'package_id',
-        'item_name', // Diubah dari 'name' menjadi 'item_name'
+        'item_name',
         'description',
         'amount',
         'order',

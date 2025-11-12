@@ -51,9 +51,22 @@
     </header>
 
     <main class="max-w-6xl mx-auto py-6 px-4">
-        <!-- Alert Messages -->
+        <!-- Status Pendaftaran Info -->
+        @if($registration && $registration->status_pendaftaran === 'diterima')
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle text-yellow-600 mr-3 text-xl"></i>
+                <div>
+                    <h3 class="font-semibold text-yellow-800">Status Pendaftaran: DITERIMA</h3>
+                    <p class="text-yellow-700 text-sm mt-1">Biodata Anda sudah terkunci dan tidak dapat diubah karena status pendaftaran sudah DITERIMA.</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Alert Messages untuk fallback -->
         @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6" id="successAlert">
             <div class="flex items-center">
                 <i class="fas fa-check-circle mr-2"></i>
                 <span>{{ session('success') }}</span>
@@ -62,7 +75,7 @@
         @endif
 
         @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6" id="errorAlert">
             <div class="flex items-center">
                 <i class="fas fa-exclamation-triangle mr-2"></i>
                 <span>{{ session('error') }}</span>
@@ -84,6 +97,7 @@
         </div>
         @endif
 
+        @if(!$registration || $registration->status_pendaftaran !== 'diterima')
         <form id="biodataForm" action="{{ route('santri.biodata.store') }}" method="POST" class="space-y-8">
             @csrf
 
@@ -131,31 +145,30 @@
                 </div>
 
                 <!-- Detail Harga Paket -->
-                <!-- Detail Harga Paket -->
-<div id="packageDetails" class="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm hidden">
-    <div class="flex items-center justify-between mb-4">
-        <h4 class="font-bold text-blue-800 text-lg">
-            <i class="fas fa-receipt mr-2"></i>Rincian Biaya Paket
-        </h4>
-        <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">
-            <i class="fas fa-info-circle mr-1"></i>Detail
-        </span>
-    </div>
+                <div id="packageDetails" class="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="font-bold text-blue-800 text-lg">
+                            <i class="fas fa-receipt mr-2"></i>Rincian Biaya Paket
+                        </h4>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">
+                            <i class="fas fa-info-circle mr-1"></i>Detail
+                        </span>
+                    </div>
 
-    <!-- Price list container -->
-    <div id="priceList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2"></div>
+                    <!-- Price list container -->
+                    <div id="priceList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2"></div>
 
-    <!-- Total section -->
-    <div class="pt-4 border-t border-blue-300 bg-white rounded-lg p-4 shadow-sm">
-        <div class="flex justify-between items-center">
-            <span class="text-blue-900 font-bold text-lg">Total Biaya:</span>
-            <span id="totalAmount" class="text-green-600 font-bold text-xl">Rp 0</span>
-        </div>
-        <p class="text-xs text-gray-500 mt-2 text-center">
-            <i class="fas fa-clock mr-1"></i>Biaya dapat berubah sesuai kebijakan pesantren
-        </p>
-    </div>
-</div>
+                    <!-- Total section -->
+                    <div class="pt-4 border-t border-blue-300 bg-white rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-900 font-bold text-lg">Total Biaya:</span>
+                            <span id="totalAmount" class="text-green-600 font-bold text-xl">Rp 0</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 text-center">
+                            <i class="fas fa-clock mr-1"></i>Biaya dapat berubah sesuai kebijakan pesantren
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <!-- Section 2: Data Pribadi -->
@@ -397,17 +410,12 @@
 
                     <div>
                         <label for="agama" class="block text-sm font-medium text-gray-700 mb-2">
-                            Agama <span class="text-red-500">*</span>
+                            Agama Calon Santri <span class="text-red-500">*</span>
                         </label>
                         <select name="agama" id="agama" required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
                             <option value="">Pilih Agama</option>
                             <option value="islam" {{ old('agama', $registration->agama ?? '') == 'islam' ? 'selected' : '' }}>Islam</option>
-                            {{-- <option value="kristen" {{ old('agama', $registration->agama ?? '') == 'kristen' ? 'selected' : '' }}>Kristen</option>
-                            <option value="katolik" {{ old('agama', $registration->agama ?? '') == 'katolik' ? 'selected' : '' }}>Katolik</option>
-                            <option value="hindu" {{ old('agama', $registration->agama ?? '') == 'hindu' ? 'selected' : '' }}>Hindu</option>
-                            <option value="buddha" {{ old('agama', $registration->agama ?? '') == 'buddha' ? 'selected' : '' }}>Buddha</option>
-                            <option value="konghucu" {{ old('agama', $registration->agama ?? '') == 'konghucu' ? 'selected' : '' }}>Konghucu</option> --}}
                         </select>
                     </div>
 
@@ -684,6 +692,30 @@
                 </div>
             </div>
         </form>
+        @else
+        <!-- Tampilan ketika status sudah diterima -->
+        <div class="bg-white rounded-xl shadow-md p-8 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="text-green-500 text-6xl mb-4">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Status Pendaftaran: DITERIMA</h2>
+                <p class="text-gray-600 mb-6">
+                    Selamat! Pendaftaran Anda telah diterima. Biodata sudah terkunci dan tidak dapat diubah.
+                </p>
+                <div class="space-y-3">
+                    <a href="{{ route('santri.dashboard') }}"
+                       class="w-full bg-primary text-white py-3 px-6 rounded-lg hover:bg-secondary transition duration-300 font-medium block">
+                        Kembali ke Dashboard
+                    </a>
+                    <a href="{{ route('santri.biodata.show') }}"
+                       class="w-full border border-primary text-primary py-3 px-6 rounded-lg hover:bg-primary hover:text-white transition duration-300 font-medium block">
+                        Lihat Biodata
+                    </a>
+                </div>
+            </div>
+        </div>
+        @endif
     </main>
 
     <!-- Footer -->
@@ -694,92 +726,133 @@
     </footer>
 </div>
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- JavaScript -->
 <script>
+    // SweetAlert untuk notifikasi
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Akses Ditolak',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'OK',
+                timer: 5000,
+                timerProgressBar: true
+            });
+            // Sembunyikan alert biasa
+            document.getElementById('errorAlert')?.style.display = 'none';
+        @endif
+
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK',
+                timer: 4000,
+                timerProgressBar: true
+            });
+            // Sembunyikan alert biasa
+            document.getElementById('successAlert')?.style.display = 'none';
+        @endif
+
+        // Cek jika status sudah diterima
+        @if($registration && $registration->status_pendaftaran === 'diterima')
+            Swal.fire({
+                icon: 'info',
+                title: 'Status Diterima',
+                text: 'Biodata Anda sudah terkunci dan tidak dapat diubah karena status pendaftaran sudah DITERIMA.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Mengerti'
+            });
+        @endif
+    });
+
     // Mobile menu toggle
     document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
         const mobileMenu = document.getElementById('mobile-menu');
         if (mobileMenu) mobileMenu.classList.toggle('hidden');
     });
 
-    // Package selection handler - PERBAIKAN INI
-   // Package selection handler - PERBAIKAN INI
-// Package selection handler - PERBAIKAN UNTUK item_name
-document.getElementById('package_id').addEventListener('change', function() {
-    const packageId = this.value;
-    const packageDetails = document.getElementById('packageDetails');
-    const priceList = document.getElementById('priceList');
-    const totalAmount = document.getElementById('totalAmount');
+    // Package selection handler
+    document.getElementById('package_id')?.addEventListener('change', function() {
+        const packageId = this.value;
+        const packageDetails = document.getElementById('packageDetails');
+        const priceList = document.getElementById('priceList');
+        const totalAmount = document.getElementById('totalAmount');
 
-    if (packageId) {
-        // Show loading
-        packageDetails.classList.remove('hidden');
-        priceList.innerHTML = '<div class="text-gray-500 flex items-center justify-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat detail harga...</div>';
+        if (packageId) {
+            // Show loading
+            packageDetails.classList.remove('hidden');
+            priceList.innerHTML = '<div class="text-gray-500 flex items-center justify-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat detail harga...</div>';
 
-        // Fetch package prices
-        fetch(`/santri/biodata/package/${packageId}/prices`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-
-
-                if (data.success) {
-                    priceList.innerHTML = '';
-
-                    // Check if prices array exists and has items
-                    if (data.prices && data.prices.length > 0) {
-                        // Tambahkan header
-                        const header = document.createElement('div');
-                        header.className = 'grid grid-cols-2 gap-4 text-sm font-semibold text-blue-800 border-b border-blue-300 pb-2 mb-3';
-                        header.innerHTML = `
-                            <span>Item Biaya</span>
-                            <span class="text-right">Jumlah</span>
-                        `;
-                        priceList.appendChild(header);
-
-                        data.prices.forEach(price => {
-                            const priceItem = document.createElement('div');
-                            priceItem.className = 'grid grid-cols-2 gap-4 text-sm py-3 border-b border-gray-200 last:border-b-0 hover:bg-blue-50 px-2 rounded';
-
-                            // Gunakan item_name dari response
-                            const itemName = price.item_name || price.name || 'Biaya';
-                            const itemDescription = price.description ?
-                                `<div class="text-xs text-gray-500 mt-1">${price.description}</div>` : '';
-
-                            priceItem.innerHTML = `
-                                <div>
-                                    <div class="text-gray-700 font-medium">${itemName}</div>
-                                    ${itemDescription}
-                                </div>
-                                <div class="text-right font-semibold text-green-600">${price.formatted_amount}</div>
-                            `;
-                            priceList.appendChild(priceItem);
-                        });
-                    } else {
-                        priceList.innerHTML = '<div class="text-yellow-500 text-sm text-center py-4"><i class="fas fa-info-circle mr-2"></i>Tidak ada detail harga tersedia</div>';
+            // Fetch package prices
+            fetch(`/santri/biodata/package/${packageId}/prices`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.status);
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        priceList.innerHTML = '';
 
-                    // Set total amount
-                    totalAmount.textContent = data.formatted_total;
+                        // Check if prices array exists and has items
+                        if (data.prices && data.prices.length > 0) {
+                            // Tambahkan header
+                            const header = document.createElement('div');
+                            header.className = 'grid grid-cols-2 gap-4 text-sm font-semibold text-blue-800 border-b border-blue-300 pb-2 mb-3';
+                            header.innerHTML = `
+                                <span>Item Biaya</span>
+                                <span class="text-right">Jumlah</span>
+                            `;
+                            priceList.appendChild(header);
 
-                } else {
-                    priceList.innerHTML = '<div class="text-red-500 text-sm text-center py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat detail harga: ' + (data.message || 'Unknown error') + '</div>';
+                            data.prices.forEach(price => {
+                                const priceItem = document.createElement('div');
+                                priceItem.className = 'grid grid-cols-2 gap-4 text-sm py-3 border-b border-gray-200 last:border-b-0 hover:bg-blue-50 px-2 rounded';
+
+                                // Gunakan item_name dari response
+                                const itemName = price.item_name || price.name || 'Biaya';
+                                const itemDescription = price.description ?
+                                    `<div class="text-xs text-gray-500 mt-1">${price.description}</div>` : '';
+
+                                priceItem.innerHTML = `
+                                    <div>
+                                        <div class="text-gray-700 font-medium">${itemName}</div>
+                                        ${itemDescription}
+                                    </div>
+                                    <div class="text-right font-semibold text-green-600">${price.formatted_amount}</div>
+                                `;
+                                priceList.appendChild(priceItem);
+                            });
+                        } else {
+                            priceList.innerHTML = '<div class="text-yellow-500 text-sm text-center py-4"><i class="fas fa-info-circle mr-2"></i>Tidak ada detail harga tersedia</div>';
+                        }
+
+                        // Set total amount
+                        totalAmount.textContent = data.formatted_total;
+
+                    } else {
+                        priceList.innerHTML = '<div class="text-red-500 text-sm text-center py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat detail harga: ' + (data.message || 'Unknown error') + '</div>';
+                        totalAmount.textContent = 'Rp 0';
+                    }
+                })
+                .catch(error => {
+                    priceList.innerHTML = '<div class="text-red-500 text-sm text-center py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Terjadi kesalahan saat memuat data: ' + error.message + '</div>';
                     totalAmount.textContent = 'Rp 0';
-                }
-            })
-            .catch(error => {
+                });
+        } else {
+            packageDetails.classList.add('hidden');
+        }
+    });
 
-                priceList.innerHTML = '<div class="text-red-500 text-sm text-center py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Terjadi kesalahan saat memuat data: ' + error.message + '</div>';
-                totalAmount.textContent = 'Rp 0';
-            });
-    } else {
-        packageDetails.classList.add('hidden');
-    }
-});
     // Format number inputs
     document.querySelectorAll('input[type="number"]').forEach(input => {
         input.addEventListener('blur', function() {
@@ -796,16 +869,16 @@ document.getElementById('package_id').addEventListener('change', function() {
     });
 
     // NIK validation
-    document.getElementById('nik').addEventListener('input', function() {
+    document.getElementById('nik')?.addEventListener('input', function() {
         this.value = this.value.replace(/\D/g, '').substring(0, 16);
     });
 
     // Kode Pos validation
-    document.getElementById('kode_pos').addEventListener('input', function() {
+    document.getElementById('kode_pos')?.addEventListener('input', function() {
         this.value = this.value.replace(/\D/g, '').substring(0, 5);
     });
 
-    document.getElementById('kode_pos_wali').addEventListener('input', function() {
+    document.getElementById('kode_pos_wali')?.addEventListener('input', function() {
         this.value = this.value.replace(/\D/g, '').substring(0, 5);
     });
 
@@ -824,7 +897,7 @@ document.getElementById('package_id').addEventListener('change', function() {
     });
 
     // Form submission handler
-    document.getElementById('biodataForm').addEventListener('submit', function(e) {
+    document.getElementById('biodataForm')?.addEventListener('submit', function(e) {
         const requiredFields = this.querySelectorAll('[required]');
         let isValid = true;
 
@@ -839,7 +912,13 @@ document.getElementById('package_id').addEventListener('change', function() {
 
         if (!isValid) {
             e.preventDefault();
-            alert('Harap lengkapi semua field yang wajib diisi!');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Form Tidak Lengkap',
+                text: 'Harap lengkapi semua field yang wajib diisi!',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
         }
     });
 
@@ -850,13 +929,13 @@ document.getElementById('package_id').addEventListener('change', function() {
     }
 
     // Auto-format tanggal untuk placeholder
-    document.getElementById('tanggal_lahir').addEventListener('focus', function() {
+    document.getElementById('tanggal_lahir')?.addEventListener('focus', function() {
         if (!this.value) {
             this.type = 'date';
         }
     });
 
-    document.getElementById('tanggal_lahir').addEventListener('blur', function() {
+    document.getElementById('tanggal_lahir')?.addEventListener('blur', function() {
         if (!this.value) {
             this.type = 'text';
             this.placeholder = 'dd/mm/yyyy';

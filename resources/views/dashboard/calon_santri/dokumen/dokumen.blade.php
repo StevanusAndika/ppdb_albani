@@ -66,111 +66,178 @@
                     @endif
                 </div>
 
-                <div class="flex gap-3">
-                    <a href="{{ route('santri.dashboard') }}" class="bg-secondary text-white px-4 py-1.5 rounded-full hover:bg-gray-600 transition duration-300 flex items-center justify-center">
-                        <i class="fas fa-arrow-left mr-2"></i> Kembali
-                    </a>
 
-                    @if($registration && $registration->hasAllDocuments() && $registration->status_pendaftaran != 'menunggu_diverifikasi')
-                        <button onclick="completeRegistration()" class="bg-green-600 text-white px-4 py-1.5 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
-                            <i class="fas fa-check-circle mr-2"></i> Selesaikan Pendaftaran
-                        </button>
-                    @endif
+
+                <div class="flex gap-3">
+
+
+                    <!-- Tombol Selesaikan Pendaftaran akan muncul otomatis via JavaScript -->
+                    <div id="completeRegistrationButtonContainer"></div>
                 </div>
             </div>
 
             <!-- Package Info -->
-            @if($registration && $registration->package)
-            <div class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h4 class="font-semibold text-blue-800 mb-2">Paket Yang Dipilih</h4>
-                        <p class="text-blue-700 font-medium">{{ $registration->package->name }}</p>
-                        <p class="text-blue-600 text-sm">{{ $registration->package->description }}</p>
-                    </div>
-                    <div class="mt-4 md:mt-0 text-center md:text-right">
-                        <p class="text-sm text-blue-600">Total Biaya</p>
-                        <p class="text-2xl font-bold text-blue-800">{{ $registration->formatted_total_biaya }}</p>
-                    </div>
-                </div>
-            </div>
-            @endif
+           
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto py-6 px-4">
+        <!-- Auto Refresh Notice -->
+        <div id="autoRefreshNotice" class="hidden mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center">
+            <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-sync-alt animate-spin"></i>
+                <span class="font-semibold">Semua dokumen telah lengkap! Halaman akan direfresh otomatis dalam <span id="countdown">5</span> detik...</span>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden mb-6 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg text-center">
+            <div class="flex items-center justify-center space-x-2">
+                <i class="fas fa-spinner animate-spin"></i>
+                <span class="font-semibold">Memuat data dokumen...</span>
+            </div>
+        </div>
+
+        <!-- Success Upload Notification -->
+        <div id="successNotification" class="hidden mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-check-circle text-xl"></i>
+                    <span class="font-semibold" id="successMessage"></span>
+                </div>
+                <button onclick="hideSuccessNotification()" class="text-green-700 hover:text-green-900">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
         <!-- Documents Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6 mb-8">
-            <!-- Kartu Keluarga Card -->
-            <div class="bg-white rounded-xl shadow-md p-6 document-card">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6 mb-8" id="documentsGrid">
+            @foreach(['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'] as $documentType)
+            @php
+                $documentConfig = [
+                    'kartu_keluarga' => [
+                        'title' => 'Kartu Keluarga',
+                        'description' => 'Fotokopi yang jelas',
+                        'icon' => 'fa-users',
+                        'color' => 'blue',
+                        'requirements' => [
+                            'Foto jelas seluruh halaman',
+                            'Terlihat nomor KK dan data lengkap',
+                            'File tidak blur atau gelap'
+                        ]
+                    ],
+                    'ijazah' => [
+                        'title' => 'Ijazah',
+                        'description' => 'Fotokopi ijazah terakhir',
+                        'icon' => 'fa-graduation-cap',
+                        'color' => 'green',
+                        'requirements' => [
+                            'Foto jelas seluruh halaman',
+                            'Terlihat nilai dan stempel',
+                            'Ijazah SD/SMP/SMA sesuai jenjang'
+                        ]
+                    ],
+                    'akta_kelahiran' => [
+                        'title' => 'Akta Kelahiran',
+                        'description' => 'Fotokopi akta kelahiran',
+                        'icon' => 'fa-birthday-cake',
+                        'color' => 'purple',
+                        'requirements' => [
+                            'Foto jelas seluruh halaman',
+                            'Terlihat nomor akta dan data lengkap',
+                            'Diterbitkan oleh dinas catatan sipil'
+                        ]
+                    ],
+                    'pas_foto' => [
+                        'title' => 'Pas Foto',
+                        'description' => 'Foto terbaru latar merah',
+                        'icon' => 'fa-camera',
+                        'color' => 'orange',
+                        'requirements' => [
+                            'Ukuran 3x4 atau 4x6',
+                            'Latar belakang warna merah',
+                            'Pakaian sopan dan rapi',
+                            'Wajah terlihat jelas'
+                        ]
+                    ]
+                ];
+
+                $config = $documentConfig[$documentType];
+                $filePath = $registration ? $registration->{$documentType . '_path'} : null;
+                $isUploaded = !empty($filePath);
+                $fileExtension = $isUploaded ? pathinfo($filePath, PATHINFO_EXTENSION) : '';
+                $isImage = in_array($fileExtension, ['jpg', 'jpeg', 'png']);
+                $fileIcon = $isImage ? 'fa-image text-green-600' : 'fa-file-pdf text-red-600';
+            @endphp
+
+            <div class="bg-white rounded-xl shadow-md p-6 document-card" id="{{ $documentType }}Card" data-document-type="{{ $documentType }}">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        <div class="w-12 h-12 bg-{{ $config['color'] }}-100 rounded-full flex items-center justify-center">
+                            <i class="fas {{ $config['icon'] }} text-{{ $config['color'] }}-600 text-xl"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-primary">Kartu Keluarga</h3>
-                            <p class="text-secondary text-sm">Fotokopi yang jelas</p>
+                            <h3 class="text-lg font-bold text-primary">{{ $config['title'] }}</h3>
+                            <p class="text-secondary text-sm">{{ $config['description'] }}</p>
                         </div>
                     </div>
-                    <span class="status-badge {{ $registration && $registration->kartu_keluaga_path ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        <i class="fas {{ $registration && $registration->kartu_keluaga_path ? 'fa-check' : 'fa-times' }} mr-1"></i>
-                        {{ $registration && $registration->kartu_keluaga_path ? 'Telah Diunggah' : 'Belum Diunggah' }}
+                    <span class="status-badge {{ $isUploaded ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}" id="{{ $documentType }}Status">
+                        <i class="fas {{ $isUploaded ? 'fa-check' : 'fa-times' }} mr-1"></i>
+                        <span class="status-text">{{ $isUploaded ? 'Telah Diunggah' : 'Belum Diunggah' }}</span>
                     </span>
                 </div>
 
-                <div class="upload-area" id="kartu_keluargaUploadArea" data-type="kartu_keluarga">
+                <div class="upload-area" id="{{ $documentType }}UploadArea" data-type="{{ $documentType }}">
                     <i class="fas fa-cloud-upload-alt upload-icon text-4xl text-primary mb-3"></i>
                     <p class="text-gray-700 font-medium mb-2">Klik atau seret file ke sini</p>
-                    <p class="text-gray-500 text-sm">Format: PDF, JPEG, PNG (Maks. 5MB)</p>
+                    <p class="text-gray-500 text-sm">
+                        Format: {{ $documentType == 'pas_foto' ? 'JPEG, PNG' : 'PDF, JPEG, PNG' }} (Maks. 5MB)
+                    </p>
                     <div class="upload-progress hidden mt-3">
                         <div class="w-full bg-gray-200 rounded-full h-2">
                             <div class="upload-progress-bar bg-primary h-2 rounded-full transition-all duration-300"
-                                 id="kartu_keluargaProgressBar" style="width: 0%"></div>
+                                 id="{{ $documentType }}ProgressBar" style="width: 0%"></div>
                         </div>
                     </div>
-                    <input type="file" id="kartu_keluargaFile" accept=".pdf,.jpeg,.jpg,.png" class="hidden">
+                    <input type="file" id="{{ $documentType }}File"
+                           accept="{{ $documentType == 'pas_foto' ? '.jpeg,.jpg,.png' : '.pdf,.jpeg,.jpg,.png' }}"
+                           class="hidden">
                 </div>
 
                 <div class="document-requirements mt-4 p-3 bg-gray-50 rounded-lg">
                     <ul class="requirement-list space-y-1">
+                        @foreach($config['requirements'] as $requirement)
                         <li class="flex items-center gap-2 text-sm text-gray-600">
                             <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Foto jelas seluruh halaman</span>
+                            <span>{{ $requirement }}</span>
                         </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Terlihat nomor KK dan data lengkap</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>File tidak blur atau gelap</span>
-                        </li>
+                        @endforeach
                     </ul>
                 </div>
 
-                <div id="kartu_keluargaFileInfo" class="file-info mt-4 p-4 bg-green-50 border border-green-200 rounded-lg {{ $registration && $registration->kartu_keluaga_path ? '' : 'hidden' }}">
+                <div id="{{ $documentType }}FileInfo" class="file-info mt-4 p-4 bg-green-50 border border-green-200 rounded-lg {{ $isUploaded ? '' : 'hidden' }}">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <i class="fas fa-file-pdf text-green-600 text-xl"></i>
+                            <i class="fas {{ $fileIcon }} text-xl"></i>
                             <div>
-                                <p class="font-medium text-gray-800" id="kartu_keluargaFileName">
-                                    @if($registration && $registration->kartu_keluaga_path)
-                                        {{ basename($registration->kartu_keluaga_path) }}
+                                <p class="font-medium text-gray-800" id="{{ $documentType }}FileName">
+                                    @if($isUploaded)
+                                        {{ basename($filePath) }}
                                     @endif
                                 </p>
                                 <p class="text-sm text-gray-600">Klik area upload untuk mengganti file</p>
                             </div>
                         </div>
-                        @if($registration && $registration->kartu_keluaga_path)
+                        @if($isUploaded)
                         <div class="file-actions flex gap-2">
-                            <a href="{{ route('santri.documents.file', 'kartu_keluarga') }}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
+                            <a href="{{ route('santri.documents.file', $documentType) }}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
                                 <i class="fas fa-eye mr-1"></i> Lihat
                             </a>
-                            <button onclick="downloadDocument('kartu_keluarga')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
+                            <button onclick="downloadDocument('{{ $documentType }}')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
                                 <i class="fas fa-download mr-1"></i> Download
                             </button>
-                            <button onclick="deleteDocument('kartu_keluarga')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
+                            <button onclick="deleteDocument('{{ $documentType }}')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
                                 <i class="fas fa-trash mr-1"></i> Hapus
                             </button>
                         </div>
@@ -178,244 +245,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Ijazah Card -->
-            <div class="bg-white rounded-xl shadow-md p-6 document-card">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary">Ijazah</h3>
-                            <p class="text-secondary text-sm">Fotokopi ijazah terakhir</p>
-                        </div>
-                    </div>
-                    <span class="status-badge {{ $registration && $registration->ijazah_path ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        <i class="fas {{ $registration && $registration->ijazah_path ? 'fa-check' : 'fa-times' }} mr-1"></i>
-                        {{ $registration && $registration->ijazah_path ? 'Telah Diunggah' : 'Belum Diunggah' }}
-                    </span>
-                </div>
-
-                <div class="upload-area" id="ijazahUploadArea" data-type="ijazah">
-                    <i class="fas fa-cloud-upload-alt upload-icon text-4xl text-primary mb-3"></i>
-                    <p class="text-gray-700 font-medium mb-2">Klik atau seret file ke sini</p>
-                    <p class="text-gray-500 text-sm">Format: PDF, JPEG, PNG (Maks. 5MB)</p>
-                    <div class="upload-progress hidden mt-3">
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="upload-progress-bar bg-primary h-2 rounded-full transition-all duration-300"
-                                 id="ijazahProgressBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <input type="file" id="ijazahFile" accept=".pdf,.jpeg,.jpg,.png" class="hidden">
-                </div>
-
-                <div class="document-requirements mt-4 p-3 bg-gray-50 rounded-lg">
-                    <ul class="requirement-list space-y-1">
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Foto jelas seluruh halaman</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Terlihat nilai dan stempel</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Ijazah SD/SMP/SMA sesuai jenjang</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div id="ijazahFileInfo" class="file-info mt-4 p-4 bg-green-50 border border-green-200 rounded-lg {{ $registration && $registration->ijazah_path ? '' : 'hidden' }}">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-file-pdf text-green-600 text-xl"></i>
-                            <div>
-                                <p class="font-medium text-gray-800" id="ijazahFileName">
-                                    @if($registration && $registration->ijazah_path)
-                                        {{ basename($registration->ijazah_path) }}
-                                    @endif
-                                </p>
-                                <p class="text-sm text-gray-600">Klik area upload untuk mengganti file</p>
-                            </div>
-                        </div>
-                        @if($registration && $registration->ijazah_path)
-                        <div class="file-actions flex gap-2">
-                            <a href="{{ route('santri.documents.file', 'ijazah') }}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
-                                <i class="fas fa-eye mr-1"></i> Lihat
-                            </a>
-                            <button onclick="downloadDocument('ijazah')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
-                                <i class="fas fa-download mr-1"></i> Download
-                            </button>
-                            <button onclick="deleteDocument('ijazah')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
-                                <i class="fas fa-trash mr-1"></i> Hapus
-                            </button>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Akta Kelahiran Card -->
-            <div class="bg-white rounded-xl shadow-md p-6 document-card">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-birthday-cake text-purple-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary">Akta Kelahiran</h3>
-                            <p class="text-secondary text-sm">Fotokopi akta kelahiran</p>
-                        </div>
-                    </div>
-                    <span class="status-badge {{ $registration && $registration->akta_kelahiran_path ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        <i class="fas {{ $registration && $registration->akta_kelahiran_path ? 'fa-check' : 'fa-times' }} mr-1"></i>
-                        {{ $registration && $registration->akta_kelahiran_path ? 'Telah Diunggah' : 'Belum Diunggah' }}
-                    </span>
-                </div>
-
-                <div class="upload-area" id="akta_kelahiranUploadArea" data-type="akta_kelahiran">
-                    <i class="fas fa-cloud-upload-alt upload-icon text-4xl text-primary mb-3"></i>
-                    <p class="text-gray-700 font-medium mb-2">Klik atau seret file ke sini</p>
-                    <p class="text-gray-500 text-sm">Format: PDF, JPEG, PNG (Maks. 5MB)</p>
-                    <div class="upload-progress hidden mt-3">
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="upload-progress-bar bg-primary h-2 rounded-full transition-all duration-300"
-                                 id="akta_kelahiranProgressBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <input type="file" id="akta_kelahiranFile" accept=".pdf,.jpeg,.jpg,.png" class="hidden">
-                </div>
-
-                <div class="document-requirements mt-4 p-3 bg-gray-50 rounded-lg">
-                    <ul class="requirement-list space-y-1">
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Foto jelas seluruh halaman</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Terlihat nomor akta dan data lengkap</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Diterbitkan oleh dinas catatan sipil</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div id="akta_kelahiranFileInfo" class="file-info mt-4 p-4 bg-green-50 border border-green-200 rounded-lg {{ $registration && $registration->akta_kelahiran_path ? '' : 'hidden' }}">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-file-pdf text-green-600 text-xl"></i>
-                            <div>
-                                <p class="font-medium text-gray-800" id="akta_kelahiranFileName">
-                                    @if($registration && $registration->akta_kelahiran_path)
-                                        {{ basename($registration->akta_kelahiran_path) }}
-                                    @endif
-                                </p>
-                                <p class="text-sm text-gray-600">Klik area upload untuk mengganti file</p>
-                            </div>
-                        </div>
-                        @if($registration && $registration->akta_kelahiran_path)
-                        <div class="file-actions flex gap-2">
-                            <a href="{{ route('santri.documents.file', 'akta_kelahiran') }}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
-                                <i class="fas fa-eye mr-1"></i> Lihat
-                            </a>
-                            <button onclick="downloadDocument('akta_kelahiran')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
-                                <i class="fas fa-download mr-1"></i> Download
-                            </button>
-                            <button onclick="deleteDocument('akta_kelahiran')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
-                                <i class="fas fa-trash mr-1"></i> Hapus
-                            </button>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pas Foto Card -->
-            <div class="bg-white rounded-xl shadow-md p-6 document-card">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-camera text-orange-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-primary">Pas Foto</h3>
-                            <p class="text-secondary text-sm">Foto terbaru latar merah</p>
-                        </div>
-                    </div>
-                    <span class="status-badge {{ $registration && $registration->pas_foto_path ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        <i class="fas {{ $registration && $registration->pas_foto_path ? 'fa-check' : 'fa-times' }} mr-1"></i>
-                        {{ $registration && $registration->pas_foto_path ? 'Telah Diunggah' : 'Belum Diunggah' }}
-                    </span>
-                </div>
-
-                <div class="upload-area" id="pas_fotoUploadArea" data-type="pas_foto">
-                    <i class="fas fa-cloud-upload-alt upload-icon text-4xl text-primary mb-3"></i>
-                    <p class="text-gray-700 font-medium mb-2">Klik atau seret file ke sini</p>
-                    <p class="text-gray-500 text-sm">Format: JPEG, PNG (Maks. 5MB)</p>
-                    <div class="upload-progress hidden mt-3">
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="upload-progress-bar bg-primary h-2 rounded-full transition-all duration-300"
-                                 id="pas_fotoProgressBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <input type="file" id="pas_fotoFile" accept=".jpeg,.jpg,.png" class="hidden">
-                </div>
-
-                <div class="document-requirements mt-4 p-3 bg-gray-50 rounded-lg">
-                    <ul class="requirement-list space-y-1">
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Ukuran 3x4 atau 4x6</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Latar belakang warna merah</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Pakaian sopan dan rapi</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <i class="fas fa-check-circle text-green-500"></i>
-                            <span>Wajah terlihat jelas</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div id="pas_fotoFileInfo" class="file-info mt-4 p-4 bg-green-50 border border-green-200 rounded-lg {{ $registration && $registration->pas_foto_path ? '' : 'hidden' }}">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-image text-green-600 text-xl"></i>
-                            <div>
-                                <p class="font-medium text-gray-800" id="pas_fotoFileName">
-                                    @if($registration && $registration->pas_foto_path)
-                                        {{ basename($registration->pas_foto_path) }}
-                                    @endif
-                                </p>
-                                <p class="text-sm text-gray-600">Klik area upload untuk mengganti file</p>
-                            </div>
-                        </div>
-                        @if($registration && $registration->pas_foto_path)
-                        <div class="file-actions flex gap-2">
-                            <a href="{{ route('santri.documents.file', 'pas_foto') }}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
-                                <i class="fas fa-eye mr-1"></i> Lihat
-                            </a>
-                            <button onclick="downloadDocument('pas_foto')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
-                                <i class="fas fa-download mr-1"></i> Download
-                            </button>
-                            <button onclick="deleteDocument('pas_foto')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
-                                <i class="fas fa-trash mr-1"></i> Hapus
-                            </button>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
 
         <!-- Progress & Actions Section -->
@@ -439,6 +269,7 @@
                                 if ($registration->akta_kelahiran_path) $uploadedCount++;
                                 if ($registration->pas_foto_path) $uploadedCount++;
                                 $percentage = ($uploadedCount / 4) * 100;
+                                $remaining = 4 - $uploadedCount;
                             @endphp
                             {{ $uploadedCount }}/4 Dokumen
                         </span>
@@ -451,45 +282,36 @@
 
                 <!-- Status Message -->
                 <div class="text-center mb-6">
-                    @if($percentage == 100)
-                        @if($registration->status_pendaftaran == 'menunggu_diverifikasi')
-                        <div class="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-6 py-3 rounded-full">
-                            <i class="fas fa-clock text-xl"></i>
-                            <span class="font-semibold">Pendaftaran sedang diverifikasi oleh admin</span>
-                        </div>
+                    <div id="statusMessage">
+                        @if($percentage == 100)
+                            @if($registration->status_pendaftaran == 'menunggu_diverifikasi')
+                            <div class="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-6 py-3 rounded-full">
+                                <i class="fas fa-clock text-xl"></i>
+                                <span class="font-semibold">Pendaftaran sedang diverifikasi oleh admin</span>
+                            </div>
+                            @else
+                            <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full">
+                                <i class="fas fa-check-circle text-xl"></i>
+                                <span class="font-semibold">Semua dokumen telah lengkap! Anda bisa menyelesaikan pendaftaran.</span>
+                            </div>
+                            @endif
                         @else
-                        <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full">
-                            <i class="fas fa-check-circle text-xl"></i>
-                            <span class="font-semibold">Semua dokumen telah lengkap! Anda bisa menyelesaikan pendaftaran.</span>
+                        <div class="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-6 py-3 rounded-full">
+                            <i class="fas fa-info-circle text-xl"></i>
+                            <span class="font-semibold">Lengkapi {{ $remaining }} dokumen lagi untuk menyelesaikan pendaftaran.</span>
                         </div>
                         @endif
-                    @else
-                    <div class="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-6 py-3 rounded-full">
-                        <i class="fas fa-info-circle text-xl"></i>
-                        <span class="font-semibold">Lengkapi {{ 4 - $uploadedCount }} dokumen lagi untuk menyelesaikan pendaftaran.</span>
                     </div>
-                    @endif
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center" id="actionButtons">
                     <a href="{{ route('santri.biodata.index') }}" class="bg-secondary text-white px-6 py-3 rounded-full hover:bg-gray-600 transition duration-300 flex items-center justify-center">
                         <i class="fas fa-arrow-left mr-2"></i> Kembali ke Biodata
                     </a>
 
-                    @if($percentage == 100 && $registration->status_pendaftaran != 'menunggu_diverifikasi')
-                    <button onclick="completeRegistration()" class="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
-                        <i class="fas fa-check-circle mr-2"></i> Selesaikan Pendaftaran
-                    </button>
-                    @elseif($registration->status_pendaftaran == 'menunggu_diverifikasi')
-                    <button class="bg-blue-500 text-white px-6 py-3 rounded-full cursor-not-allowed flex items-center justify-center" disabled>
-                        <i class="fas fa-clock mr-2"></i> Menunggu Verifikasi Admin
-                    </button>
-                    @else
-                    <button onclick="showCompletionWarning()" class="bg-gray-400 text-white px-6 py-3 rounded-full cursor-not-allowed flex items-center justify-center">
-                        <i class="fas fa-lock mr-2"></i> Lengkapi Dokumen
-                    </button>
-                    @endif
+                    <!-- Tombol akan diupdate via JavaScript -->
+                    <div id="dynamicActionButton"></div>
                 </div>
             </div>
             @else
@@ -553,6 +375,33 @@
         .hidden {
             display: none !important;
         }
+
+        /* Auto refresh animation */
+        .auto-refresh-notice {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Success notification animation */
+        .slide-down {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </div>
 @endsection
@@ -562,12 +411,75 @@
     // Global variables
     const documentTypes = ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'];
     let uploadInProgress = false;
+    let autoRefreshTimer = null;
+
+    // Initialize uploadedDocuments from server data
+    let uploadedDocuments = {
+        'kartu_keluarga': {{ !empty($registration->kartu_keluaga_path) ? 'true' : 'false' }},
+        'ijazah': {{ !empty($registration->ijazah_path) ? 'true' : 'false' }},
+        'akta_kelahiran': {{ !empty($registration->akta_kelahiran_path) ? 'true' : 'false' }},
+        'pas_foto': {{ !empty($registration->pas_foto_path) ? 'true' : 'false' }}
+    };
+
+    // Save state to localStorage
+    function saveDocumentState() {
+        localStorage.setItem('uploadedDocuments', JSON.stringify(uploadedDocuments));
+    }
+
+    // Load state from localStorage
+    function loadDocumentState() {
+        const saved = localStorage.getItem('uploadedDocuments');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // Merge with server state (server state takes priority)
+            uploadedDocuments = { ...parsed, ...uploadedDocuments };
+        }
+    }
+
+    // Sync with server state
+    async function syncWithServer() {
+        try {
+            const response = await fetch('/santri/documents/progress', {
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Update uploadedDocuments based on server response
+                    documentTypes.forEach(type => {
+                        const hasDocument = data.progress.details && data.progress.details[type];
+                        if (hasDocument !== undefined) {
+                            uploadedDocuments[type] = hasDocument;
+                        }
+                    });
+                    saveDocumentState();
+                    updateAllDocumentUI();
+                    updateProgress();
+                    updateActionButtons(); // Update tombol setelah sync
+                }
+            }
+        } catch (error) {
+            console.error('Failed to sync with server:', error);
+        }
+    }
 
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Initializing document upload system...');
+        loadDocumentState();
         initializeDocumentUpload();
         initializeDragAndDrop();
+        updateProgress(); // Initial progress update
+        updateAllDocumentUI(); // Initial UI update
+        updateActionButtons(); // Initial tombol action
+        updateHeaderButton(); // Initial tombol header
+
+        // Sync with server on load
+        syncWithServer();
     });
 
     function initializeDocumentUpload() {
@@ -584,7 +496,6 @@
     }
 
     function initializeDragAndDrop() {
-        // Global drag and drop handlers
         document.addEventListener('dragenter', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -609,8 +520,6 @@
     function initFileUpload(documentType) {
         const uploadArea = document.getElementById(`${documentType}UploadArea`);
         const fileInput = document.getElementById(`${documentType}File`);
-        const progressBar = document.getElementById(`${documentType}ProgressBar`);
-        const uploadProgress = uploadArea.querySelector('.upload-progress');
 
         if (!uploadArea || !fileInput) {
             console.error(`Required elements for ${documentType} not found`);
@@ -749,7 +658,9 @@
             }
         });
 
-        fetch(`/santri/documents/upload/${documentType}`, {
+        const uploadUrl = `/santri/documents/upload/${documentType}`;
+
+        fetch(uploadUrl, {
             method: 'POST',
             body: formData,
             headers: {
@@ -761,19 +672,13 @@
             clearInterval(progressInterval);
             progressBar.style.width = '100%';
 
-            // Cek content type untuk memastikan response JSON
             const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
                 const text = await response.text();
-                throw new Error('Server mengembalikan response yang tidak valid');
+                throw new Error(`Server returned non-JSON response`);
             }
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
-            }
-            return data;
         })
         .then(data => {
             setTimeout(() => {
@@ -782,18 +687,25 @@
                 uploadInProgress = false;
 
                 if (data.success) {
-                    updateFileInfo(documentType, data.file_name);
-                    updateDocumentStatus(documentType, true);
-                    updateOverallProgress();
+                    // Update state and UI
+                    uploadedDocuments[documentType] = true;
+                    saveDocumentState();
+                    updateDocumentUI(documentType, true, data.file_name, data.file_path);
+                    updateProgress();
+                    updateActionButtons(); // Update tombol setelah upload
+                    updateHeaderButton(); // Update tombol di header
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        confirmButtonText: 'OK'
-                    });
+                    // Show success notification
+                    showSuccessNotification('Dokumen berhasil diunggah!');
+
+                    // Auto refresh jika semua dokumen lengkap
+                    if (data.all_documents_complete) {
+                        showSuccessNotification('Semua dokumen telah lengkap! Anda dapat menyelesaikan pendaftaran.');
+                        showAutoRefreshNotice();
+                    }
+
                 } else {
-                    throw new Error(data.message);
+                    throw new Error(data.message || 'Upload gagal tanpa pesan error');
                 }
             }, 500);
         })
@@ -806,7 +718,7 @@
             console.error('Upload error:', error);
 
             let errorMessage = 'Terjadi kesalahan saat mengunggah file. Silakan coba lagi.';
-            if (error.message.includes('Server mengembalikan response yang tidak valid')) {
+            if (error.message.includes('non-JSON response')) {
                 errorMessage = 'Terjadi kesalahan server. Silakan refresh halaman dan coba lagi.';
             } else if (error.message) {
                 errorMessage = error.message;
@@ -821,145 +733,293 @@
         });
     }
 
-    function updateFileInfo(documentType, fileName) {
+    function updateAllDocumentUI() {
+        documentTypes.forEach(type => {
+            updateDocumentUI(type, uploadedDocuments[type]);
+        });
+    }
+
+    function updateDocumentUI(documentType, isUploaded, fileName = null, filePath = null) {
+        const statusElement = document.getElementById(`${documentType}Status`);
         const fileInfo = document.getElementById(`${documentType}FileInfo`);
         const fileNameElement = document.getElementById(`${documentType}FileName`);
 
-        if (fileInfo && fileNameElement) {
-            // Shorten filename if too long
-            const displayName = fileName.length > 30
-                ? fileName.substring(0, 27) + '...'
-                : fileName;
-
-            fileNameElement.textContent = displayName;
-            fileInfo.classList.remove('hidden');
-
-            // Update action buttons
-            const actionsHtml = `
-                <div class="file-actions flex gap-2">
-                    <a href="/santri/documents/file/${documentType}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
-                        <i class="fas fa-eye mr-1"></i> Lihat
-                    </a>
-                    <button onclick="downloadDocument('${documentType}')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
-                        <i class="fas fa-download mr-1"></i> Download
-                    </button>
-                    <button onclick="deleteDocument('${documentType}')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
-                        <i class="fas fa-trash mr-1"></i> Hapus
-                    </button>
-                </div>
-            `;
-
-            const existingActions = fileInfo.querySelector('.file-actions');
-            if (existingActions) {
-                existingActions.remove();
-            }
-
-            const container = fileInfo.querySelector('.flex.items-center.justify-between');
-            if (container) {
-                container.insertAdjacentHTML('beforeend', actionsHtml);
-            }
-        }
-    }
-
-    function updateDocumentStatus(documentType, isUploaded) {
-        const statusElement = document.querySelector(`#${documentType}UploadArea`)?.closest('.document-card')?.querySelector('.status-badge');
-
         if (statusElement) {
+            const statusText = statusElement.querySelector('.status-text');
             if (isUploaded) {
                 statusElement.className = 'status-badge bg-green-100 text-green-800';
-                statusElement.innerHTML = '<i class="fas fa-check mr-1"></i> Telah Diunggah';
+                statusElement.innerHTML = '<i class="fas fa-check mr-1"></i><span class="status-text">Telah Diunggah</span>';
             } else {
                 statusElement.className = 'status-badge bg-red-100 text-red-800';
-                statusElement.innerHTML = '<i class="fas fa-times mr-1"></i> Belum Diunggah';
+                statusElement.innerHTML = '<i class="fas fa-times mr-1"></i><span class="status-text">Belum Diunggah</span>';
+            }
+        }
+
+        if (fileInfo) {
+            if (isUploaded) {
+                if (fileName && fileNameElement) {
+                    const displayName = fileName.length > 30
+                        ? fileName.substring(0, 27) + '...'
+                        : fileName;
+                    fileNameElement.textContent = displayName;
+                }
+
+                // Update action buttons
+                const actionsHtml = `
+                    <div class="file-actions flex gap-2">
+                        <a href="/santri/documents/file/${documentType}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
+                            <i class="fas fa-eye mr-1"></i> Lihat
+                        </a>
+                        <button onclick="downloadDocument('${documentType}')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
+                            <i class="fas fa-download mr-1"></i> Download
+                        </button>
+                        <button onclick="deleteDocument('${documentType}')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
+                            <i class="fas fa-trash mr-1"></i> Hapus
+                        </button>
+                    </div>
+                `;
+
+                const existingActions = fileInfo.querySelector('.file-actions');
+                if (existingActions) {
+                    existingActions.remove();
+                }
+
+                const container = fileInfo.querySelector('.flex.items-center.justify-between');
+                if (container) {
+                    container.insertAdjacentHTML('beforeend', actionsHtml);
+                }
+
+                fileInfo.classList.remove('hidden');
+            } else {
+                fileInfo.classList.add('hidden');
             }
         }
     }
 
-    async function updateOverallProgress() {
-        try {
-            const response = await fetch('/santri/documents/progress', {
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            });
+    function updateProgress() {
+        const uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+        const percentage = (uploadedCount / 4) * 100;
+        const remaining = 4 - uploadedCount;
 
-            const data = await response.json();
+        // Update progress text
+        const progressText = document.getElementById('progressText');
+        if (progressText) {
+            progressText.textContent = `${uploadedCount}/4 Dokumen`;
+        }
 
-            if (data.success) {
-                const progress = data.progress;
-                const progressBar = document.getElementById('overallProgressBar');
-                const progressText = document.getElementById('progressText');
+        // Update progress bar
+        const progressBar = document.getElementById('overallProgressBar');
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+        }
 
-                if (progressBar && progressText) {
-                    progressBar.style.width = `${progress.percentage}%`;
-                    progressText.textContent = `${progress.uploaded}/${progress.total} Dokumen`;
-                }
+        // Update status message
+        const statusMessage = document.getElementById('statusMessage');
+        if (statusMessage) {
+            if (percentage === 100) {
+                statusMessage.innerHTML = `
+                    <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full">
+                        <i class="fas fa-check-circle text-xl"></i>
+                        <span class="font-semibold">Semua dokumen telah lengkap! Anda bisa menyelesaikan pendaftaran.</span>
+                    </div>
+                `;
+            } else {
+                statusMessage.innerHTML = `
+                    <div class="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-6 py-3 rounded-full">
+                        <i class="fas fa-info-circle text-xl"></i>
+                        <span class="font-semibold">Lengkapi ${remaining} dokumen lagi untuk menyelesaikan pendaftaran.</span>
+                    </div>
+                `;
             }
-        } catch (error) {
-            console.error('Error fetching progress:', error);
         }
     }
+
+    // Update tombol action di section progress
+    function updateActionButtons() {
+        const uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+        const percentage = (uploadedCount / 4) * 100;
+        const actionButtons = document.getElementById('dynamicActionButton');
+
+        if (actionButtons) {
+            if (percentage === 100) {
+                actionButtons.innerHTML = `
+                    <button onclick="confirmCompleteRegistration()" class="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-check-circle mr-2"></i> Selesaikan Pendaftaran
+                    </button>
+                `;
+            } else {
+                actionButtons.innerHTML = `
+                    <button onclick="showCompletionWarning()" class="bg-gray-400 text-white px-6 py-3 rounded-full cursor-not-allowed flex items-center justify-center" disabled>
+                        <i class="fas fa-lock mr-2"></i> Lengkapi Dokumen
+                    </button>
+                `;
+            }
+        }
+    }
+
+    // Update tombol di header
+    function updateHeaderButton() {
+        const uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+        const percentage = (uploadedCount / 4) * 100;
+        const headerButtonContainer = document.getElementById('completeRegistrationButtonContainer');
+
+        if (headerButtonContainer && percentage === 100) {
+            headerButtonContainer.innerHTML = `
+                <button onclick="confirmCompleteRegistration()" class="bg-green-600 text-white px-4 py-1.5 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-check-circle mr-2"></i> Selesaikan Pendaftaran
+                </button>
+            `;
+        } else if (headerButtonContainer) {
+            headerButtonContainer.innerHTML = '';
+        }
+    }
+
+    // Show success notification
+    function showSuccessNotification(message) {
+        const notification = document.getElementById('successNotification');
+        const messageElement = document.getElementById('successMessage');
+
+        if (notification && messageElement) {
+            messageElement.textContent = message;
+            notification.classList.remove('hidden');
+            notification.classList.add('slide-down');
+
+            // Auto hide setelah 5 detik
+            setTimeout(() => {
+                hideSuccessNotification();
+            }, 5000);
+        }
+    }
+
+    // Hide success notification
+    function hideSuccessNotification() {
+        const notification = document.getElementById('successNotification');
+        if (notification) {
+            notification.classList.add('hidden');
+            notification.classList.remove('slide-down');
+        }
+    }
+
+    function showAutoRefreshNotice() {
+        const notice = document.getElementById('autoRefreshNotice');
+        const countdownElement = document.getElementById('countdown');
+
+        notice.classList.remove('hidden');
+        notice.classList.add('auto-refresh-notice');
+
+        let countdown = 5;
+        countdownElement.textContent = countdown;
+
+        autoRefreshTimer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+
+            if (countdown <= 0) {
+                clearInterval(autoRefreshTimer);
+                window.location.reload();
+            }
+        }, 1000);
+    }
+
+    // Konfirmasi sebelum menyelesaikan pendaftaran
+    window.confirmCompleteRegistration = function() {
+        Swal.fire({
+            title: 'Pastikan Data Sesuai',
+            html: `
+                <div class="text-left">
+                    <p class="mb-4">Sebelum menyelesaikan pendaftaran, pastikan:</p>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                        <li>Semua dokumen telah diupload dengan benar</li>
+                        <li>Data biodata sudah sesuai dan lengkap</li>
+                        <li>File yang diupload jelas dan terbaca</li>
+                        <li>Anda tidak dapat mengubah data setelah ini</li>
+                    </ul>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Data Sudah Sesuai',
+            cancelButtonText: 'Periksa Kembali',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                completeRegistration();
+            }
+        });
+    };
 
     // Download document function
     window.downloadDocument = function(documentType) {
-        // Show loading
         Swal.fire({
             title: 'Mendownload...',
-            text: 'Sedang mempersiapkan file untuk download',
+            text: 'Sedang mempersiapkan file',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
             }
         });
 
-        // Create a temporary link to trigger download
-        const link = document.createElement('a');
-        link.href = `/santri/documents/download/${documentType}`;
-        link.target = '_blank';
-
-        // Coba download dengan fetch untuk error handling
         fetch(`/santri/documents/download/${documentType}`, {
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             }
         })
         .then(response => {
+            if (!response.ok) {
+                throw new Error('Download failed');
+            }
+            return response.blob();
+        })
+        .then(blob => {
             Swal.close();
 
-            if (!response.ok) {
-                // Jika response tidak ok, coba parse error message
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message || 'Download gagal');
-                });
-            }
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
 
-            // Jika response ok, trigger download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const documentNames = {
+                'kartu_keluarga': 'Kartu-Keluarga',
+                'ijazah': 'Ijazah',
+                'akta_kelahiran': 'Akta-Kelahiran',
+                'pas_foto': 'Pas-Foto'
+            };
+
+            const baseName = documentNames[documentType] || documentType;
+            const user = '{{ Auth::user()->name }}';
+            const extension = blob.type.includes('pdf') ? 'pdf' :
+                            blob.type.includes('jpeg') ? 'jpg' :
+                            blob.type.includes('png') ? 'png' : 'file';
+
+            a.download = `${baseName}_${user}.${extension}`;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
 
             Swal.fire({
                 icon: 'success',
                 title: 'Download Berhasil',
                 text: 'File berhasil didownload',
-                confirmButtonText: 'OK'
+                timer: 2000,
+                showConfirmButton: false
             });
         })
         .catch(error => {
             Swal.close();
-            console.error('Download error:', error);
 
             Swal.fire({
                 icon: 'error',
                 title: 'Download Gagal',
-                text: error.message || 'Terjadi kesalahan saat mendownload file',
+                text: 'File tidak ditemukan atau belum diupload. Silakan upload file terlebih dahulu.',
                 confirmButtonText: 'Mengerti'
             });
         });
     };
 
-    // Global functions accessible from HTML
+    // Delete document function
     window.deleteDocument = function(documentType) {
         if (uploadInProgress) {
             Swal.fire({
@@ -992,21 +1052,22 @@
                     }
                 })
                 .then(async response => {
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Network response was not ok');
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        throw new Error('Server returned non-JSON response');
                     }
-                    return data;
                 })
                 .then(data => {
                     if (data.success) {
-                        const fileInfo = document.getElementById(`${documentType}FileInfo`);
-                        if (fileInfo) {
-                            fileInfo.classList.add('hidden');
-                        }
-                        updateDocumentStatus(documentType, false);
-                        updateOverallProgress();
+                        // Update state and UI
+                        uploadedDocuments[documentType] = false;
+                        saveDocumentState();
+                        updateDocumentUI(documentType, false);
+                        updateProgress();
+                        updateActionButtons(); // Update tombol setelah delete
+                        updateHeaderButton(); // Update tombol di header
 
                         Swal.fire({
                             icon: 'success',
@@ -1032,10 +1093,13 @@
     };
 
     window.showCompletionWarning = function() {
+        const uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+        const remaining = 4 - uploadedCount;
+
         Swal.fire({
             icon: 'warning',
             title: 'Dokumen Belum Lengkap',
-            html: `Harap lengkapi semua dokumen terlebih dahulu sebelum menyelesaikan pendaftaran.<br><br>
+            html: `Harap lengkapi <strong>${remaining} dokumen</strong> lagi sebelum menyelesaikan pendaftaran.<br><br>
                   <small class="text-gray-600">Periksa kembali bahwa semua dokumen telah diunggah dengan benar.</small>`,
             confirmButtonText: 'Mengerti',
             confirmButtonColor: '#3b82f6'
@@ -1054,90 +1118,66 @@
         }
 
         Swal.fire({
-            title: 'Selesaikan Pendaftaran?',
-            html: `
-                <p>Pastikan semua data dan dokumen sudah lengkap dan benar sebelum melanjutkan.</p>
-                <div class="text-left mt-4 p-3 bg-yellow-50 rounded-lg">
-                    <p class="text-sm font-semibold text-yellow-800">Perhatian:</p>
-                    <ul class="text-sm text-yellow-700 mt-2 list-disc list-inside">
-                        <li>Data tidak dapat diubah setelah pendaftaran diselesaikan</li>
-                        <li>Tim admin akan memverifikasi data Anda</li>
-                        <li>Status pendaftaran akan berubah menjadi "Menunggu Verifikasi"</li>
-                    </ul>
-                </div>
-            `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#10b981',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Ya, Selesaikan Pendaftaran',
-            cancelButtonText: 'Periksa Kembali',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Menyelesaikan Pendaftaran...',
-                    text: 'Sedang mengirim data untuk verifikasi',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                fetch(`{{ route('santri.documents.complete') }}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(async response => {
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Network response was not ok');
-                    }
-                    return data;
-                })
-                .then(data => {
-                    Swal.close();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Pendaftaran Berhasil!',
-                            html: `
-                                <p>${data.message}</p>
-                                <div class="mt-4 p-3 bg-green-50 rounded-lg">
-                                    <p class="text-sm text-green-700">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Tim admin akan menghubungi Anda melalui WhatsApp untuk informasi selanjutnya.
-                                    </p>
-                                </div>
-                            `,
-                            confirmButtonText: 'Kembali ke Dashboard',
-                            confirmButtonColor: '#10b981',
-                            allowOutsideClick: false,
-                            allowEscapeKey: false
-                        }).then(() => {
-                            window.location.href = '{{ route("santri.dashboard") }}';
-                        });
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    Swal.close();
-                    console.error('Complete registration error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal Menyelesaikan Pendaftaran',
-                        text: error.message || 'Terjadi kesalahan saat menyelesaikan pendaftaran. Silakan coba lagi.',
-                        confirmButtonText: 'Mengerti'
-                    });
-                });
+            title: 'Menyelesaikan Pendaftaran...',
+            text: 'Sedang mengirim data untuk verifikasi',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
+        });
+
+        fetch(`{{ route('santri.documents.complete') }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                throw new Error('Server returned non-JSON response');
+            }
+        })
+        .then(data => {
+            Swal.close();
+
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pendaftaran Berhasil!',
+                    html: `
+                        <p>${data.message}</p>
+                        <div class="mt-4 p-3 bg-green-50 rounded-lg">
+                            <p class="text-sm text-green-700">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Tim admin akan menghubungi Anda melalui WhatsApp untuk informasi selanjutnya.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Kembali ke Dashboard',
+                    confirmButtonColor: '#10b981',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(() => {
+                    window.location.href = '{{ route("santri.dashboard") }}';
+                });
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            console.error('Complete registration error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menyelesaikan Pendaftaran',
+                text: error.message || 'Terjadi kesalahan saat menyelesaikan pendaftaran. Silakan coba lagi.',
+                confirmButtonText: 'Mengerti'
+            });
         });
     };
 
@@ -1147,14 +1187,10 @@
         if (mobileMenu) mobileMenu.classList.toggle('hidden');
     });
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        // Ctrl + Enter to complete registration
-        if (e.ctrlKey && e.key === 'Enter') {
-            const progressBar = document.getElementById('overallProgressBar');
-            if (progressBar && progressBar.style.width === '100%') {
-                completeRegistration();
-            }
+    // Clean up timer when leaving page
+    window.addEventListener('beforeunload', function() {
+        if (autoRefreshTimer) {
+            clearInterval(autoRefreshTimer);
         }
     });
 </script>

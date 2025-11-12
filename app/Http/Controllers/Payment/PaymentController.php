@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Payment;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Registration;
+use App\Models\Package;
+use App\Models\Price;
+use App\Models\ContentSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,14 +21,17 @@ class PaymentController extends Controller
     {
         $user = auth()->user();
         $payments = Payment::where('user_id', $user->id)
-                          ->with(['registration', 'registration.package'])
+                          ->with(['registration', 'registration.package', 'registration.programUnggulan'])
                           ->latest()
                           ->get();
 
-        $registration = Registration::where('user_id', $user->id)->first();
+        $registration = Registration::where('user_id', $user->id)
+                                   ->with(['package', 'programUnggulan'])
+                                   ->first();
+
         $hasSuccessfulPayment = $registration ? $registration->hasSuccessfulPayment() : false;
 
-        return view('dashboard.calon_santri.payments.index', compact('payments', 'hasSuccessfulPayment'));
+        return view('dashboard.calon_santri.payments.index', compact('payments', 'hasSuccessfulPayment', 'registration'));
     }
 
     /**
@@ -34,7 +40,9 @@ class PaymentController extends Controller
     public function create()
     {
         $user = auth()->user();
-        $registration = Registration::where('user_id', $user->id)->first();
+        $registration = Registration::where('user_id', $user->id)
+                                   ->with(['package', 'programUnggulan'])
+                                   ->first();
 
         // Validasi status registrasi
         if (!$registration || $registration->status_pendaftaran === 'belum_mendaftar') {
@@ -45,7 +53,7 @@ class PaymentController extends Controller
         // Validasi kelengkapan dokumen
         if (!$registration->hasAllDocuments()) {
             return redirect()->route('santri.dashboard')
-                ->with('error', 'Anda belum melengkapi semua dokumen. Silakan upload semua dokumen terlebih dahulu.');
+                ->with('error', 'Anda belum melengkapi semua dokumen. Silakan upload semua dokumen terlebih dahulu sebelum melakukan pembayaran.');
         }
 
         // Cek apakah sudah ada pembayaran yang berhasil
@@ -68,7 +76,26 @@ class PaymentController extends Controller
                 ->with('info', 'Anda sudah memiliki pembayaran yang sedang diproses.');
         }
 
-        return view('dashboard.calon_santri.payments.create', compact('registration'));
+        // Ambil rincian harga dari paket yang dipilih
+        $packagePrices = Price::where('package_id', $registration->package_id)
+                            ->active()
+                            ->ordered()
+                            ->get();
+
+        // Ambil nama program unggulan dengan benar
+        $programUnggulanName = 'Tidak ada program unggulan';
+        if ($registration->program_unggulan_id) {
+            $programUnggulan = ContentSetting::find($registration->program_unggulan_id);
+            if ($programUnggulan) {
+                $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+            }
+        }
+
+        return view('dashboard.calon_santri.payments.create', compact(
+            'registration',
+            'packagePrices',
+            'programUnggulanName'
+        ));
     }
 
     /**
@@ -77,7 +104,9 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        $registration = Registration::where('user_id', $user->id)->first();
+        $registration = Registration::where('user_id', $user->id)
+                                   ->with(['package', 'programUnggulan'])
+                                   ->first();
 
         // Validasi
         if (!$registration || !$registration->hasAllDocuments()) {
@@ -97,13 +126,44 @@ class PaymentController extends Controller
         try {
             $totalAmount = $registration->total_biaya;
 
+            // Validasi amount tidak boleh null atau 0
+            if (is_null($totalAmount) || $totalAmount <= 0) {
+                // Cek data package dan prices untuk debugging
+                $package = Package::with(['prices' => function($query) {
+                    $query->active();
+                }])->find($registration->package_id);
+
+                Log::error('Invalid payment amount:', [
+                    'registration_id' => $registration->id,
+                    'package_id' => $registration->package_id,
+                    'package_name' => $package->name ?? 'No package',
+                    'package_total_amount' => $package->total_amount ?? 0,
+                    'prices_count' => $package->prices->count() ?? 0,
+                    'prices_total' => $package->prices->sum('amount') ?? 0,
+                    'calculated_total' => $totalAmount
+                ]);
+
+                throw new \Exception('Jumlah pembayaran tidak valid. Silakan hubungi admin. Package: ' . ($package->name ?? 'Unknown'));
+            }
+
+            // Generate payment code
+            $paymentCode = 'PAY-' . date('YmdHis') . '-' . strtoupper(uniqid());
+
             // Create payment record
             $payment = Payment::create([
                 'registration_id' => $registration->id,
                 'user_id' => $user->id,
                 'amount' => $totalAmount,
                 'payment_method' => $request->payment_method,
-                'status' => 'pending'
+                'status' => 'pending',
+                'payment_code' => $paymentCode
+            ]);
+
+            Log::info('Payment created:', [
+                'payment_id' => $payment->id,
+                'amount' => $totalAmount,
+                'method' => $request->payment_method,
+                'payment_code' => $paymentCode
             ]);
 
             if ($request->payment_method === 'cash') {
@@ -129,11 +189,20 @@ class PaymentController extends Controller
             } else { // xendit
                 $xendit = app('xendit');
 
+                // Ambil nama program unggulan untuk description
+                $programUnggulanName = 'Tidak ada program unggulan';
+                if ($registration->program_unggulan_id) {
+                    $programUnggulan = ContentSetting::find($registration->program_unggulan_id);
+                    if ($programUnggulan) {
+                        $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+                    }
+                }
+
                 // Data untuk Xendit
                 $xenditData = [
                     'external_id' => $payment->payment_code,
                     'amount' => $totalAmount,
-                    'description' => 'Pembayaran Pendaftaran Santri - ' . $registration->id_pendaftaran,
+                    'description' => 'Pembayaran Pendaftaran Santri - ' . $registration->id_pendaftaran . ' - Program: ' . $programUnggulanName,
                     'payer_email' => $user->email,
                     'customer' => [
                         'given_names' => $user->name,
@@ -204,10 +273,12 @@ class PaymentController extends Controller
     public function success(Request $request)
     {
         $user = auth()->user();
-        $registration = Registration::where('user_id', $user->id)->first();
+        $registration = Registration::where('user_id', $user->id)
+                                   ->with(['package', 'programUnggulan'])
+                                   ->first();
         $latestPayment = $registration ? $registration->payments()->latest()->first() : null;
 
-        return view('dashboard.calon_santri.payments.success', compact('latestPayment'));
+        return view('dashboard.calon_santri.payments.success', compact('latestPayment', 'registration'));
     }
 
     /**
@@ -219,11 +290,18 @@ class PaymentController extends Controller
     }
 
     /**
-     * Download invoice
+     * Download invoice as PDF
      */
-    public function downloadInvoice($paymentCode)
+    public function downloadInvoicePdf($paymentCode)
     {
-        $payment = Payment::where('payment_code', $paymentCode)->firstOrFail();
+        $payment = Payment::where('payment_code', $paymentCode)
+                         ->with([
+                             'user',
+                             'registration',
+                             'registration.package',
+                             'registration.programUnggulan'
+                         ])
+                         ->firstOrFail();
 
         // Validasi ownership untuk santri
         if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
@@ -234,30 +312,86 @@ class PaymentController extends Controller
             return back()->with('error', 'Invoice hanya tersedia untuk pembayaran yang berhasil.');
         }
 
-        return view('dashboard.calon_santri.payments.invoice', compact('payment'));
+        // Load package prices for detailed breakdown
+        $packagePrices = Price::where('package_id', $payment->registration->package_id)
+                             ->active()
+                             ->ordered()
+                             ->get();
+
+        $data = [
+            'payment' => $payment,
+            'packagePrices' => $packagePrices,
+        ];
+
+        $pdf = \PDF::loadView('dashboard.calon_santri.payments.invoice-pdf', $data);
+
+        $filename = "Invoice-{$payment->payment_code}.pdf";
+
+        return $pdf->download($filename);
     }
 
     /**
-     * Get payment detail for AJAX
+     * Display invoice page (HTML) - DIPERBAIKI dengan null safety
+     */
+    public function downloadInvoice($paymentCode)
+    {
+        $payment = Payment::where('payment_code', $paymentCode)
+                         ->with([
+                             'user',
+                             'registration',
+                             'registration.package',
+                             'registration.programUnggulan'
+                         ])
+                         ->firstOrFail();
+
+        // Validasi ownership untuk santri
+        if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        if (!$payment->isPaid()) {
+            return back()->with('error', 'Invoice hanya tersedia untuk pembayaran yang berhasil.');
+        }
+
+        // Load package prices for detailed breakdown
+        $packagePrices = Price::where('package_id', $payment->registration->package_id)
+                             ->active()
+                             ->ordered()
+                             ->get();
+
+        return view('dashboard.calon_santri.payments.invoice', compact('payment', 'packagePrices'));
+    }
+
+    /**
+     * Get payment detail for AJAX - DIPERBAIKI dengan null safety
      */
     public function detail($id)
     {
-        $payment = Payment::with(['user', 'registration', 'registration.package'])
-                         ->where('id', $id)
-                         ->firstOrFail();
+        $payment = Payment::with([
+            'user',
+            'registration',
+            'registration.package',
+            'registration.programUnggulan'
+        ])->where('id', $id)->firstOrFail();
 
         // Validasi ownership
         if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized']);
         }
 
-        $html = view('dashboard.calon_santri.payments.partials.detail', compact('payment'))->render();
+        // Ambil rincian harga
+        $packagePrices = Price::where('package_id', $payment->registration->package_id)
+                            ->active()
+                            ->ordered()
+                            ->get();
+
+        $html = view('dashboard.calon_santri.payments.partials.detail', compact('payment', 'packagePrices'))->render();
 
         return response()->json(['success' => true, 'html' => $html]);
     }
 
     /**
-     * Xendit webhook handler
+     * Xendit webhook handler - DIPERBAIKI dengan kirim bukti pembayaran
      */
     public function webhook(Request $request)
     {
@@ -301,7 +435,8 @@ class PaymentController extends Controller
         ]);
 
         // Cari payment berdasarkan xendit_id atau external_id
-        $payment = Payment::where('xendit_id', $xenditId)
+        $payment = Payment::with(['user', 'registration', 'registration.package', 'registration.programUnggulan'])
+                         ->where('xendit_id', $xenditId)
                          ->orWhere('xendit_external_id', $externalId)
                          ->orWhere('payment_code', $externalId)
                          ->first();
@@ -359,12 +494,23 @@ class PaymentController extends Controller
 
             switch ($newStatus) {
                 case 'success':
+                    // Ambil data program unggulan dengan benar
+                    $programUnggulanName = 'Tidak ada program unggulan';
+                    if ($payment->registration->program_unggulan_id) {
+                        $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
+                        if ($programUnggulan) {
+                            $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+                        }
+                    }
+
+                    // Kirim bukti pembayaran sukses
                     $fonnte->sendPaymentSuccess(
                         $user->getFormattedPhoneNumber(),
                         $user->name,
                         $payment->payment_code,
                         number_format($payment->amount, 0, ',', '.'),
-                        $payment->registration->package->name
+                        $payment->registration->package->name ?? 'Paket Pendaftaran',
+                        $programUnggulanName
                     );
 
                     // Update status pendaftaran
@@ -434,7 +580,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Check payment status manually
+     * Check payment status manually - DIPERBAIKI untuk auto sync
      */
     public function checkStatus($paymentCode)
     {
@@ -444,6 +590,8 @@ class PaymentController extends Controller
         if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized']);
         }
+
+        $statusUpdated = false;
 
         // Jika payment via xendit dan masih pending, check status di xendit
         if ($payment->payment_method === 'xendit' && $payment->isPending() && $payment->xendit_id) {
@@ -461,11 +609,42 @@ class PaymentController extends Controller
                             'xendit_response' => array_merge($payment->xendit_response ?? [], $invoice)
                         ]);
 
+                        $statusUpdated = true;
+
                         Log::info('Payment status updated manually', [
                             'payment_id' => $payment->id,
                             'old_status' => $payment->getOriginal('status'),
                             'new_status' => $newStatus
                         ]);
+
+                        // Jika status berubah menjadi success, kirim notifikasi
+                        if ($newStatus === 'success') {
+                            $fonnte = app('fonnte');
+                            $user = $payment->user;
+
+                            // Ambil data program unggulan
+                            $programUnggulanName = 'Tidak ada program unggulan';
+                            if ($payment->registration->program_unggulan_id) {
+                                $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
+                                if ($programUnggulan) {
+                                    $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+                                }
+                            }
+
+                            $fonnte->sendPaymentSuccess(
+                                $user->getFormattedPhoneNumber(),
+                                $user->name,
+                                $payment->payment_code,
+                                number_format($payment->amount, 0, ',', '.'),
+                                $payment->registration->package->name ?? 'Paket Pendaftaran',
+                                $programUnggulanName
+                            );
+
+                            // Update status pendaftaran
+                            $payment->registration->update([
+                                'status_pendaftaran' => 'diterima'
+                            ]);
+                        }
                     }
                 }
             } catch (\Exception $e) {
@@ -475,14 +654,16 @@ class PaymentController extends Controller
 
         return response()->json([
             'success' => true,
+            'status_updated' => $statusUpdated,
             'payment' => [
                 'id' => $payment->id,
                 'payment_code' => $payment->payment_code,
                 'status' => $payment->status,
                 'status_label' => $payment->status_label,
                 'status_color' => $payment->status_color,
-                'paid_at' => $payment->paid_at,
-                'formatted_amount' => $payment->formatted_amount
+                'paid_at' => $payment->paid_at ? $payment->paid_at->format('Y-m-d H:i:s') : null,
+                'formatted_amount' => $payment->formatted_amount,
+                'is_paid' => $payment->isPaid()
             ]
         ]);
     }
@@ -511,5 +692,48 @@ class PaymentController extends Controller
 
         // Redirect ke create payment
         return redirect()->route('santri.payments.create');
+    }
+
+    /**
+     * Manual sync payment status
+     */
+    public function manualSync($paymentCode)
+    {
+        $payment = Payment::where('payment_code', $paymentCode)->firstOrFail();
+
+        // Validasi ownership
+        if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
+            return back()->with('error', 'Unauthorized');
+        }
+
+        if ($payment->payment_method === 'xendit' && $payment->xendit_id) {
+            try {
+                $xendit = app('xendit');
+                $invoiceResult = $xendit->getInvoice($payment->xendit_id);
+
+                if ($invoiceResult['success']) {
+                    $invoice = $invoiceResult['data'];
+                    $newStatus = $this->mapXenditStatus($invoice['status']);
+
+                    if ($newStatus !== $payment->status) {
+                        $payment->update([
+                            'status' => $newStatus,
+                            'xendit_response' => array_merge($payment->xendit_response ?? [], $invoice)
+                        ]);
+
+                        return back()->with('success', 'Status pembayaran berhasil disinkronisasi.');
+                    } else {
+                        return back()->with('info', 'Status pembayaran sudah up-to-date.');
+                    }
+                } else {
+                    return back()->with('error', 'Gagal mengambil data dari Xendit: ' . $invoiceResult['message']);
+                }
+            } catch (\Exception $e) {
+                Log::error('Manual sync error: ' . $e->getMessage());
+                return back()->with('error', 'Terjadi kesalahan saat sinkronisasi: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('info', 'Tidak ada pembaruan status.');
     }
 }

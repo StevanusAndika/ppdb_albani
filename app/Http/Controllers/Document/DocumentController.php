@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Document;
 
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
+use App\Models\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -21,89 +22,138 @@ class DocumentController extends Controller
 
     public function __construct()
     {
-        // Initialize ImageManager dengan GD driver
         $this->imageManager = new ImageManager(new Driver());
     }
 
     public function index()
     {
         $user = Auth::user();
-        $registration = Registration::with('package')->where('user_id', $user->id)->first();
+
+        // Load registration dengan package dan programUnggulan
+        $registration = Registration::with(['package', 'programUnggulan'])
+            ->where('user_id', $user->id)
+            ->first();
 
         if (!$registration) {
             return redirect()->route('santri.biodata.index')
                 ->with('error', 'Silakan isi biodata terlebih dahulu sebelum mengunggah dokumen.');
         }
 
-        return view('dashboard.calon_santri.dokumen.dokumen', compact('registration'));
+        // Cek jika status pendaftaran = diterima
+        if ($registration->status_pendaftaran === 'diterima') {
+            return redirect()->route('santri.dashboard')
+                ->with('error', 'Anda tidak dapat mengunggah atau mengedit dokumen karena status pendaftaran sudah DITERIMA.');
+        }
+
+        // Pastikan package terload dengan benar
+        if ($registration->package_id && !$registration->relationLoaded('package')) {
+            $package = Package::find($registration->package_id);
+            $registration->setRelation('package', $package);
+        }
+
+        $totalBiaya = $registration->total_biaya;
+        $programUnggulanId = $registration->program_unggulan_id;
+
+        // Handle program unggulan name
+        $programUnggulanName = 'Belum dipilih';
+        if ($registration->programUnggulan) {
+            $programUnggulanName = $registration->programUnggulan->name ?? "Program #{$programUnggulanId}";
+        } elseif ($programUnggulanId) {
+            $programUnggulanName = "Program #{$programUnggulanId}";
+        }
+
+        return view('dashboard.calon_santri.dokumen.dokumen', compact(
+            'registration',
+            'totalBiaya',
+            'programUnggulanId',
+            'programUnggulanName'
+        ));
     }
 
     public function upload(Request $request, $documentType)
     {
-        $user = Auth::user();
-        $registration = Registration::where('user_id', $user->id)->first();
-
-        if (!$registration) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Silakan isi biodata terlebih dahulu.'
-            ], 400);
-        }
-
-        // Validasi document type
-        if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jenis dokumen tidak valid.'
-            ], 400);
-        }
+        // Pastikan response selalu JSON
+        $response = response()->json([], 200, [], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
         try {
-            $validated = $request->validate([
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User tidak terautentikasi.'
+                ], 401);
+            }
+
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Silakan isi biodata terlebih dahulu.'
+                ], 400);
+            }
+
+            // Cek jika status pendaftaran = diterima
+            if ($registration->status_pendaftaran === 'diterima') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak dapat mengunggah atau mengedit dokumen karena status pendaftaran sudah DITERIMA.'
+                ], 403);
+            }
+
+            if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jenis dokumen tidak valid.'
+                ], 400);
+            }
+
+            // Validasi file
+            $validator = validator($request->all(), [
                 'file' => 'required|file|mimes:' . implode(',', $this->allowedMimes) . '|max:' . $this->maxFileSize
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', $e->errors()['file'])
-            ], 422);
-        }
 
-        try {
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal: ' . implode(', ', $validator->errors()->all())
+                ], 422);
+            }
+
             $file = $request->file('file');
-            $fileName = $this->generateFileName($file, $documentType);
-            $folderPath = $this->getFolderPath($user, $documentType);
 
             // Hapus file lama jika ada
             $this->deleteOldFile($registration, $documentType);
 
-            // Konversi ke PDF jika file gambar
-            if (in_array(strtolower($file->getClientOriginalExtension()), ['jpeg', 'jpg', 'png'])) {
-                $filePath = $this->processImage($file, $folderPath, $fileName);
-            } else {
-                // Simpan file PDF langsung
-                $filePath = $file->storeAs($folderPath, $fileName, 'public');
-            }
+            // Upload file baru
+            $filePath = $this->uploadFile($file, $documentType, $user, $registration);
 
             // Update path di database
-            $registration->update([$this->getDocumentColumn($documentType) => $filePath]);
+            $column = $this->getDocumentColumn($documentType);
+            $registration->update([$column => $filePath]);
 
-            // Update status pendaftaran jika semua dokumen lengkap
-            if ($registration->hasAllDocuments()) {
+            // Refresh model untuk mendapatkan data terbaru
+            $registration->refresh();
+
+            // Check jika semua dokumen sudah lengkap
+            $allComplete = $registration->hasAllDocuments();
+            if ($allComplete) {
                 $registration->markAsPending();
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Dokumen berhasil diunggah.',
+                'message' => 'Dokumen berhasil diunggah.' . ($allComplete ? ' Semua dokumen telah lengkap!' : ''),
                 'file_path' => $filePath,
-                'file_name' => $fileName,
-                'document_type' => $documentType
+                'file_name' => basename($filePath),
+                'document_type' => $documentType,
+                'all_documents_complete' => $allComplete,
+                'refresh_required' => $allComplete
             ]);
 
         } catch (\Exception $e) {
             \Log::error('Upload error: ' . $e->getMessage(), [
-                'user_id' => $user->id,
+                'user_id' => Auth::id(),
                 'document_type' => $documentType,
                 'exception' => $e
             ]);
@@ -115,131 +165,68 @@ class DocumentController extends Controller
         }
     }
 
-    private function processImage($file, $folderPath, $fileName)
+    /**
+     * Upload file dengan struktur folder yang efisien
+     */
+    private function uploadFile($file, $documentType, $user, $registration)
     {
-        // Ganti extension menjadi .pdf untuk konsistensi
-        $pdfFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.pdf';
+        $originalExtension = strtolower($file->getClientOriginalExtension());
+        $fileName = $this->generateFileName($file, $documentType, $originalExtension);
+        $folderPath = $this->getEfficientFolderPath($user, $registration);
 
         // Buat folder jika belum ada
-        $fullPath = "public/{$folderPath}";
-        if (!Storage::exists($fullPath)) {
-            Storage::makeDirectory($fullPath, 0755, true);
+        if (!Storage::disk('public')->exists($folderPath)) {
+            Storage::disk('public')->makeDirectory($folderPath, 0755, true);
         }
 
-        try {
-            // Process dengan Intervention Image v3
-            $image = $this->imageManager->read($file->getRealPath());
+        $fullPath = $folderPath . '/' . $fileName;
 
-            // Optimalkan gambar - resize maintaining aspect ratio
-            $image->scaleDown(1200);
+        // Untuk file gambar, optimalkan tanpa mengubah format
+        if (in_array($originalExtension, ['jpeg', 'jpg', 'png'])) {
+            try {
+                $image = $this->imageManager->read($file->getRealPath());
+                $image->scaleDown(1200); // Optimasi ukuran
 
-            // Simpan sebagai JPEG dengan kualitas baik
-            $imagePath = "{$folderPath}/{$pdfFileName}";
+                if ($originalExtension === 'png') {
+                    $encodedImage = $image->encode(new PngEncoder());
+                } else {
+                    $encodedImage = $image->encode(new JpegEncoder(85));
+                }
 
-            // Encode berdasarkan tipe file asli - TANPA NAMED PARAMETERS
-            $extension = strtolower($file->getClientOriginalExtension());
+                Storage::disk('public')->put($fullPath, $encodedImage->toString());
+                return $fullPath;
 
-            if ($extension === 'png') {
-                // Untuk PNG, gunakan PngEncoder tanpa parameter quality
-                $encodedImage = $image->encode(new PngEncoder());
-            } else {
-                // Untuk JPEG, gunakan JpegEncoder dengan quality sebagai argument biasa
-                $encodedImage = $image->encode(new JpegEncoder(85));
+            } catch (\Exception $e) {
+                \Log::warning('Image processing failed, using direct upload: ' . $e->getMessage());
+                // Fallback: upload langsung
+                $file->storeAs($folderPath, $fileName, 'public');
+                return $fullPath;
             }
-
-            Storage::disk('public')->put($imagePath, $encodedImage->toString());
-
-            return $imagePath;
-
-        } catch (\Exception $e) {
-            \Log::warning('Intervention Image v3 failed, using GD fallback: ' . $e->getMessage());
-            return $this->processImageWithGD($file, $folderPath, $pdfFileName);
-        }
-    }
-
-    private function processImageWithGD($file, $folderPath, $fileName)
-    {
-        $sourcePath = $file->getRealPath();
-        $destinationPath = storage_path("app/public/{$folderPath}/{$fileName}");
-
-        // Get image info
-        $imageInfo = getimagesize($sourcePath);
-        $mimeType = $imageInfo['mime'];
-
-        // Create image from source
-        switch ($mimeType) {
-            case 'image/jpeg':
-                $sourceImage = imagecreatefromjpeg($sourcePath);
-                break;
-            case 'image/png':
-                $sourceImage = imagecreatefrompng($sourcePath);
-                break;
-            case 'image/gif':
-                $sourceImage = imagecreatefromgif($sourcePath);
-                break;
-            default:
-                throw new \Exception('Unsupported image type: ' . $mimeType);
-        }
-
-        if (!$sourceImage) {
-            throw new \Exception('Failed to create image from source');
-        }
-
-        // Get original dimensions
-        $originalWidth = imagesx($sourceImage);
-        $originalHeight = imagesy($sourceImage);
-
-        // Calculate new dimensions (max width 1200px, maintain aspect ratio)
-        $newWidth = min($originalWidth, 1200);
-        $newHeight = (int) ($originalHeight * ($newWidth / $originalWidth));
-
-        // Create new image
-        $newImage = imagecreatetruecolor($newWidth, $newHeight);
-
-        // Preserve transparency for PNG
-        if ($mimeType === 'image/png') {
-            imagealphablending($newImage, false);
-            imagesavealpha($newImage, true);
-            $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
-            imagefilledrectangle($newImage, 0, 0, $newWidth, $newHeight, $transparent);
         } else {
-            // Add white background for JPEG
-            $white = imagecolorallocate($newImage, 255, 255, 255);
-            imagefill($newImage, 0, 0, $white);
+            // Untuk PDF, upload langsung
+            $file->storeAs($folderPath, $fileName, 'public');
+            return $fullPath;
         }
-
-        // Resize image
-        imagecopyresampled(
-            $newImage, $sourceImage,
-            0, 0, 0, 0,
-            $newWidth, $newHeight,
-            $originalWidth, $originalHeight
-        );
-
-        // Save image
-        switch ($mimeType) {
-            case 'image/jpeg':
-                imagejpeg($newImage, $destinationPath, 85);
-                break;
-            case 'image/png':
-                imagepng($newImage, $destinationPath, 8);
-                break;
-            case 'image/gif':
-                imagegif($newImage, $destinationPath);
-                break;
-        }
-
-        // Free memory
-        imagedestroy($sourceImage);
-        imagedestroy($newImage);
-
-        return "{$folderPath}/{$fileName}";
     }
 
-    private function generateFileName($file, $documentType)
+    /**
+     * Struktur folder yang efisien: documents/{user_id}_{sanitized_name}/
+     */
+    private function getEfficientFolderPath($user, $registration)
+    {
+        $userName = $this->sanitizeFileName($user->name);
+        $userId = $user->id;
+
+        // Gunakan ID pendaftaran untuk konsistensi
+        $registrationId = $registration->id_pendaftaran ?? 'user_' . $userId;
+
+        return "documents/{$registrationId}_{$userName}";
+    }
+
+    private function generateFileName($file, $documentType, $originalExtension)
     {
         $timestamp = now()->format('Ymd_His');
-        $randomString = Str::random(8);
+        $randomString = Str::random(6);
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $sanitizedName = Str::slug($originalName);
 
@@ -252,36 +239,14 @@ class DocumentController extends Controller
 
         $baseName = $documentNames[$documentType] ?? $documentType;
 
-        return "{$baseName}_{$sanitizedName}_{$timestamp}_{$randomString}.pdf";
-    }
-
-    private function getFolderPath($user, $documentType)
-    {
-        $folderNames = [
-            'kartu_keluarga' => 'kartu-keluarga',
-            'ijazah' => 'ijazah',
-            'akta_kelahiran' => 'akta-kelahiran',
-            'pas_foto' => 'pas-foto'
-        ];
-
-        $folderName = $folderNames[$documentType] ?? $documentType;
-
-        // Gunakan nama user untuk folder
-        $userName = $this->sanitizeFileName($user->name);
-        $userId = $user->id;
-
-        return "documents/{$userName}_{$userId}/{$folderName}";
+        return "{$baseName}_{$sanitizedName}_{$timestamp}_{$randomString}.{$originalExtension}";
     }
 
     private function sanitizeFileName($name)
     {
-        // Hapus karakter khusus dan ganti spasi dengan underscore
         $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '_', $name);
-        // Hapus multiple underscores
         $sanitized = preg_replace('/_{2,}/', '_', $sanitized);
-        // Hapus underscore di awal dan akhir
         $sanitized = trim($sanitized, '_');
-
         return $sanitized ?: 'user';
     }
 
@@ -297,37 +262,82 @@ class DocumentController extends Controller
         return $columns[$documentType] ?? $documentType . '_path';
     }
 
+    /**
+     * Hapus file lama dengan pembersihan yang proper
+     */
     private function deleteOldFile($registration, $documentType)
     {
         $column = $this->getDocumentColumn($documentType);
         $oldFilePath = $registration->$column;
 
         if ($oldFilePath && Storage::disk('public')->exists($oldFilePath)) {
-            Storage::disk('public')->delete($oldFilePath);
+            try {
+                // Hapus file
+                Storage::disk('public')->delete($oldFilePath);
+
+                // Cek dan hapus folder jika kosong
+                $this->cleanupEmptyFolders($oldFilePath);
+
+            } catch (\Exception $e) {
+                \Log::error('Error deleting old file: ' . $e->getMessage(), [
+                    'file_path' => $oldFilePath,
+                    'document_type' => $documentType
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Bersihkan folder kosong setelah menghapus file
+     */
+    private function cleanupEmptyFolders($filePath)
+    {
+        $directory = dirname($filePath);
+
+        // Cek jika directory adalah folder documents/...
+        if (strpos($directory, 'documents/') === 0) {
+            try {
+                // Cek jika folder kosong
+                $filesInDirectory = Storage::disk('public')->files($directory);
+                $subdirectories = Storage::disk('public')->directories($directory);
+
+                if (empty($filesInDirectory) && empty($subdirectories)) {
+                    Storage::disk('public')->deleteDirectory($directory);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Error checking empty directory: ' . $e->getMessage());
+            }
         }
     }
 
     public function delete($documentType)
     {
-        $user = Auth::user();
-        $registration = Registration::where('user_id', $user->id)->first();
-
-        if (!$registration) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data registrasi tidak ditemukan.'
-            ], 404);
-        }
-
-        // Validasi document type
-        if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jenis dokumen tidak valid.'
-            ], 400);
-        }
-
         try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.'
+                ], 404);
+            }
+
+            // Cek jika status pendaftaran = diterima
+            if ($registration->status_pendaftaran === 'diterima') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak dapat menghapus dokumen karena status pendaftaran sudah DITERIMA.'
+                ], 403);
+            }
+
+            if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jenis dokumen tidak valid.'
+                ], 400);
+            }
+
             $this->deleteOldFile($registration, $documentType);
 
             $column = $this->getDocumentColumn($documentType);
@@ -341,7 +351,7 @@ class DocumentController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Delete document error: ' . $e->getMessage(), [
-                'user_id' => $user->id,
+                'user_id' => Auth::id(),
                 'document_type' => $documentType,
                 'exception' => $e
             ]);
@@ -362,7 +372,6 @@ class DocumentController extends Controller
             abort(404, 'Data registrasi tidak ditemukan.');
         }
 
-        // Validasi document type
         if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
             abort(404, 'Jenis dokumen tidak valid.');
         }
@@ -376,10 +385,11 @@ class DocumentController extends Controller
 
         $file = Storage::disk('public')->get($filePath);
         $mimeType = Storage::disk('public')->mimeType($filePath);
+        $fileName = basename($filePath);
 
         return response($file, 200)
             ->header('Content-Type', $mimeType)
-            ->header('Content-Disposition', 'inline; filename="' . basename($filePath) . '"');
+            ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
     }
 
     /**
@@ -387,52 +397,40 @@ class DocumentController extends Controller
      */
     public function download($documentType)
     {
-        $user = Auth::user();
-        $registration = Registration::where('user_id', $user->id)->first();
-
-        if (!$registration) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data registrasi tidak ditemukan.'
-            ], 404);
-        }
-
-        // Validasi document type
-        if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Jenis dokumen tidak valid.'
-            ], 400);
-        }
-
-        $column = $this->getDocumentColumn($documentType);
-        $filePath = $registration->$column;
-
-        if (!$filePath || !Storage::disk('public')->exists($filePath)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'File tidak ditemukan.'
-            ], 404);
-        }
-
         try {
-            $downloadName = $this->getDownloadFileName($documentType, $user->name);
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return back()->with('error', 'Data registrasi tidak ditemukan.');
+            }
+
+            if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
+                return back()->with('error', 'Jenis dokumen tidak valid.');
+            }
+
+            $column = $this->getDocumentColumn($documentType);
+            $filePath = $registration->$column;
+
+            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+                return back()->with('error', 'File tidak ditemukan. Silakan upload file terlebih dahulu.');
+            }
+
+            $downloadName = $this->getDownloadFileName($documentType, $user->name, $filePath);
             return Storage::disk('public')->download($filePath, $downloadName);
+
         } catch (\Exception $e) {
             \Log::error('Download error: ' . $e->getMessage(), [
-                'user_id' => $user->id,
+                'user_id' => Auth::id(),
                 'document_type' => $documentType,
                 'exception' => $e
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mendownload file: ' . $e->getMessage()
-            ], 500);
+            return back()->with('error', 'Gagal mendownload file: ' . $e->getMessage());
         }
     }
 
-    private function getDownloadFileName($documentType, $userName)
+    private function getDownloadFileName($documentType, $userName, $filePath)
     {
         $documentNames = [
             'kartu_keluarga' => 'Kartu-Keluarga',
@@ -443,30 +441,39 @@ class DocumentController extends Controller
 
         $baseName = $documentNames[$documentType] ?? $documentType;
         $sanitizedName = $this->sanitizeFileName($userName);
+        $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-        return "{$baseName}_{$sanitizedName}.pdf";
+        return "{$baseName}_{$sanitizedName}.{$fileExtension}";
     }
 
     public function completeRegistration()
     {
-        $user = Auth::user();
-        $registration = Registration::where('user_id', $user->id)->first();
-
-        if (!$registration) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data registrasi tidak ditemukan.'
-            ], 404);
-        }
-
-        if (!$registration->hasAllDocuments()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Semua dokumen harus diunggah sebelum menyelesaikan pendaftaran.'
-            ], 400);
-        }
-
         try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.'
+                ], 404);
+            }
+
+            // Cek jika status pendaftaran = diterima
+            if ($registration->status_pendaftaran === 'diterima') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak dapat menyelesaikan pendaftaran karena status sudah DITERIMA.'
+                ], 403);
+            }
+
+            if (!$registration->hasAllDocuments()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Semua dokumen harus diunggah sebelum menyelesaikan pendaftaran.'
+                ], 400);
+            }
+
             $registration->markAsPending();
 
             \Log::info('Registration completed', [
@@ -482,7 +489,7 @@ class DocumentController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Complete registration error: ' . $e->getMessage(), [
-                'user_id' => $user->id,
+                'user_id' => Auth::id(),
                 'exception' => $e
             ]);
 
@@ -498,130 +505,113 @@ class DocumentController extends Controller
      */
     public function getProgress()
     {
-        $user = Auth::user();
-        $registration = Registration::where('user_id', $user->id)->first();
-
-        if (!$registration) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data registrasi tidak ditemukan.'
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'progress' => $registration->upload_progress
-        ]);
-    }
-    // Tambahkan di DocumentController.php
-
-/**
- * Download all documents as ZIP
- */
-public function downloadAll()
-{
-    $user = Auth::user();
-    $registration = Registration::where('user_id', $user->id)->first();
-
-    if (!$registration) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Data registrasi tidak ditemukan.'
-        ], 404);
-    }
-
-    try {
-        // Check if all documents are uploaded
-        if (!$registration->hasAllDocuments()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Semua dokumen harus diunggah sebelum dapat didownload.'
-            ], 400);
-        }
-
-        // Create ZIP file
-        $zipFileName = "Dokumen_Pendaftaran_{$user->name}.zip";
-        $zipPath = storage_path("app/temp/{$zipFileName}");
-
-        // Ensure temp directory exists
-        if (!file_exists(dirname($zipPath))) {
-            mkdir(dirname($zipPath), 0755, true);
-        }
-
-        $zip = new \ZipArchive();
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
-            // Add each document to ZIP
-            $documents = [
-                'kartu_keluarga' => $registration->kartu_keluaga_path,
-                'ijazah' => $registration->ijazah_path,
-                'akta_kelahiran' => $registration->akta_kelahiran_path,
-                'pas_foto' => $registration->pas_foto_path
-            ];
-
-            $documentNames = [
-                'kartu_keluarga' => 'Kartu-Keluarga',
-                'ijazah' => 'Ijazah',
-                'akta_kelahiran' => 'Akta-Kelahiran',
-                'pas_foto' => 'Pas-Foto'
-            ];
-
-            foreach ($documents as $type => $filePath) {
-                if ($filePath && Storage::disk('public')->exists($filePath)) {
-                    $fileContent = Storage::disk('public')->get($filePath);
-                    $fileName = $documentNames[$type] . '_' . $user->name . '.pdf';
-                    $zip->addFromString($fileName, $fileContent);
-                }
-            }
-
-            $zip->close();
-
-            // Return ZIP file as download
-            return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
-
-        } else {
-            throw new \Exception('Gagal membuat file ZIP.');
-        }
-
-    } catch (\Exception $e) {
-        \Log::error('Download all documents error: ' . $e->getMessage(), [
-            'user_id' => $user->id,
-            'exception' => $e
-        ]);
-
-        // Clean up temp file if exists
-        if (file_exists($zipPath)) {
-            unlink($zipPath);
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal mendownload semua dokumen: ' . $e->getMessage()
-        ], 500);
-    }
-}
-    /**
-     * Test Intervention Image functionality
-     */
-    public function testImage()
-    {
         try {
-            // Test Intervention Image v3
-            $image = $this->imageManager->create(100, 100);
-            $image->place('ff0000'); // Fill with red
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Intervention Image v3 is working correctly',
-                'image_info' => [
-                    'width' => $image->width(),
-                    'height' => $image->height(),
-                    'version' => 'v3.11'
-                ]
+                'progress' => $registration->upload_progress
             ]);
+
         } catch (\Exception $e) {
+            \Log::error('Get progress error: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Intervention Image v3 error: ' . $e->getMessage()
+                'message' => 'Gagal mengambil progress: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download all documents as ZIP
+     */
+    public function downloadAll()
+    {
+        try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.'
+                ], 404);
+            }
+
+            // Check if all documents are uploaded
+            if (!$registration->hasAllDocuments()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Semua dokumen harus diunggah sebelum dapat didownload.'
+                ], 400);
+            }
+
+            // Create ZIP file
+            $zipFileName = "Dokumen_Pendaftaran_{$user->name}.zip";
+            $zipPath = storage_path("app/temp/{$zipFileName}");
+
+            // Ensure temp directory exists
+            if (!file_exists(dirname($zipPath))) {
+                mkdir(dirname($zipPath), 0755, true);
+            }
+
+            $zip = new \ZipArchive();
+            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+                // Add each document to ZIP
+                $documents = [
+                    'kartu_keluarga' => $registration->kartu_keluaga_path,
+                    'ijazah' => $registration->ijazah_path,
+                    'akta_kelahiran' => $registration->akta_kelahiran_path,
+                    'pas_foto' => $registration->pas_foto_path
+                ];
+
+                $documentNames = [
+                    'kartu_keluarga' => 'Kartu-Keluarga',
+                    'ijazah' => 'Ijazah',
+                    'akta_kelahiran' => 'Akta-Kelahiran',
+                    'pas_foto' => 'Pas-Foto'
+                ];
+
+                foreach ($documents as $type => $filePath) {
+                    if ($filePath && Storage::disk('public')->exists($filePath)) {
+                        $fileContent = Storage::disk('public')->get($filePath);
+                        $fileName = $documentNames[$type] . '_' . $user->name . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
+                        $zip->addFromString($fileName, $fileContent);
+                    }
+                }
+
+                $zip->close();
+
+                // Return ZIP file as download
+                return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+
+            } else {
+                throw new \Exception('Gagal membuat file ZIP.');
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Download all documents error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e
+            ]);
+
+            // Clean up temp file if exists
+            if (file_exists($zipPath)) {
+                unlink($zipPath);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mendownload semua dokumen: ' . $e->getMessage()
             ], 500);
         }
     }

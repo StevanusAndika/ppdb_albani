@@ -34,42 +34,44 @@ Route::prefix('barcode')->name('barcode.')->group(function () {
 });
 
 // Auth Routes
-Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
-Route::post('/check-phone', [AuthController::class, 'checkPhoneNumber'])->name('check.phone');
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::middleware('guest')->group(function () {
+    Route::post('/check-email', [AuthController::class, 'checkEmail'])->name('check.email');
+    Route::post('/check-phone', [AuthController::class, 'checkPhoneNumber'])->name('check.phone');
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 
-// Password Reset Routes
-Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])
-    ->name('password.request');
-Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
-    ->name('password.reset');
+    // Password Reset Routes
+    Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
+        ->name('password.reset');
 
-// Auth action routes
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    // Auth action routes
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+
+    // Password Reset Action Routes
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])
+        ->name('password.email');
+    Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])
+        ->name('password.verify.otp');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])
+        ->name('password.update');
+    Route::post('/resend-otp', [PasswordResetController::class, 'resendOtp'])
+        ->name('password.resend.otp');
+    Route::post('/check-password-cooldown', [PasswordResetController::class, 'checkCooldown'])
+        ->name('password.check.cooldown');
+
+    // Socialite Routes
+    Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])
+        ->name('socialite.redirect');
+    Route::get('/auth/{provider}/callback', [AuthController::class, 'handleProvideCallback'])
+        ->name('socialite.callback');
+});
 
 // Socialite Registration Route
 Route::post('/socialite/register', [AuthController::class, 'handleSocialiteRegistration'])
     ->name('socialite.register.post');
-
-// Password Reset Action Routes
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])
-    ->name('password.email');
-Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])
-    ->name('password.verify.otp');
-Route::post('/reset-password', [PasswordResetController::class, 'reset'])
-    ->name('password.update');
-Route::post('/resend-otp', [PasswordResetController::class, 'resendOtp'])
-    ->name('password.resend.otp');
-Route::post('/check-password-cooldown', [PasswordResetController::class, 'checkCooldown'])
-    ->name('password.check.cooldown');
-
-// Socialite Routes
-Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])
-    ->name('socialite.redirect');
-Route::get('/auth/{provider}/callback', [AuthController::class, 'handleProvideCallback'])
-    ->name('socialite.callback');
 
 // Logout route
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -193,7 +195,7 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::get('/package/{package}/prices', [BiodataController::class, 'getPackagePrices'])->name('package.prices');
     });
 
-    // Document Routes
+    // Document Routes - FIXED ROUTES
     Route::prefix('documents')->name('documents.')->group(function () {
         Route::get('/', [DocumentController::class, 'index'])->name('index');
         Route::post('/upload/{documentType}', [DocumentController::class, 'upload'])->name('upload');
@@ -202,23 +204,27 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::get('/download/{documentType}', [DocumentController::class, 'download'])->name('download');
         Route::post('/complete', [DocumentController::class, 'completeRegistration'])->name('complete');
         Route::get('/progress', [DocumentController::class, 'getProgress'])->name('progress');
-        Route::get('/test-image', [DocumentController::class, 'testImage'])->name('test-image');
         Route::get('/download-all', [DocumentController::class, 'downloadAll'])->name('download-all');
+
+        // Test routes (optional)
+        Route::get('/test-image', [DocumentController::class, 'testImage'])->name('test-image');
     });
 
     // Payment Routes
-    Route::prefix('payments')->name('payments.')->group(function () {
-        Route::get('/', [PaymentController::class, 'index'])->name('index');
-        Route::get('/create', [PaymentController::class, 'create'])->name('create');
-        Route::post('/', [PaymentController::class, 'store'])->name('store');
-        Route::get('/success', [PaymentController::class, 'success'])->name('success');
-        Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
-        Route::get('/invoice/{paymentCode}', [PaymentController::class, 'downloadInvoice'])->name('download-invoice');
-        Route::get('/{id}/detail', [PaymentController::class, 'detail'])->name('detail');
-        Route::get('/check-status/{paymentCode}', [PaymentController::class, 'checkStatus'])->name('check-status');
-        Route::get('/retry/{paymentCode}', [PaymentController::class, 'retryPayment'])->name('retry');
-        Route::get('/manual-sync/{paymentCode}', [PaymentController::class, 'manualSync'])->name('manual-sync');
-    });
+   // Payment Routes
+        Route::prefix('payments')->name('payments.')->group(function () {
+            Route::get('/', [PaymentController::class, 'index'])->name('index');
+            Route::get('/create', [PaymentController::class, 'create'])->name('create');
+            Route::post('/', [PaymentController::class, 'store'])->name('store');
+            Route::get('/success', [PaymentController::class, 'success'])->name('success');
+            Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
+            Route::get('/invoice/{paymentCode}', [PaymentController::class, 'downloadInvoice'])->name('download-invoice');
+            Route::get('/invoice/{paymentCode}/pdf', [PaymentController::class, 'downloadInvoicePdf'])->name('download-invoice-pdf'); // Tambahkan ini
+            Route::get('/{id}/detail', [PaymentController::class, 'detail'])->name('detail');
+            Route::get('/check-status/{paymentCode}', [PaymentController::class, 'checkStatus'])->name('check-status');
+            Route::get('/retry/{paymentCode}', [PaymentController::class, 'retryPayment'])->name('retry');
+            Route::post('/manual-sync/{paymentCode}', [PaymentController::class, 'manualSync'])->name('manual-sync');
+        });
 
     // Settings Routes untuk Calon Santri
     Route::prefix('settings')->name('settings.')->group(function () {

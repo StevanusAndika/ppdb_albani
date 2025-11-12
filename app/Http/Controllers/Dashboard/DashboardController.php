@@ -64,9 +64,13 @@ class DashboardController extends Controller
     public function santriDashboard()
     {
         $user = Auth::user();
-        $registration = Registration::with(['package.activePrices'])
-            ->where('user_id', $user->id)
-            ->first();
+
+        // Ambil data registrasi dengan relasi yang benar
+        $registration = Registration::with(['package', 'package.prices' => function($query) {
+            $query->where('is_active', true)->orderBy('order');
+        }])
+        ->where('user_id', $user->id)
+        ->first();
 
         $documentProgress = 0;
         if ($registration) {
@@ -78,41 +82,45 @@ class DashboardController extends Controller
             $documentProgress = ($uploadedCount / 4) * 100;
         }
 
-        // Ambil data pembayaran - GUNAKAN COLLECTION
-        $payments = collect(); // Inisialisasi sebagai collection kosong
+        // Ambil data pembayaran
+        $payments = collect();
         $latestPayment = null;
         $hasSuccessfulPayment = false;
 
         if ($registration) {
             $payments = Payment::where('registration_id', $registration->id)
                              ->orderBy('created_at', 'desc')
-                             ->get(); // Ini akan return Collection
+                             ->get();
 
             $latestPayment = $payments->first();
             $hasSuccessfulPayment = $payments->whereIn('status', ['success', 'lunas'])->isNotEmpty();
         }
 
         // Ambil pengumuman untuk santri
-        $userAnnouncements = collect(); // Inisialisasi sebagai collection kosong
+        $userAnnouncements = collect();
         if ($registration) {
             $userAnnouncements = Announcement::where('registration_id', $registration->id)
                 ->where('status', 'sent')
                 ->orderBy('sent_at', 'desc')
                 ->limit(5)
-                ->get(); // Ini akan return Collection
+                ->get();
         }
 
         // Ambil program unggulan untuk ditampilkan di dashboard
         $contentSettings = ContentSetting::first();
-        $programUnggulan = $contentSettings ? $contentSettings->program_unggulan : [];
+        $programUnggulan = $contentSettings ? ($contentSettings->program_unggulan_data ?? []) : [];
 
-        // Ambil data untuk stats cards - PERBAIKI INI
+        // Hitung total progress
+        $totalProgress = $this->calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment);
+
+        // Stats untuk dashboard santri
         $stats = [
             'document_progress' => $documentProgress,
-            'total_payments' => $payments->count(), // Sekarang bisa karena $payments adalah Collection
+            'total_payments' => $payments->count(),
             'success_payments' => $payments->whereIn('status', ['success', 'lunas'])->count(),
             'pending_payments' => $payments->whereIn('status', ['pending', 'waiting_payment'])->count(),
-            'announcements_count' => $userAnnouncements->count(), // Sekarang bisa karena $userAnnouncements adalah Collection
+            'announcements_count' => $userAnnouncements->count(),
+            'total_progress' => $totalProgress,
         ];
 
         return view('dashboard.calon_santri.index', compact(
@@ -123,8 +131,36 @@ class DashboardController extends Controller
             'hasSuccessfulPayment',
             'userAnnouncements',
             'stats',
-            'programUnggulan'
+            'programUnggulan',
+            'totalProgress'
         ));
+    }
+
+    /**
+     * Hitung total progress pendaftaran
+     */
+    private function calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment)
+    {
+        $totalProgress = 25; // Step 1: Buat Akun selalu complete
+
+        if ($registration) {
+            $totalProgress += 25; // Step 2: Isi Biodata
+        }
+
+        if ($registration && $registration->hasAllDocuments()) {
+            $totalProgress += 25; // Step 3: Upload Dokumen lengkap
+        } elseif ($registration) {
+            // Jika dokumen belum lengkap, hitung berdasarkan progress dokumen
+            $totalProgress += ($documentProgress / 100) * 25;
+        }
+
+        if ($hasSuccessfulPayment) {
+            $totalProgress += 25; // Step 4: Pembayaran lunas
+        } elseif ($registration && $registration->hasAllDocuments()) {
+            $totalProgress += 10; // Step 4: Siap bayar (partial progress)
+        }
+
+        return min(100, round($totalProgress));
     }
 
     /**

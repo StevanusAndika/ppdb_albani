@@ -21,6 +21,12 @@ class BiodataController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
+        // Cek jika status pendaftaran = diterima
+        if ($registration && $registration->status_pendaftaran === 'diterima') {
+            return redirect()->route('santri.dashboard')
+                ->with('error', 'Anda tidak dapat mengisi atau mengedit biodata karena status pendaftaran sudah DITERIMA.');
+        }
+
         // Ambil packages dengan total amount
         $packages = Package::with('activePrices')
             ->active()
@@ -108,8 +114,13 @@ class BiodataController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-
         $existingRegistration = Registration::where('user_id', $user->id)->first();
+
+        // Cek jika status pendaftaran = diterima
+        if ($existingRegistration && $existingRegistration->status_pendaftaran === 'diterima') {
+            return redirect()->route('santri.dashboard')
+                ->with('error', 'Anda tidak dapat mengisi atau mengedit biodata karena status pendaftaran sudah DITERIMA.');
+        }
 
         $validated = $this->validateRequest($request, $existingRegistration);
 
@@ -131,7 +142,7 @@ class BiodataController extends Controller
 
             // Generate barcode setelah registrasi berhasil
             if (!$registration->hasQrCode()) {
-                $registration->generateBarcode();
+                $registration->generateQrCode();
             }
 
             DB::commit();
@@ -228,6 +239,12 @@ class BiodataController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
+        // Cek jika status pendaftaran = diterima
+        if ($registration->status_pendaftaran === 'diterima') {
+            return redirect()->route('santri.dashboard')
+                ->with('error', 'Anda tidak dapat mengisi atau mengedit biodata karena status pendaftaran sudah DITERIMA.');
+        }
+
         $packages = Package::with('activePrices')
             ->active()
             ->get()
@@ -267,6 +284,12 @@ class BiodataController extends Controller
     {
         $user = Auth::user();
         $registration = Registration::where('user_id', $user->id)->firstOrFail();
+
+        // Cek jika status pendaftaran = diterima
+        if ($registration->status_pendaftaran === 'diterima') {
+            return redirect()->route('santri.dashboard')
+                ->with('error', 'Anda tidak dapat mengisi atau mengedit biodata karena status pendaftaran sudah DITERIMA.');
+        }
 
         $validated = $this->validateRequest($request, $registration);
 
