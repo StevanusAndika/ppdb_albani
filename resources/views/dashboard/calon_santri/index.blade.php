@@ -170,6 +170,13 @@
                                 <span class="font-semibold text-sm">Kegiatan</span>
                             </div>
                         </a>
+                        <a href="https://api.whatsapp.com/send?phone=6287748115931&text=Halo%20Admin%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid%2C%20saya%20memiliki%20kendala%20atau%20ingin%20konsultasi%20seputar%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid"
+                        class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-4 text-center hover:from-green-600 hover:to-green-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-headset text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">Bantuan</span>
+                            </div>
+                        </a>
                     </div>
                 </div>
 
@@ -309,9 +316,7 @@
                                         Perbaiki Data
                                     </a>
                                 @endif
-                                <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300 text-sm">
-                                    Lihat Detail
-                                </a>
+
                             </div>
                         @else
                             <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300 text-sm">
@@ -329,7 +334,8 @@
                                     'telah_dilihat' => 'bg-yellow-100 text-yellow-800',
                                     'menunggu_diverifikasi' => 'bg-orange-100 text-orange-800',
                                     'ditolak' => 'bg-red-100 text-red-800',
-                                    'diterima' => 'bg-green-100 text-green-800'
+                                    'diterima' => 'bg-green-100 text-green-800',
+                                    'perlu_review' => 'bg-purple-100 text-purple-800'
                                 ];
                                 $statusIcons = [
                                     'belum_mendaftar' => 'fa-clock',
@@ -337,7 +343,8 @@
                                     'telah_dilihat' => 'fa-eye',
                                     'menunggu_diverifikasi' => 'fa-hourglass-half',
                                     'ditolak' => 'fa-times-circle',
-                                    'diterima' => 'fa-check-circle'
+                                    'diterima' => 'fa-check-circle',
+                                    'perlu_review' => 'fa-search-plus'
                                 ];
                             @endphp
                             <div class="px-4 py-3 rounded-full text-base font-medium {{ $statusColors[$registration->status_pendaftaran] ?? 'bg-gray-100 text-gray-800' }} flex items-center">

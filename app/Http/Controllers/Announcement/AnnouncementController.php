@@ -85,8 +85,11 @@ class AnnouncementController extends Controller
             }
 
             $phoneNumber = $registration->user->getFormattedPhoneNumber();
-            $message = "Selamat, anda dinyatakan lolos dan siap menjadi santri di Pondok Pesantren Bani Syahid";
-
+           $message = "Assalamu'alaikum Warahmatullahi Wabarakatuh.
+                        Dengan memanjatkan puji syukur ke hadirat Allah Subhanahu Wa Ta'ala, kami sampalkan kabar gembira. Berdasarkan hasil evaluasi Ujian Tulis Seleksi Masuk yang telah Anda ikuti, Anda DINYATAKAN LULUS dan diterima sebagai santri di Pondok Pesantren Bani Syahid.
+                        Selamat! Anda dipersilakan untuk segera melengkapi administrasi pendaftaran ulang.
+                        Informasi lebih lanjut akan disampaikan melalui kontak yang terdaftar.
+                        Terima kasih.";
             // Kirim pesan via Fonnte
             $result = $this->sendFonnteMessage($phoneNumber, $message);
 

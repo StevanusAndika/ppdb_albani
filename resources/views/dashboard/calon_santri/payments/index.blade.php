@@ -181,12 +181,7 @@
                                     </form>
                                     @endif
 
-                                    <!-- Detail Button -->
-                                    <button onclick="showPaymentDetail('{{ $payment->id }}')"
-                                            class="text-purple-600 hover:text-purple-900 transition duration-200 p-2 rounded-full hover:bg-purple-50"
-                                            title="Detail Pembayaran">
-                                        <i class="fas fa-info-circle"></i>
-                                    </button>
+                                    
 
                                     <!-- Retry Button untuk payment expired -->
                                     @if($payment->status === 'expired' && !$hasSuccessfulPayment)
@@ -298,7 +293,7 @@
 </div>
 
 <!-- Payment Detail Modal -->
-<div id="paymentDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+{{-- <div id="paymentDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-bold text-gray-800">Detail Pembayaran</h3>
@@ -310,7 +305,7 @@
             <!-- Content will be loaded via AJAX -->
         </div>
     </div>
-</div>
+</div> --}}
 
 <script>
 // Auto sync untuk pembayaran pending

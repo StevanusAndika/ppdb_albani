@@ -134,22 +134,25 @@ class FonnteServiceProvider extends ServiceProvider
                  */
                 public function sendRegistrationRejection(string $phone, string $namaSantri, string $alasan): array
                 {
-                    $message = "PEMBERITAHUAN KETIDAKSESUAIAN DATA PENDAFTARAN\n\n"
-                             . "Kepada Yth. Orang Tua/Wali Santri {$namaSantri},\n\n"
-                             . "Dengan hormat, kami sampaikan bahwa pendaftaran calon santri *{$namaSantri}* "
-                             . "tidak dapat kami terima dengan alasan:\n\n"
-                             . "*{$alasan}*\n\n"
-                             . "Silakan login ke sistem PPDB untuk:\n"
-                             . "1. Melengkapi data yang kurang\n"
-                             . "2. Memperbaiki data yang tidak sesuai\n"
-                             . "3. Mengunggah ulang dokumen yang diperlukan\n\n"
-                             . "Anda dapat mengisi ulang formulir pendaftaran dengan data yang benar dan lengkap.\n\n"
-                             . "Terima kasih atas perhatiannya.\n\n"
-                             . "Salam,\n"
-                             . "Panitia PPDB Pondok Pesantren Bani Syahid";
-
-                    return $this->sendMessage($phone, $message);
-                }
+                   $message = "PEMBERITAHUAN PERBAIKAN DATA PENDAFTARAN\n\n"
+                            . "Kepada Yth.\n"
+                            . "Bapak/Ibu Orang Tua/Wali Santri\n"
+                            . "Atas Nama: *{$namaSantri}*\n\n"
+                            . "*Assalamu'alaikum Warahmatullahi Wabarakatuh*\n\n"
+                            . "Setelah kami melakukan pemeriksaan, kami menemukan bahwa data pendaftaran calon santri *{$namaSantri}* *BELUM DAPAT DIPROSES LEBIH LANJUT KARENA :*\n\n"
+                            . " *{$alasan}*\n\n"
+                            . "*TINDAK LANJUT YANG DIPERLUKAN:*\n"
+                            . "1. Login ke sistem PPDB\n"
+                            . "2. Melengkapi data yang masih kurang\n"
+                            . "3. Memperbaiki data yang tidak sesuai\n"
+                            . "4. Mengunggah ulang dokumen yang diperlukan\n\n"
+                            . "Setelah memperbaiki data, Anda dapat mengirimkan kembali untuk kami proses kembali.\n\n"
+                            . "Terima kasih atas perhatian dan kerja samanya.\n\n"
+                            . "*Wassalamu'alaikum Warahmatullahi Wabarakatuh*\n"
+                            . "Panitia PPDB\n"
+                            . "Pondok Pesantren Al Quran Bani Syahid";
+                                        return $this->sendMessage($phone, $message);
+                                    }
 
 
                 /**

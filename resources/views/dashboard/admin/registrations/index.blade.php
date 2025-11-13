@@ -13,17 +13,18 @@
     .status-badge.menunggu_diverifikasi { @apply bg-orange-100 text-orange-800; }
     .status-badge.ditolak { @apply bg-red-100 text-red-800; }
     .status-badge.diterima { @apply bg-green-100 text-green-800; }
+    .status-badge.perlu_review { @apply bg-purple-100 text-purple-800; }
 
     .action-btn {
-        @apply px-3 py-1 rounded-lg text-sm font-medium transition duration-200;
+        @apply px-3 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center justify-center space-x-1;
     }
     .action-btn.view { @apply bg-blue-500 text-white hover:bg-blue-600; }
-    .action-btn.verify { @apply bg-green-500 text-white hover:bg-green-600; }
-    .action-btn.reject { @apply bg-red-500 text-white hover:bg-red-600; }
+    .action-btn.setuju { @apply bg-green-500 text-white hover:bg-green-600; }
+    .action-btn.tolak { @apply bg-red-500 text-white hover:bg-red-600; }
     .action-btn.whatsapp { @apply bg-green-500 text-white hover:bg-green-600; }
 
     .filter-tab {
-        @apply px-4 py-2 rounded-lg cursor-pointer transition duration-200;
+        @apply px-4 py-2 rounded-lg cursor-pointer transition duration-200 text-sm;
     }
     .filter-tab.active {
         @apply bg-primary text-white;
@@ -31,193 +32,220 @@
     .filter-tab:not(.active) {
         @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
     }
+
+    .document-progress {
+        @apply w-full bg-gray-200 rounded-full h-2;
+    }
+    .document-progress-bar {
+        @apply h-2 rounded-full transition-all duration-300;
+    }
+
+    .needs-review-badge {
+        @apply inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full ml-2;
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive {
+            @apply block w-full overflow-x-auto;
+        }
+        .action-buttons {
+            @apply flex flex-col space-y-1;
+        }
+        .filter-tabs {
+            @apply flex overflow-x-auto space-x-2 pb-2;
+        }
+    }
 </style>
 @endsection
 
 @section('content')
-<div class="min-h-screen bg-gray-50 font-sans full-width-page">
+<div class="min-h-screen bg-gray-50 font-sans">
     <!-- Navbar -->
-    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
-        <div class="container mx-auto flex justify-between items-center">
+    <nav class="bg-white shadow-md py-3 px-4 md:px-6 rounded-xl mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
             <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
-            <div class="hidden md:flex space-x-6 items-center">
-                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium">Dashboard</a>
-                <a href="{{ route('admin.registrations.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
-                <a href="{{ route('admin.manage-users.index') }}" class="text-primary hover:text-secondary font-medium">Kelola User</a>
-                <form action="{{ route('logout') }}" method="POST" class="ml-4">
+            <div class="flex flex-wrap gap-2 md:gap-4 items-center">
+                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium text-sm">Dashboard</a>
+                <a href="{{ route('admin.registrations.index') }}" class="text-primary hover:text-secondary font-medium text-sm">Pendaftaran</a>
+                <a href="{{ route('admin.manage-users.index') }}" class="text-primary hover:text-secondary font-medium text-sm">Kelola User</a>
+                <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full transition duration-300 text-sm">Logout</button>
                 </form>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-3 md:px-4">
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-primary mb-2">Kelola Pendaftaran Santri</h1>
-            <p class="text-secondary">Kelola dan verifikasi data pendaftaran calon santri</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-primary mb-2">Kelola Pendaftaran Santri</h1>
+            <p class="text-secondary text-sm md:text-base">Kelola dan verifikasi data pendaftaran calon santri</p>
         </div>
 
         <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                        <i class="fas fa-users text-white text-xl"></i>
+                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-2 md:p-3">
+                        <i class="fas fa-users text-white text-lg md:text-xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Pendaftaran</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $registrations->total() }}</p>
+                    <div class="ml-3">
+                        <p class="text-xs md:text-sm font-medium text-gray-600">Total</p>
+                        <p class="text-xl md:text-2xl font-semibold text-gray-900">{{ $registrations->total() }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                        <i class="fas fa-clock text-white text-xl"></i>
+                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-2 md:p-3">
+                        <i class="fas fa-clock text-white text-lg md:text-xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Menunggu Verifikasi</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $registrations->where('status_pendaftaran', 'menunggu_diverifikasi')->count() }}</p>
+                    <div class="ml-3">
+                        <p class="text-xs md:text-sm font-medium text-gray-600">Menunggu</p>
+                        <p class="text-xl md:text-2xl font-semibold text-gray-900">{{ $registrations->where('status_pendaftaran', 'menunggu_diverifikasi')->count() }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                        <i class="fas fa-check text-white text-xl"></i>
+                    <div class="flex-shrink-0 bg-purple-500 rounded-md p-2 md:p-3">
+                        <i class="fas fa-redo text-white text-lg md:text-xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Diterima</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $registrations->where('status_pendaftaran', 'diterima')->count() }}</p>
+                    <div class="ml-3">
+                        <p class="text-xs md:text-sm font-medium text-gray-600">Perlu Review</p>
+                        <p class="text-xl md:text-2xl font-semibold text-gray-900">{{ $registrations->where('status_pendaftaran', 'perlu_review')->count() }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
-                        <i class="fas fa-times text-white text-xl"></i>
+                    <div class="flex-shrink-0 bg-green-500 rounded-md p-2 md:p-3">
+                        <i class="fas fa-check text-white text-lg md:text-xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Ditolak</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $registrations->where('status_pendaftaran', 'ditolak')->count() }}</p>
+                    <div class="ml-3">
+                        <p class="text-xs md:text-sm font-medium text-gray-600">Diterima</p>
+                        <p class="text-xl md:text-2xl font-semibold text-gray-900">{{ $registrations->where('status_pendaftaran', 'diterima')->count() }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-            <div class="flex flex-wrap gap-2">
-                <div class="filter-tab active" data-filter="all">
+        <div class="bg-white rounded-xl shadow-md p-4 md:p-6 mb-6">
+            <div class="filter-tabs flex space-x-2 overflow-x-auto pb-2">
+                <div class="filter-tab active whitespace-nowrap" data-filter="all">
                     Semua ({{ $registrations->total() }})
                 </div>
-                <div class="filter-tab" data-filter="menunggu_diverifikasi">
-                    Menunggu Verifikasi ({{ $registrations->where('status_pendaftaran', 'menunggu_diverifikasi')->count() }})
+                <div class="filter-tab whitespace-nowrap" data-filter="menunggu_diverifikasi">
+                    Menunggu ({{ $registrations->where('status_pendaftaran', 'menunggu_diverifikasi')->count() }})
                 </div>
-                <div class="filter-tab" data-filter="diterima">
+                <div class="filter-tab whitespace-nowrap" data-filter="perlu_review">
+                    Perlu Review ({{ $registrations->where('status_pendaftaran', 'perlu_review')->count() }})
+                </div>
+                <div class="filter-tab whitespace-nowrap" data-filter="diterima">
                     Diterima ({{ $registrations->where('status_pendaftaran', 'diterima')->count() }})
                 </div>
-                <div class="filter-tab" data-filter="ditolak">
+                <div class="filter-tab whitespace-nowrap" data-filter="ditolak">
                     Ditolak ({{ $registrations->where('status_pendaftaran', 'ditolak')->count() }})
-                </div>
-                <div class="filter-tab" data-filter="telah_mengisi">
-                    Telah Mengisi ({{ $registrations->where('status_pendaftaran', 'telah_mengisi')->count() }})
                 </div>
             </div>
         </div>
 
         <!-- Registrations Table -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="table-responsive">
                 <table class="w-full text-sm text-left text-gray-500">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
-                            <th class="px-6 py-4">ID Pendaftaran</th>
-                            <th class="px-6 py-4">Nama Santri</th>
-                            <th class="px-6 py-4">Paket</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4">Tanggal Daftar</th>
-                            <th class="px-6 py-4">Dokumen</th>
-                            <th class="px-6 py-4 text-center">Aksi</th>
+                            <th class="px-4 py-3">ID & Nama</th>
+                            <th class="px-4 py-3 hidden md:table-cell">Paket & Program</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3 hidden lg:table-cell">Dokumen</th>
+                            <th class="px-4 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($registrations as $registration)
                         <tr class="border-b hover:bg-gray-50 registration-row" data-status="{{ $registration->status_pendaftaran }}">
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3">
                                 <div class="font-mono text-xs font-bold text-primary">{{ $registration->id_pendaftaran }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $registration->nama_lengkap }}</div>
+                                <div class="font-medium text-gray-900 text-sm">{{ Str::limit($registration->nama_lengkap, 20) }}</div>
                                 <div class="text-xs text-gray-500">{{ $registration->user->email }}</div>
-                                <div class="text-xs text-gray-500">{{ $registration->nomor_telpon_orang_tua }}</div>
+                                <div class="text-xs text-gray-500 md:hidden">
+                                    {{ $registration->package->name }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3 hidden md:table-cell">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                                     {{ $registration->package->name }}
                                 </span>
-                                <div class="text-xs text-gray-500 mt-1">{{ $registration->formatted_total_biaya }}</div>
+                                <div class="text-xs text-gray-500 mt-1">{{ $registration->program_unggulan_name }}</div>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="status-badge {{ $registration->status_pendaftaran }}">
-                                    {{ $registration->status_label }}
-                                </span>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center">
+                                    <span class="status-badge {{ $registration->status_pendaftaran }} text-xs">
+                                        {{ $registration->status_label }}
+                                    </span>
+                                    @if($registration->needs_re_review)
+                                    <span class="needs-review-badge" title="Data telah diperbarui setelah penolakan">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        Perlu Review
+                                    </span>
+                                    @endif
+                                </div>
                                 @if($registration->dilihat_pada)
-                                <div class="text-xs text-gray-500 mt-1">
+                                <div class="text-xs text-gray-500 mt-1 hidden lg:block">
                                     Dilihat: {{ $registration->dilihat_pada->translatedFormat('d M Y H:i') }}
                                 </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $registration->created_at->translatedFormat('d F Y') }}</div>
-                                <div class="text-xs text-gray-500">{{ $registration->created_at->format('H:i') }}</div>
-                            </td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-3 hidden lg:table-cell">
                                 @php
-                                    $docCount = 0;
-                                    if ($registration->kartu_keluaga_path) $docCount++;
-                                    if ($registration->ijazah_path) $docCount++;
-                                    if ($registration->akta_kelahiran_path) $docCount++;
-                                    if ($registration->pas_foto_path) $docCount++;
+                                    $docCount = $registration->uploaded_documents_count;
+                                    $progressPercentage = ($docCount / 4) * 100;
                                 @endphp
-                                <div class="flex items-center">
+                                <div class="flex items-center space-x-2">
                                     <span class="text-sm {{ $docCount == 4 ? 'text-green-600' : 'text-orange-600' }}">
                                         {{ $docCount }}/4
                                     </span>
-                                    @if($docCount == 4)
-                                    <i class="fas fa-check-circle text-green-500 ml-2"></i>
-                                    @else
-                                    <i class="fas fa-exclamation-triangle text-orange-500 ml-2"></i>
-                                    @endif
+                                    <div class="document-progress w-16">
+                                        <div class="document-progress-bar {{ $docCount == 4 ? 'bg-green-500' : 'bg-orange-500' }}"
+                                             style="width: {{ $progressPercentage }}%"></div>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
+                            <td class="px-4 py-3">
+                                <div class="action-buttons flex flex-col space-y-1">
                                     <a href="{{ route('admin.registrations.show', $registration) }}"
-                                       class="action-btn view text-center">
-                                        <i class="fas fa-eye mr-1"></i> Detail
+                                       class="action-btn view">
+                                        <i class="fas fa-eye"></i>
+                                        <span>Detail</span>
                                     </a>
 
-                                    @if($registration->status_pendaftaran == 'menunggu_diverifikasi')
+                                    <!-- Tombol Setuju dan Tolak muncul untuk status menunggu dan perlu review -->
+                                    {{-- @if(in_array($registration->status_pendaftaran, ['menunggu_diverifikasi', 'perlu_review']))
                                     <button onclick="updateStatus('{{ $registration->id }}', 'diterima')"
-                                            class="action-btn verify text-center">
-                                        <i class="fas fa-check mr-1"></i> Terima
+                                            class="action-btn setuju"
+                                            {{ !$registration->is_documents_complete || !$registration->is_biodata_complete || !$registration->has_successful_payment ? 'disabled' : '' }}>
+                                        <i class="fas fa-check"></i>
+                                        <span>Setuju</span>
                                     </button>
                                     <button onclick="showRejectModal('{{ $registration->id }}')"
-                                            class="action-btn reject text-center">
-                                        <i class="fas fa-times mr-1"></i> Tolak
+                                            class="action-btn tolak">
+                                        <i class="fas fa-times"></i>
+                                        <span>Tolak</span>
                                     </button>
-                                    @endif
+                                    @endif --}}
 
-                                    @if($registration->status_pendaftaran == 'ditolak')
+                                    @if($registration->status_pendaftaran == 'ditolak' && !$registration->needs_re_review)
                                     <button onclick="sendWhatsAppNotification('{{ $registration->id }}')"
-                                            class="action-btn whatsapp text-center">
-                                        <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                                            class="action-btn whatsapp">
+                                        <i class="fab fa-whatsapp"></i>
+                                        <span>WhatsApp</span>
                                     </button>
                                     @endif
                                 </div>
@@ -225,7 +253,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-8 text-center">
+                            <td colspan="5" class="px-6 py-8 text-center">
                                 <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
                                 <p class="text-gray-500">Belum ada data pendaftaran</p>
                             </td>
@@ -235,9 +263,8 @@
                 </table>
             </div>
 
-            <!-- Pagination - PERBAIKAN: Gunakan pagination yang benar -->
             @if($registrations->hasPages())
-            <div class="px-6 py-4 bg-gray-50 border-t">
+            <div class="px-4 md:px-6 py-4 bg-gray-50 border-t">
                 {{ $registrations->links() }}
             </div>
             @endif
@@ -245,7 +272,7 @@
     </main>
 
     <!-- Reject Modal -->
-    <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
         <div class="bg-white rounded-xl p-6 w-full max-w-md">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Tolak Pendaftaran</h3>
             <form id="rejectForm">
@@ -280,11 +307,9 @@
         tab.addEventListener('click', function() {
             const filter = this.dataset.filter;
 
-            // Update active tab
             document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
 
-            // Filter rows
             document.querySelectorAll('.registration-row').forEach(row => {
                 if (filter === 'all' || row.dataset.status === filter) {
                     row.style.display = '';
@@ -298,7 +323,7 @@
     // Update status function
     function updateStatus(registrationId, status) {
         const message = status === 'diterima'
-            ? 'Apakah Anda yakin ingin menerima pendaftaran ini?'
+            ? 'Apakah Anda yakin ingin menyetujui pendaftaran ini?'
             : 'Apakah Anda yakin ingin menolak pendaftaran ini?';
 
         Swal.fire({
@@ -308,7 +333,7 @@
             showCancelButton: true,
             confirmButtonColor: status === 'diterima' ? '#10b981' : '#ef4444',
             cancelButtonColor: '#6b7280',
-            confirmButtonText: status === 'diterima' ? 'Ya, Terima' : 'Ya, Tolak',
+            confirmButtonText: status === 'diterima' ? 'Ya, Setuju' : 'Ya, Tolak',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {

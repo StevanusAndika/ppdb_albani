@@ -7,7 +7,7 @@
     <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
-            <div class="hidden md:flex space-x-6 items-center">
+            <div class=" md:flex space-x-6 items-center">
                 <a href="{{ route('santri.dashboard') }}" class="text-primary hover:text-secondary font-medium">Dashboard</a>
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf

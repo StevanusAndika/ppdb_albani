@@ -61,7 +61,9 @@ class Registration extends Model
         'pas_foto_path',
         'status_pendaftaran',
         'catatan_admin',
-        'dilihat_pada'
+        'dilihat_pada',
+        'ditolak_pada',
+        'diperbarui_setelah_ditolak'
     ];
 
     protected $casts = [
@@ -69,9 +71,22 @@ class Registration extends Model
         'penghasilan_ayah' => 'decimal:2',
         'penghasilan_ibu' => 'decimal:2',
         'dilihat_pada' => 'datetime',
+        'ditolak_pada' => 'datetime',
+        'diperbarui_setelah_ditolak' => 'boolean'
     ];
 
-    protected $appends = ['status_label', 'total_biaya', 'formatted_total_biaya', 'qr_code_url'];
+    protected $appends = [
+        'status_label',
+        'total_biaya',
+        'formatted_total_biaya',
+        'qr_code_url',
+        'program_unggulan_name',
+        'is_biodata_complete',
+        'is_documents_complete',
+        'has_successful_payment',
+        'uploaded_documents_count',
+        'needs_re_review'
+    ];
 
     protected static function boot()
     {
@@ -84,8 +99,26 @@ class Registration extends Model
         });
 
         static::created(function ($registration) {
-            // Generate QR Code otomatis setelah registrasi dibuat
             $registration->generateQrCode();
+        });
+
+        static::updating(function ($registration) {
+            // Jika status sebelumnya ditolak dan sedang diupdate data penting, tandai sebagai diperbarui
+            if ($registration->isDirty() && $registration->getOriginal('status_pendaftaran') === 'ditolak') {
+                $importantFields = [
+                    'nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
+                    'alamat_tinggal', 'kecamatan', 'kelurahan', 'kota', 'kode_pos',
+                    'nama_ibu_kandung', 'nama_ayah_kandung', 'nomor_telpon_orang_tua', 'agama',
+                    'kartu_keluaga_path', 'ijazah_path', 'akta_kelahiran_path', 'pas_foto_path'
+                ];
+
+                foreach ($importantFields as $field) {
+                    if ($registration->isDirty($field)) {
+                        $registration->diperbarui_setelah_ditolak = true;
+                        break;
+                    }
+                }
+            }
         });
 
         static::deleting(function ($registration) {
@@ -104,6 +137,11 @@ class Registration extends Model
         return $this->payments()
             ->whereIn('status', ['success', 'lunas'])
             ->exists();
+    }
+
+    public function getHasSuccessfulPaymentAttribute()
+    {
+        return $this->hasSuccessfulPayment();
     }
 
     public function hasPendingPayment()
@@ -138,7 +176,8 @@ class Registration extends Model
             'telah_dilihat' => 'Telah Dilihat',
             'menunggu_diverifikasi' => 'Menunggu Diverifikasi',
             'ditolak' => 'Ditolak',
-            'diterima' => 'Diterima'
+            'diterima' => 'Diterima',
+            'perlu_review' => 'Perlu Review Ulang'
         ];
 
         return $statuses[$this->status_pendaftaran] ?? $this->status_pendaftaran;
@@ -146,14 +185,11 @@ class Registration extends Model
 
     public function getTotalBiayaAttribute()
     {
-        // Jika package sudah diload via relationship
         if ($this->relationLoaded('package') && $this->package) {
-            // Cek jika package memiliki total_amount
             if (isset($this->package->total_amount) && $this->package->total_amount > 0) {
                 return $this->package->total_amount;
             }
 
-            // Jika tidak, hitung dari prices
             if ($this->package->relationLoaded('prices')) {
                 return $this->package->prices->where('is_active', true)->sum('amount');
             } else {
@@ -161,7 +197,6 @@ class Registration extends Model
             }
         }
 
-        // Jika belum, load manual
         if ($this->package_id) {
             $package = Package::with(['prices' => function($query) {
                 $query->active();
@@ -194,20 +229,36 @@ class Registration extends Model
 
     public function markAsPending()
     {
-        $this->update(['status_pendaftaran' => 'menunggu_diverifikasi']);
+        $this->update([
+            'status_pendaftaran' => 'menunggu_diverifikasi',
+            'diperbarui_setelah_ditolak' => false
+        ]);
     }
 
     public function markAsRejected($catatan = null)
     {
         $this->update([
             'status_pendaftaran' => 'ditolak',
-            'catatan_admin' => $catatan
+            'catatan_admin' => $catatan,
+            'ditolak_pada' => now(),
+            'diperbarui_setelah_ditolak' => false
         ]);
     }
 
     public function markAsApproved()
     {
-        $this->update(['status_pendaftaran' => 'diterima']);
+        $this->update([
+            'status_pendaftaran' => 'diterima',
+            'diperbarui_setelah_ditolak' => false
+        ]);
+    }
+
+    public function markAsNeedsReview()
+    {
+        $this->update([
+            'status_pendaftaran' => 'perlu_review',
+            'diperbarui_setelah_ditolak' => false
+        ]);
     }
 
     public function hasAllDocuments()
@@ -216,6 +267,123 @@ class Registration extends Model
                !empty($this->ijazah_path) &&
                !empty($this->akta_kelahiran_path) &&
                !empty($this->pas_foto_path);
+    }
+
+    public function getIsDocumentsCompleteAttribute()
+    {
+      return $this->uploaded_documents_count === 4;
+    }
+
+    /**
+     * Hitung jumlah dokumen yang sudah diupload
+     */
+    public function getUploadedDocumentsCountAttribute()
+    {
+        $count = 0;
+        if (!empty($this->kartu_keluaga_path)) $count++;
+        if (!empty($this->ijazah_path)) $count++;
+        if (!empty($this->akta_kelahiran_path)) $count++;
+        if (!empty($this->pas_foto_path)) $count++;
+        return $count;
+    }
+
+    /**
+     * Cek apakah perlu review ulang (status ditolak tapi data diperbarui)
+     */
+    public function getNeedsReReviewAttribute()
+    {
+        return $this->status_pendaftaran === 'ditolak' && $this->diperbarui_setelah_ditolak;
+    }
+
+    /**
+     * Cek kelengkapan biodata dengan field opsional
+     */
+    public function isBiodataComplete()
+    {
+        $requiredFields = [
+            'nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
+            'alamat_tinggal', 'kecamatan', 'kelurahan', 'kota', 'kode_pos',
+            'nama_ibu_kandung', 'nama_ayah_kandung', 'nomor_telpon_orang_tua', 'agama'
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (empty($this->$field)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function getIsBiodataCompleteAttribute()
+    {
+        return $this->isBiodataComplete();
+    }
+
+    /**
+     * Get program unggulan dari ContentSetting dengan perbaikan
+     */
+    public function getProgramUnggulanAttribute()
+    {
+        if (!$this->program_unggulan_id) {
+            return null;
+        }
+
+        try {
+            $contentSetting = ContentSetting::first();
+            if (!$contentSetting) {
+                return null;
+            }
+
+            $programs = $contentSetting->program_unggulan ?? [];
+
+            if (is_string($programs)) {
+                $programs = json_decode($programs, true) ?? [];
+            }
+
+            foreach ($programs as $program) {
+                if (isset($program['id']) && $program['id'] == $this->program_unggulan_id) {
+                    return $program;
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            \Log::error('Error getting program unggulan: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get program unggulan name dengan fallback
+     */
+    public function getProgramUnggulanNameAttribute()
+    {
+        try {
+            $program = $this->program_unggulan;
+
+            if ($program && isset($program['nama_program'])) {
+                return $program['nama_program'];
+            }
+
+            if ($this->program_unggulan_id) {
+                return " " . $this->program_unggulan_id;
+            }
+
+            return 'Belum memilih program';
+        } catch (\Exception $e) {
+            \Log::error('Error getting program name: ' . $e->getMessage());
+            return 'Error loading program';
+        }
+    }
+
+    /**
+     * Get program unggulan description
+     */
+    public function getProgramUnggulanDescriptionAttribute()
+    {
+        $program = $this->program_unggulan;
+        return $program['deskripsi'] ?? '';
     }
 
     /**
@@ -293,25 +461,21 @@ class Registration extends Model
     public function generateQrCode()
     {
         try {
-            // Pastikan directory qr-codes exists
             if (!Storage::disk('public')->exists('qr-codes')) {
                 Storage::disk('public')->makeDirectory('qr-codes');
             }
 
-            // URL yang akan di-encode dalam QR Code
             $qrCodeUrl = route('barcode.show', $this->id_pendaftaran);
 
-            // Generate QR Code sebagai PNG
             $qrCode = DNS2D::getBarcodePNG(
                 $qrCodeUrl,
                 'QRCODE',
-                8, // Ukuran lebih besar untuk QR Code
+                8,
                 8,
                 array(0,0,0),
                 true
             );
 
-            // Simpan ke storage
             $filename = 'qr-codes/' . $this->id_pendaftaran . '.png';
             Storage::disk('public')->put($filename, base64_decode($qrCode));
 
@@ -333,7 +497,6 @@ class Registration extends Model
             return Storage::disk('public')->url($filename);
         }
 
-        // Generate jika belum ada
         $generated = $this->generateQrCode();
         return $generated ? Storage::disk('public')->url($generated) : null;
     }
@@ -376,18 +539,15 @@ class Registration extends Model
     }
 
     /**
-     * ALIAS METHOD untuk kompatibilitas - HAPUS METHOD INI JIKA SUDAH TIDAK DIPERLUKAN
-     * Method ini hanya untuk backward compatibility
+     * ALIAS METHOD untuk kompatibilitas
      */
     public function hasBarcode()
     {
         return $this->hasQrCode();
     }
 
-    // Di dalam model Registration.php
     public function programUnggulan()
     {
-        // Ganti 'ProgramUnggulan' dengan nama model yang sesuai
         return $this->belongsTo(ContentSetting::class, 'program_unggulan_id');
     }
 }

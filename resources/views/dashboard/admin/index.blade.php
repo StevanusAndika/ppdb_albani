@@ -212,7 +212,8 @@
                                                 'telah_dilihat' => 'bg-yellow-100 text-yellow-800',
                                                 'menunggu_diverifikasi' => 'bg-orange-100 text-orange-800',
                                                 'ditolak' => 'bg-red-100 text-red-800',
-                                                'diterima' => 'bg-green-100 text-green-800'
+                                                'diterima' => 'bg-green-100 text-green-800',
+                                                'perlu_review' => 'bg-purple-100 text-purple-800',
                                             ];
                                         @endphp
                                         <span class="text-xs font-medium px-2 py-1 rounded-full {{ $statusColors[$registration->status_pendaftaran] }}">
@@ -266,7 +267,27 @@
                 </div>
                 @endif
 
-               <!-- Di bagian Quick Actions -->
+
+
+                <!-- Additional Quick Actions -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Kelola Konten Website</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="{{ route('admin.content.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                            <i class="fas fa-edit text-2xl mb-2"></i>
+                            <p>Kelola Konten</p>
+                        </a>
+                        <a href="{{ route('admin.settings.index') }}" class="bg-teal-500 hover:bg-teal-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                            <i class="fas fa-cogs text-2xl mb-2"></i>
+                            <p>Pengaturan</p>
+                        </a>
+                        <a href="{{ route('admin.billing.packages.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                            <i class="fas fa-box text-2xl mb-2"></i>
+                            <p>Kelola Paket</p>
+                        </a>
+                    </div>
+                </div>
+                <!-- Di bagian Quick Actions -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -289,25 +310,23 @@
                         </a>
                     </div>
                 </div>
-
-                <!-- Additional Quick Actions -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Kelola Konten Website</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <a href="{{ route('admin.content.index') }}" class="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                            <i class="fas fa-edit text-2xl mb-2"></i>
-                            <p>Kelola Konten</p>
-                        </a>
-                        <a href="{{ route('admin.settings.index') }}" class="bg-teal-500 hover:bg-teal-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                            <i class="fas fa-cogs text-2xl mb-2"></i>
-                            <p>Pengaturan</p>
-                        </a>
-                        <a href="{{ route('admin.billing.packages.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
-                            <i class="fas fa-box text-2xl mb-2"></i>
-                            <p>Kelola Paket</p>
-                        </a>
-                    </div>
+                  <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Support Menu</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="#" class="bg-yellow-500 hover:bg-yellow-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                        <i class="fas fa-bell text-2xl mb-2"></i>
+                        <p>Kirim Notif Tes Tertulis</p>
+                    </a>
+                    <a href="#" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                        <i class="fas fa-qrcode text-2xl mb-2"></i>
+                        <p>Scan QR Calon Santri</p>
+                    </a>
+                    <a href="{{ route('admin.quota.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                        <i class="fas fa-chart-pie text-2xl mb-2"></i>
+                        <p>Kelola Kuota Pendaftaran</p>
+                    </a>
                 </div>
+            </div>
             </div>
         </div>
     </main>

@@ -32,11 +32,11 @@
             align-items: flex-start;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #e91e63;
+            border-bottom: 2px solid #057572;
         }
 
         .pesantren-info h1 {
-            color: #e91e63;
+            color: #057572;
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 5px;
@@ -53,7 +53,7 @@
         }
 
         .invoice-title h2 {
-            color: #e91e63;
+            color: #057572;
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 5px;
@@ -76,11 +76,11 @@
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
-            border-left: 4px solid #e91e63;
+            border-left: 4px solid #057572;
         }
 
         .info-box h3 {
-            color: #e91e63;
+            color: #057572;
             font-size: 16px;
             font-weight: 600;
             margin-bottom: 15px;
@@ -120,7 +120,7 @@
         }
 
         .items-table th {
-            background: #e91e63;
+            background: #057572;
             color: white;
             padding: 12px 15px;
             text-align: left;
@@ -161,7 +161,7 @@
         .total-row.grand-total {
             font-size: 18px;
             font-weight: 700;
-            color: #e91e63;
+            color: #057572;
             border-top: 2px solid #e9ecef;
             padding-top: 10px;
             margin-top: 10px;
@@ -293,7 +293,7 @@
                 <h1>Pondok Pesantren Al-Qur'an Bani Syahid</h1>
                 <p class="tagline">Lembaga Pendidikan Islam Berbasis Al-Qur'an dan Sunnah</p>
                 <p style="margin-top: 10px; font-size: 14px; color: #666;">
-                    Jl. Pesantren No. 123, Jakarta Selatan<br>
+                   Jl. Kp. Tipar Tengah, RT.5/RW.10, Mekarsari, Kec. Cimanggis, Kota Depok, Jawa Barat 16452<br>
                     Telp: (021) 1234-5678 | Email: admin@banisyahid.sch.id
                 </p>
             </div>
@@ -484,7 +484,7 @@
         <div class="footer">
             <p>
                 <strong>Pondok Pesantren Al-Qur'an Bani Syahid</strong><br>
-                Jl. Pesantren No. 123, Jakarta Selatan | Telp: (021) 1234-5678<br>
+                 Jl. Kp. Tipar Tengah, RT.5/RW.10, Mekarsari, Kec. Cimanggis, Kota Depok, Jawa Barat 16452 | Telp: (021) 1234-5678<br>
                 Email: admin@banisyahid.sch.id | Website: www.banisyahid.sch.id
             </p>
             <p style="margin-top: 10px;">
@@ -495,7 +495,7 @@
         <!-- Print Button (Hanya tampil di browser) -->
         <div class="no-print" style="text-align: center; margin-top: 30px;">
             <button onclick="window.print()" style="
-                background: #e91e63;
+                background: #057572;
                 color: white;
                 border: none;
                 padding: 12px 24px;
@@ -508,18 +508,7 @@
                 <i class="fas fa-print"></i> Print Invoice
             </button>
 
-            <button onclick="downloadPDF()" style="
-                background: #28a745;
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 6px;
-                font-size: 16px;
-                font-weight: 600;
-                cursor: pointer;
-            ">
-                <i class="fas fa-download"></i> Download PDF
-            </button>
+
         </div>
     </div>
 
