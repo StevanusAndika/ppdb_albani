@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Transaksi - Pondok Pesantren Bani Syahid')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 font-sans full-width-page">
+<div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
         <div class="container mx-auto flex justify-between items-center">
