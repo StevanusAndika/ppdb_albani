@@ -125,6 +125,10 @@ class RegistrationController extends Controller
             $errors[] = 'Belum ada pembayaran yang lunas';
         }
 
+        // tambahin cek kuota==================================================
+
+        //=====================================================================
+
         if (!empty($errors)) {
             return [
                 'success' => false,
