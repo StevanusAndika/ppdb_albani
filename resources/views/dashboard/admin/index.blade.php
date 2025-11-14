@@ -321,7 +321,7 @@
                         <i class="fas fa-qrcode text-2xl mb-2"></i>
                         <p>Scan QR Calon Santri</p>
                     </a>
-                    <a href="{{ route('admin.quota.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
+                                        <a href="{{ route('admin.quota.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition duration-200 text-center">
                         <i class="fas fa-chart-pie text-2xl mb-2"></i>
                         <p>Kelola Kuota Pendaftaran</p>
                     </a>

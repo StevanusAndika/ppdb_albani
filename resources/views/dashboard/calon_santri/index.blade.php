@@ -116,6 +116,16 @@
                         </button>
                     </div>
                     @endif
+
+                    <!-- Barcode Button -->
+                    {{-- @if($registration && $barcodeUrl)
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <button onclick="showBarcodeModal()" class="w-full bg-indigo-600 text-white py-2 rounded-full hover:bg-indigo-700 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-qrcode mr-2"></i> Lihat QR Code
+                        </button>
+                        <p class="text-xs text-gray-500 text-center mt-2">Untuk verifikasi pendaftaran</p>
+                    </div>
+                    @endif --}}
                 </div>
 
                 <!-- Quick Menu Card -->
@@ -147,6 +157,23 @@
                             </div>
                         </a>
 
+                        <!-- Barcode Card -->
+                        @if($registration && $barcodeUrl)
+                        {{-- <a href="javascript:void(0)" onclick="showBarcodeModal()" class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg p-4 text-center hover:from-indigo-600 hover:to-indigo-700 transition duration-300 transform hover:scale-105">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-qrcode text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">QR Code</span>
+                            </div>
+                        </a> --}}
+                        @else
+                        <div class="bg-gradient-to-br from-gray-300 to-gray-400 text-white rounded-lg p-4 text-center opacity-50">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-qrcode text-2xl mb-2"></i>
+                                <span class="font-semibold text-sm">QR Code</span>
+                            </div>
+                        </div>
+                        @endif
+
                         <!-- Settings Card -->
                         <a href="{{ route('santri.settings.index') }}" class="bg-gradient-to-br from-gray-600 to-gray-700 text-white rounded-lg p-4 text-center hover:from-gray-700 hover:to-gray-800 transition duration-300 transform hover:scale-105">
                             <div class="flex flex-col items-center">
@@ -170,6 +197,7 @@
                                 <span class="font-semibold text-sm">Kegiatan</span>
                             </div>
                         </a>
+
                         <a href="https://api.whatsapp.com/send?phone=6287748115931&text=Halo%20Admin%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid%2C%20saya%20memiliki%20kendala%20atau%20ingin%20konsultasi%20seputar%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid"
                         class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-4 text-center hover:from-green-600 hover:to-green-700 transition duration-300 transform hover:scale-105">
                             <div class="flex flex-col items-center">
@@ -202,6 +230,12 @@
                                     'route' => route('santri.payments.index'),
                                     'color' => 'purple'
                                 ],
+                                'QR Code' => [
+                                    'completed' => $registration && $barcodeUrl,
+                                    'route' => 'javascript:void(0)',
+                                    'onclick' => 'showBarcodeModal()',
+                                    'color' => 'indigo'
+                                ],
                                 'Pengaturan' => [
                                     'completed' => true,
                                     'route' => route('santri.settings.index'),
@@ -211,7 +245,9 @@
                         @endphp
 
                         @foreach($progressItems as $label => $item)
-                        <a href="{{ $item['route'] }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition duration-300">
+                        <a href="{{ $item['route'] }}"
+                           @if(isset($item['onclick'])) onclick="{{ $item['onclick'] }}" @endif
+                           class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition duration-300">
                             <div class="flex items-center">
                                 <div class="w-3 h-3 rounded-full bg-{{ $item['color'] }}-500 mr-3"></div>
                                 <span class="text-sm font-medium text-gray-700">{{ $label }}</span>
@@ -291,15 +327,21 @@
                         </div>
                     </div>
 
-                    <!-- Progress Card -->
+                    <!-- Barcode Card -->
                     <div class="bg-white rounded-xl shadow-md p-6">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-orange-500 rounded-md p-3">
-                                <i class="fas fa-chart-line text-white text-xl"></i>
+                            <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                                <i class="fas fa-qrcode text-white text-xl"></i>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Progress</p>
-                                <p class="text-lg font-semibold text-gray-900">{{ $totalProgress }}%</p>
+                                <p class="text-sm font-medium text-gray-600">QR Code</p>
+                                @if($registration && $barcodeUrl)
+                                    <button onclick="showBarcodeModal()" class="text-lg font-semibold text-indigo-600 hover:text-indigo-800">
+                                        Tersedia
+                                    </button>
+                                @else
+                                    <p class="text-lg font-semibold text-gray-900">-</p>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -458,6 +500,68 @@
                     @endif
                 </div>
 
+                <!-- Barcode Section -->
+                @if($registration && $barcodeUrl)
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-primary">QR Code Pendaftaran</h3>
+                        <div class="flex gap-2">
+                            <button onclick="showBarcodeModal()" class="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition duration-300 text-sm flex items-center">
+                                <i class="fas fa-expand mr-1"></i> Lihat Fullscreen
+                            </button>
+                            <a href="{{ $barcodeDownloadUrl }}" class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition duration-300 text-sm flex items-center">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <!-- QR Code Preview -->
+                        <div class="bg-white p-4 rounded-lg border-2 border-indigo-200 shadow-sm">
+                            <img src="{{ $barcodeUrl }}"
+                                 alt="QR Code Pendaftaran"
+                                 class="w-48 h-48 mx-auto qr-fade-in"
+                                 id="barcodePreview">
+                        </div>
+
+                        <!-- Barcode Information -->
+                        <div class="flex-1">
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-700 mb-2">Informasi QR Code</h4>
+                                    <p class="text-sm text-gray-600">
+                                        QR Code ini berisi informasi pendaftaran Anda dan dapat digunakan untuk verifikasi oleh admin.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-xs text-gray-500">ID Pendaftaran</p>
+                                        <p class="font-mono font-bold text-primary">{{ $registration->id_pendaftaran }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500">Status</p>
+                                        <p class="font-semibold text-green-600">Aktif</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="showBarcodeModal()" class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition duration-300 text-sm flex items-center">
+                                        <i class="fas fa-eye mr-1"></i> Lihat Detail
+                                    </button>
+                                    <a href="{{ $barcodeDownloadUrl }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm flex items-center">
+                                        <i class="fas fa-download mr-1"></i> Download
+                                    </a>
+                                    <a href="{{ $barcodeInfoUrl }}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300 text-sm flex items-center">
+                                        <i class="fas fa-external-link-alt mr-1"></i> Info Page
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Dokumen Section -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -604,16 +708,89 @@
                             <p class="font-semibold">Riwayat Bayar</p>
                             <p class="text-sm opacity-75">Lihat status pembayaran</p>
                         </a>
-                        <a href="{{ route('santri.settings.index') }}" class="p-4 border-2 border-gray-500 rounded-lg text-center hover:bg-gray-500 hover:text-white transition duration-300">
-                            <i class="fas fa-cog text-2xl mb-2"></i>
-                            <p class="font-semibold">Pengaturan</p>
-                            <p class="text-sm opacity-75">Kelola akun & profil</p>
-                        </a>
+                        @if($registration && $barcodeUrl)
+                        {{-- <a href="javascript:void(0)" onclick="showBarcodeModal()" class="p-4 border-2 border-indigo-500 rounded-lg text-center hover:bg-indigo-500 hover:text-white transition duration-300">
+                            <i class="fas fa-qrcode text-2xl mb-2"></i>
+                            <p class="font-semibold">QR Code</p>
+                            <p class="text-sm opacity-75">Lihat barcode pendaftaran</p>
+                        </a> --}}
+                        @else
+                        <div class="p-4 border-2 border-gray-300 rounded-lg text-center text-gray-400">
+                            <i class="fas fa-qrcode text-2xl mb-2"></i>
+                            <p class="font-semibold">QR Code</p>
+                            <p class="text-sm opacity-75">Tersedia setelah daftar</p>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Barcode Modal -->
+    <div id="barcodeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-primary">QR Code Pendaftaran</h3>
+                <button onclick="closeBarcodeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            @if($registration && $barcodeUrl)
+            <div class="text-center">
+                <!-- QR Code Image -->
+                <div class="bg-white p-4 rounded-lg border-2 border-gray-200 mb-4">
+                    <img src="{{ $barcodeUrl }}"
+                         alt="QR Code Pendaftaran"
+                         class="w-64 h-64 mx-auto qr-fade-in"
+                         id="barcodeImage">
+                </div>
+
+                <!-- ID Pendaftaran -->
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600">ID Pendaftaran:</p>
+                    <p class="font-mono font-bold text-lg text-primary">{{ $registration->id_pendaftaran }}</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{{ $barcodeDownloadUrl }}"
+                       class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-download mr-2"></i> Download QR 
+                    </a>
+                    <a href="{{ $barcodeInfoUrl }}"
+                       target="_blank"
+                       class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-external-link-alt mr-2"></i> Info Lengkap
+                    </a>
+                    <button onclick="refreshBarcode()"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-sync-alt mr-2"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- Information -->
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-700">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        QR Code ini dapat digunakan untuk verifikasi pendaftaran Anda
+                    </p>
+                </div>
+            </div>
+            @else
+            <div class="text-center py-6">
+                <i class="fas fa-qrcode text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500">QR Code akan tersedia setelah Anda menyelesaikan pendaftaran</p>
+                @if(!$registration)
+                <a href="{{ route('santri.biodata.index') }}" class="inline-block mt-3 bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary transition duration-300">
+                    Mulai Pendaftaran
+                </a>
+                @endif
+            </div>
+            @endif
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-primary text-white py-8 px-4 mt-6">
@@ -706,6 +883,72 @@
                 });
             });
         }
+
+        // Barcode Modal Functions
+        function showBarcodeModal() {
+            const modal = document.getElementById('barcodeModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                // Refresh barcode image to ensure it's current
+                refreshBarcode();
+            }
+        }
+
+        function closeBarcodeModal() {
+            const modal = document.getElementById('barcodeModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function refreshBarcode() {
+            const barcodeImage = document.getElementById('barcodeImage');
+            const barcodePreview = document.getElementById('barcodePreview');
+
+            if (barcodeImage && '{{ $barcodeUrl }}') {
+                // Add timestamp to prevent caching
+                const timestamp = new Date().getTime();
+                barcodeImage.src = '{{ $barcodeUrl }}' + '?t=' + timestamp;
+
+                // Show loading effect
+                barcodeImage.classList.remove('qr-fade-in');
+                setTimeout(() => {
+                    barcodeImage.classList.add('qr-fade-in');
+                }, 100);
+            }
+
+            if (barcodePreview && '{{ $barcodeUrl }}') {
+                const timestamp = new Date().getTime();
+                barcodePreview.src = '{{ $barcodeUrl }}' + '?t=' + timestamp;
+
+                barcodePreview.classList.remove('qr-fade-in');
+                setTimeout(() => {
+                    barcodePreview.classList.add('qr-fade-in');
+                }, 100);
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'QR Code Diperbarui',
+                text: 'QR Code berhasil diperbarui',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('barcodeModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBarcodeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeBarcodeModal();
+            }
+        });
 
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

@@ -30,7 +30,7 @@ Route::prefix('barcode')->name('barcode.')->group(function () {
     Route::get('/{id_pendaftaran}', [BarcodeController::class, 'show'])->name('show');
     Route::get('/{id_pendaftaran}/download', [BarcodeController::class, 'download'])->name('download');
     Route::get('/{id_pendaftaran}/image', [BarcodeController::class, 'getQrCode'])->name('image');
-    Route::get('/scan/{id_pendaftaran}', [BarcodeController::class, 'scan'])->name('scan');
+    Route::get('/scan/{id_pendaftaran}', [BarcodeController::class, 'scan'])->name('scan'); // ← UTAMA untuk scan QR
     Route::get('/generate/all', [BarcodeController::class, 'generateAll'])->name('generate.all');
 });
 
@@ -174,17 +174,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/generate-password', [ManageUserController::class, 'generatePassword'])->name('generate-password');
     });
 
-    // Registration Management
+    // Registration Management - PENTING untuk redirect admin dari barcode
     Route::prefix('registrations')->name('registrations.')->group(function () {
         Route::get('/', [RegistrationController::class, 'index'])->name('index');
-        Route::get('/{registration}', [RegistrationController::class, 'show'])->name('show');
+        Route::get('/{registration}', [RegistrationController::class, 'show'])->name('show'); // ← INI yang digunakan untuk redirect
         Route::put('/{registration}/status', [RegistrationController::class, 'updateStatus'])->name('update-status');
         Route::post('/{registration}/send-notification', [RegistrationController::class, 'sendNotification'])->name('send-notification');
         Route::post('/{registration}/upload-document', [RegistrationController::class, 'uploadDocument'])->name('upload-document');
         Route::put('/{registration}/admin-notes', [RegistrationController::class, 'updateAdminNotes'])->name('update-admin-notes');
         Route::post('/{registration}/reset-pending', [RegistrationController::class, 'resetToPending'])->name('reset-pending');
 
-        // Routes baru untuk akses dokumen
+        // Routes untuk akses dokumen
         Route::get('/{registration}/document/{documentType}/view', [RegistrationController::class, 'viewDocument'])->name('view-document');
         Route::get('/{registration}/document/{documentType}/download', [RegistrationController::class, 'downloadDocument'])->name('download-document');
         Route::get('/{registration}/document/{documentType}/url', [RegistrationController::class, 'getDocumentUrl'])->name('get-document-url');
@@ -200,7 +200,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/bulk-update', [AdminPaymentController::class, 'bulkUpdate'])->name('bulk-update');
         Route::get('/export', [AdminPaymentController::class, 'export'])->name('export');
 
-        // Tambahkan route untuk manual sync
+        // Route untuk manual sync
         Route::post('/{payment}/manual-sync', [PaymentController::class, 'manualSync'])->name('manual-sync');
     });
 });
@@ -226,7 +226,7 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::get('/package/{package}/prices', [BiodataController::class, 'getPackagePrices'])->name('package.prices');
     });
 
-    // Document Routes - FIXED ROUTES
+    // Document Routes
     Route::prefix('documents')->name('documents.')->group(function () {
         Route::get('/', [DocumentController::class, 'index'])->name('index');
         Route::post('/upload/{documentType}', [DocumentController::class, 'upload'])->name('upload');

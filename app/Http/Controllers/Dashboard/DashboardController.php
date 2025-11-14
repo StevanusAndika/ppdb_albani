@@ -123,6 +123,16 @@ class DashboardController extends Controller
             'total_progress' => $totalProgress,
         ];
 
+        // Generate barcode URL jika ada registrasi
+        $barcodeUrl = null;
+        $barcodeDownloadUrl = null;
+        $barcodeInfoUrl = null;
+        if ($registration) {
+            $barcodeUrl = route('barcode.image', $registration->id_pendaftaran);
+            $barcodeDownloadUrl = route('barcode.download', $registration->id_pendaftaran);
+            $barcodeInfoUrl = route('barcode.show', $registration->id_pendaftaran);
+        }
+
         return view('dashboard.calon_santri.index', compact(
             'registration',
             'documentProgress',
@@ -132,7 +142,10 @@ class DashboardController extends Controller
             'userAnnouncements',
             'stats',
             'programUnggulan',
-            'totalProgress'
+            'totalProgress',
+            'barcodeUrl',
+            'barcodeDownloadUrl',
+            'barcodeInfoUrl'
         ));
     }
 

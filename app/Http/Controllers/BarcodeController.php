@@ -6,6 +6,7 @@ use App\Models\Registration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class BarcodeController extends Controller
 {
@@ -22,6 +23,11 @@ class BarcodeController extends Controller
             // Generate QR Code jika belum ada
             if (!$registration->hasQrCode()) {
                 $registration->generateQrCode();
+            }
+
+            // CEK JIKA USER LOGIN SEBAGAI ADMIN, REDIRECT LANGSUNG KE ADMIN
+            if (Auth::check() && Auth::user()->isAdmin()) {
+                return redirect()->route('admin.registrations.show', $registration->id);
             }
 
             return view('barcode.info', compact('registration'));
@@ -85,11 +91,34 @@ class BarcodeController extends Controller
     }
 
     /**
-     * Scan QR Code and redirect to info page
+     * Scan QR Code and redirect based on user role - REDIRECT LANGSUNG
      */
     public function scan($id_pendaftaran)
     {
-        return redirect()->route('barcode.show', $id_pendaftaran);
+        try {
+            // Cek apakah pendaftaran exist
+            $registration = Registration::where('id_pendaftaran', $id_pendaftaran)->firstOrFail();
+
+            // Jika user tidak login, redirect ke public info page
+            if (!Auth::check()) {
+                return redirect()->route('barcode.show', $id_pendaftaran);
+            }
+
+            // Cek role user yang login
+            $user = Auth::user();
+
+            if ($user->isAdmin()) {
+                // Jika admin, redirect LANGSUNG ke halaman detail pendaftaran di admin
+                return redirect()->route('admin.registrations.show', $registration->id);
+            } else {
+                // Jika calon_santri atau role lainnya, redirect ke public info page
+                return redirect()->route('barcode.show', $id_pendaftaran);
+            }
+
+        } catch (\Exception $e) {
+            // Fallback jika ada error, redirect ke public info page
+            return redirect()->route('barcode.show', $id_pendaftaran);
+        }
     }
 
     /**
