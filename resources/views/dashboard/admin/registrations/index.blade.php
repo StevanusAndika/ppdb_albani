@@ -59,7 +59,11 @@
 @endsection
 
 @section('content')
+<<<<<<< HEAD
 <div class="min-h-screen bg-gray-50 font-sans">
+=======
+<div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
+>>>>>>> e7f3d13a5fca599c6b8e36a9c2fb8f120c9c74d3
     <!-- Navbar -->
     <nav class="bg-white shadow-md py-3 px-4 md:px-6 rounded-xl mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
