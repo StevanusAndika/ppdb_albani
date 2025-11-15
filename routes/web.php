@@ -18,7 +18,7 @@ use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\FAQ\FAQController;
 use App\Http\Controllers\Kegiatan\KegiatanController;
 use App\Http\Controllers\Announcement\AnnouncementController;
-use App\Http\Controllers\UserSetting\SettingController as UserSettingController;
+use App\Http\Controllers\usersetting\SettingController as UserSettingController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\Quota\QuotaController;
 

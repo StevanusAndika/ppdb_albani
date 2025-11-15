@@ -253,7 +253,7 @@
                                     <p class="text-sm text-gray-600 mt-1">{{ Str::limit($announcement->message, 100) }}</p>
                                     <div class="flex items-center gap-2 mt-2">
                                         <span class="text-xs text-gray-500">
-                                            {{ $announcement->sent_at->format('d M Y H:i') }}
+
                                         </span>
                                         <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
                                             Terkirim

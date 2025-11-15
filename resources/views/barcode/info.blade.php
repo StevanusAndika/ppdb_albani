@@ -68,7 +68,7 @@
             <!-- Information Grid -->
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Data Pribadi -->
-                <div class="space-y-4">
+                {{-- <div class="space-y-4">
                     <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
                         <i class="fas fa-user mr-2 text-blue-600"></i>Data Pribadi
                     </h3>
@@ -91,10 +91,10 @@
                             <p class="font-medium">{{ ucfirst($registration->agama) }}</p>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Kontak & Alamat -->
-                <div class="space-y-4">
+                {{-- <div class="space-y-4">
                     <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
                         <i class="fas fa-address-book mr-2 text-green-600"></i>Kontak & Alamat
                     </h3>
@@ -113,10 +113,10 @@
                             <p class="font-medium">{{ $registration->nomor_telpon_orang_tua }}</p>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Data Orang Tua -->
-                <div class="space-y-4">
+                {{-- <div class="space-y-4">
                     <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
                         <i class="fas fa-users mr-2 text-purple-600"></i>Data Orang Tua
                     </h3>
@@ -139,7 +139,7 @@
                             <p class="font-medium">{{ $registration->pekerjaan_ibu }}</p>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Pendidikan -->
                 <div class="space-y-4">
