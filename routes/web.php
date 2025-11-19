@@ -21,16 +21,17 @@ use App\Http\Controllers\Announcement\AnnouncementController;
 use App\Http\Controllers\usersetting\SettingController as UserSettingController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\Quota\QuotaController;
+use App\Http\Controllers\Announcement\SeleksiAnnoucementController; // TAMBAHKAN INI
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
-// QR Code Routes (Public - no auth required)
+// QR Code Routes
 Route::prefix('barcode')->name('barcode.')->group(function () {
     Route::get('/{id_pendaftaran}', [BarcodeController::class, 'show'])->name('show');
     Route::get('/{id_pendaftaran}/download', [BarcodeController::class, 'download'])->name('download');
     Route::get('/{id_pendaftaran}/image', [BarcodeController::class, 'getQrCode'])->name('image');
-    Route::get('/scan/{id_pendaftaran}', [BarcodeController::class, 'scan'])->name('scan'); // ← UTAMA untuk scan QR
+    Route::get('/scan/{id_pendaftaran}', [BarcodeController::class, 'scan'])->name('scan');
     Route::get('/generate/all', [BarcodeController::class, 'generateAll'])->name('generate.all');
 });
 
@@ -41,39 +42,21 @@ Route::middleware('guest')->group(function () {
     Route::get('/check-quota', [AuthController::class, 'checkQuota'])->name('auth.checkQuota');
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-
-    // Password Reset Routes
-    Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])
-        ->name('password.request');
-    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])
-        ->name('password.reset');
-
-    // Auth action routes
+    Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-
-    // Password Reset Action Routes
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])
-        ->name('password.email');
-    Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])
-        ->name('password.verify.otp');
-    Route::post('/reset-password', [PasswordResetController::class, 'reset'])
-        ->name('password.update');
-    Route::post('/resend-otp', [PasswordResetController::class, 'resendOtp'])
-        ->name('password.resend.otp');
-    Route::post('/check-password-cooldown', [PasswordResetController::class, 'checkCooldown'])
-        ->name('password.check.cooldown');
-
-    // Socialite Routes
-    Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])
-        ->name('socialite.redirect');
-    Route::get('/auth/{provider}/callback', [AuthController::class, 'handleProvideCallback'])
-        ->name('socialite.callback');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])->name('password.verify.otp');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+    Route::post('/resend-otp', [PasswordResetController::class, 'resendOtp'])->name('password.resend.otp');
+    Route::post('/check-password-cooldown', [PasswordResetController::class, 'checkCooldown'])->name('password.check.cooldown');
+    Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])->name('socialite.redirect');
+    Route::get('/auth/{provider}/callback', [AuthController::class, 'handleProvideCallback'])->name('socialite.callback');
 });
 
 // Socialite Registration Route
-Route::post('/socialite/register', [AuthController::class, 'handleSocialiteRegistration'])
-    ->name('socialite.register.post');
+Route::post('/socialite/register', [AuthController::class, 'handleSocialiteRegistration'])->name('socialite.register.post');
 
 // Logout route
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -84,21 +67,21 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
 
-    // Announcement Routes
+    // Announcement Routes (Pengumuman Kelulusan)
     Route::prefix('announcements')->name('announcements.')->group(function () {
         Route::get('/', [AnnouncementController::class, 'index'])->name('index');
+        Route::post('/send-individual/{registrationId}', [AnnouncementController::class, 'sendIndividualMessage'])->name('send-individual');
+        Route::post('/send-bulk', [AnnouncementController::class, 'sendBulkMessage'])->name('send-bulk');
+        // Tambahkan route baru untuk update status seleksi
+    Route::post('/update-status-seleksi/{registrationId}', [AnnouncementController::class, 'updateStatusSeleksi'])->name('update-status-seleksi');
+    });
 
-        // Route untuk individual message
-        Route::post('/send-individual/{registrationId}', [AnnouncementController::class, 'sendIndividualMessage'])
-             ->name('send-individual');
-
-        // Route untuk bulk message
-        Route::post('/send-bulk', [AnnouncementController::class, 'sendBulkMessage'])
-             ->name('send-bulk');
-
-        // Route untuk all santri
-        Route::post('/send-all-santri', [AnnouncementController::class, 'sendToAllSantri'])
-             ->name('send-all-santri');
+    // Seleksi Announcement Routes (Undangan Tes Seleksi) - TAMBAHKAN INI
+    Route::prefix('seleksi-announcements')->name('seleksi-announcements.')->group(function () {
+        Route::get('/', [SeleksiAnnoucementController::class, 'index'])->name('index');
+        Route::post('/send-individual/{registrationId}', [SeleksiAnnoucementController::class, 'sendIndividualSeleksi'])->name('send-individual');
+        Route::post('/send-bulk', [SeleksiAnnoucementController::class, 'sendBulkSeleksi'])->name('send-bulk');
+        Route::post('/send-all-santri', [SeleksiAnnoucementController::class, 'sendToAllSantriSeleksi'])->name('send-all-santri');
     });
 
     // Quota Management Routes
@@ -109,6 +92,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{quota}', [QuotaController::class, 'destroy'])->name('destroy');
         Route::post('/{quota}/activate', [QuotaController::class, 'activate'])->name('activate');
         Route::post('/{quota}/reset', [QuotaController::class, 'reset'])->name('reset');
+        Route::get('/check-availability', [QuotaController::class, 'checkAvailability'])->name('check-availability');
     });
 
     // Content Management
@@ -116,16 +100,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [KontenController::class, 'index'])->name('index');
         Route::put('/update', [KontenController::class, 'update'])->name('update');
         Route::delete('/file/{fileType}', [KontenController::class, 'deleteFile'])->name('file.delete');
-
-        // Program Unggulan Routes
         Route::post('/program/add', [KontenController::class, 'addProgram'])->name('program.add');
         Route::delete('/program/{index}', [KontenController::class, 'deleteProgram'])->name('program.delete');
-
-        // FAQ Routes
         Route::post('/faq/add', [KontenController::class, 'addFaq'])->name('faq.add');
         Route::delete('/faq/{index}', [KontenController::class, 'deleteFaq'])->name('faq.delete');
-
-        // Kegiatan Routes
         Route::post('/kegiatan/add', [KontenController::class, 'addKegiatan'])->name('kegiatan.add');
         Route::delete('/kegiatan/{index}', [KontenController::class, 'deleteKegiatan'])->name('kegiatan.delete');
     });
@@ -174,17 +152,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/generate-password', [ManageUserController::class, 'generatePassword'])->name('generate-password');
     });
 
-    // Registration Management - PENTING untuk redirect admin dari barcode
+    // Registration Management
     Route::prefix('registrations')->name('registrations.')->group(function () {
         Route::get('/', [RegistrationController::class, 'index'])->name('index');
-        Route::get('/{registration}', [RegistrationController::class, 'show'])->name('show'); // ← INI yang digunakan untuk redirect
+        Route::get('/{registration}', [RegistrationController::class, 'show'])->name('show');
+
+        // Update Status Routes
         Route::put('/{registration}/status', [RegistrationController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{registration}/status-seleksi', [RegistrationController::class, 'updateStatusSeleksi'])->name('update-status-seleksi');
+        Route::post('/{registration}/update-documents-rejection', [RegistrationController::class, 'updateDocumentsWithRejection'])->name('update-documents-rejection');
+
+        // Notification Routes
         Route::post('/{registration}/send-notification', [RegistrationController::class, 'sendNotification'])->name('send-notification');
+
+        // Document Management Routes
         Route::post('/{registration}/upload-document', [RegistrationController::class, 'uploadDocument'])->name('upload-document');
         Route::put('/{registration}/admin-notes', [RegistrationController::class, 'updateAdminNotes'])->name('update-admin-notes');
         Route::post('/{registration}/reset-pending', [RegistrationController::class, 'resetToPending'])->name('reset-pending');
 
-        // Routes untuk akses dokumen
+        // Document View/Download Routes
         Route::get('/{registration}/document/{documentType}/view', [RegistrationController::class, 'viewDocument'])->name('view-document');
         Route::get('/{registration}/document/{documentType}/download', [RegistrationController::class, 'downloadDocument'])->name('download-document');
         Route::get('/{registration}/document/{documentType}/url', [RegistrationController::class, 'getDocumentUrl'])->name('get-document-url');
@@ -199,15 +185,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{payment}/status', [AdminPaymentController::class, 'updateStatus'])->name('update-status');
         Route::post('/bulk-update', [AdminPaymentController::class, 'bulkUpdate'])->name('bulk-update');
         Route::get('/export', [AdminPaymentController::class, 'export'])->name('export');
-
-        // Route untuk manual sync
         Route::post('/{payment}/manual-sync', [PaymentController::class, 'manualSync'])->name('manual-sync');
     });
 });
 
 // Santri Routes
 Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(function () {
+    // Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'santriDashboard'])->name('dashboard');
+    Route::get('/dashboard/document-progress', [DashboardController::class, 'getDocumentProgress'])->name('dashboard.document-progress');
 
     // FAQ Routes
     Route::prefix('faq')->name('faq.')->group(function () {
@@ -223,6 +209,9 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
     Route::prefix('biodata')->name('biodata.')->group(function () {
         Route::get('/', [BiodataController::class, 'index'])->name('index');
         Route::post('/', [BiodataController::class, 'store'])->name('store');
+        Route::get('/show', [BiodataController::class, 'show'])->name('show');
+        Route::get('/edit', [BiodataController::class, 'edit'])->name('edit');
+        Route::put('/update', [BiodataController::class, 'update'])->name('update');
         Route::get('/package/{package}/prices', [BiodataController::class, 'getPackagePrices'])->name('package.prices');
     });
 
@@ -236,9 +225,10 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::post('/complete', [DocumentController::class, 'completeRegistration'])->name('complete');
         Route::get('/progress', [DocumentController::class, 'getProgress'])->name('progress');
         Route::get('/download-all', [DocumentController::class, 'downloadAll'])->name('download-all');
-
-        // Test routes (optional)
         Route::get('/test-image', [DocumentController::class, 'testImage'])->name('test-image');
+        Route::get('/check-quota-delete-all', [DocumentController::class, 'checkQuotaForDeleteAll'])->name('check-quota-delete-all');
+        Route::delete('/delete-all', [DocumentController::class, 'deleteAllDocuments'])->name('delete-all');
+        Route::get('/check-complete', [DocumentController::class, 'checkAllDocumentsCompleteApi'])->name('check-complete');
     });
 
     // Payment Routes
@@ -254,6 +244,7 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::get('/check-status/{paymentCode}', [PaymentController::class, 'checkStatus'])->name('check-status');
         Route::get('/retry/{paymentCode}', [PaymentController::class, 'retryPayment'])->name('retry');
         Route::post('/manual-sync/{paymentCode}', [PaymentController::class, 'manualSync'])->name('manual-sync');
+        Route::get('/check-quota', [PaymentController::class, 'checkQuota'])->name('check-quota');
     });
 
     // Settings Routes untuk Calon Santri
@@ -269,7 +260,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-// Xendit Webhook Route (public - no auth required)
+// Xendit Webhook Route
 Route::post('/webhook/xendit', [PaymentController::class, 'webhook'])
     ->name('webhook.xendit')
     ->withoutMiddleware(['web']);

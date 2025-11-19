@@ -49,12 +49,14 @@ class RegistrationController extends Controller
     {
         $request->validate([
             'status' => 'required|in:telah_dilihat,menunggu_diverifikasi,ditolak,diterima,perlu_review',
+            'status_seleksi' => 'required|in:sudah_mengikuti_seleksi,belum_mengikuti_seleksi', // TAMBAHKAN VALIDASI
             'catatan' => 'nullable|string|max:1000'
         ]);
 
         try {
             $oldStatus = $registration->status_pendaftaran;
             $newStatus = $request->status;
+            $newStatusSeleksi = $request->status_seleksi;
 
             // Validasi untuk status diterima
             if ($newStatus === 'diterima') {
@@ -89,10 +91,116 @@ class RegistrationController extends Controller
                     break;
             }
 
+            // Update status seleksi
+            if ($newStatusSeleksi === 'sudah_mengikuti_seleksi') {
+                $registration->markAsSudahSeleksi();
+            } else {
+                $registration->markAsBelumSeleksi();
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Status pendaftaran berhasil diupdate.',
-                'status_label' => $registration->status_label
+                'status_label' => $registration->status_label,
+                'status_seleksi_label' => $registration->status_seleksi_label
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update status seleksi saja
+     */
+    public function updateStatusSeleksi(Request $request, Registration $registration)
+    {
+        $request->validate([
+            'status_seleksi' => 'required|in:sudah_mengikuti_seleksi,belum_mengikuti_seleksi'
+        ]);
+
+        try {
+            if ($request->status_seleksi === 'sudah_mengikuti_seleksi') {
+                $registration->markAsSudahSeleksi();
+            } else {
+                $registration->markAsBelumSeleksi();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status seleksi berhasil diupdate.',
+                'status_seleksi_label' => $registration->status_seleksi_label
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update dokumen dengan penolakan
+     */
+    public function updateDocumentsWithRejection(Request $request, Registration $registration)
+    {
+        $request->validate([
+            'reject_reason' => 'required|string|max:1000',
+            'keep_kartu_keluarga' => 'boolean',
+            'keep_ijazah' => 'boolean',
+            'keep_akta_kelahiran' => 'boolean',
+            'keep_pas_foto' => 'boolean'
+        ]);
+
+        try {
+            // Hapus dokumen yang tidak dicentang
+            if (!$request->keep_kartu_keluarga && $registration->kartu_keluaga_path) {
+                if (Storage::disk('public')->exists($registration->kartu_keluaga_path)) {
+                    Storage::disk('public')->delete($registration->kartu_keluaga_path);
+                }
+                $registration->kartu_keluaga_path = null;
+            }
+
+            if (!$request->keep_ijazah && $registration->ijazah_path) {
+                if (Storage::disk('public')->exists($registration->ijazah_path)) {
+                    Storage::disk('public')->delete($registration->ijazah_path);
+                }
+                $registration->ijazah_path = null;
+            }
+
+            if (!$request->keep_akta_kelahiran && $registration->akta_kelahiran_path) {
+                if (Storage::disk('public')->exists($registration->akta_kelahiran_path)) {
+                    Storage::disk('public')->delete($registration->akta_kelahiran_path);
+                }
+                $registration->akta_kelahiran_path = null;
+            }
+
+            if (!$request->keep_pas_foto && $registration->pas_foto_path) {
+                if (Storage::disk('public')->exists($registration->pas_foto_path)) {
+                    Storage::disk('public')->delete($registration->pas_foto_path);
+                }
+                $registration->pas_foto_path = null;
+            }
+
+            // Update status dan catatan
+            $registration->update([
+                'status_pendaftaran' => 'ditolak',
+                'catatan_admin' => $request->reject_reason,
+                'ditolak_pada' => now(),
+                'diperbarui_setelah_ditolak' => false
+            ]);
+
+            // Kirim notifikasi penolakan
+            $this->sendRejectionNotification($registration);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Dokumen berhasil diperbarui dan pendaftaran ditolak.',
+                'uploaded_documents_count' => $registration->fresh()->uploaded_documents_count
             ]);
 
         } catch (\Exception $e) {

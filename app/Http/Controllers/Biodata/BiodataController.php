@@ -128,14 +128,16 @@ class BiodataController extends Controller
         try {
             if ($existingRegistration) {
                 $existingRegistration->update(array_merge($validated, [
-                    'status_pendaftaran' => 'telah_mengisi'
+                    'status_pendaftaran' => 'telah_mengisi',
+                    'status_seleksi' => 'belum_mengikuti_seleksi' // SET DEFAULT
                 ]));
                 $registration = $existingRegistration;
                 $message = 'Biodata berhasil diperbarui';
             } else {
                 $registration = Registration::create(array_merge($validated, [
                     'user_id' => $user->id,
-                    'status_pendaftaran' => 'telah_mengisi'
+                    'status_pendaftaran' => 'telah_mengisi',
+                    'status_seleksi' => 'belum_mengikuti_seleksi' // SET DEFAULT
                 ]));
                 $message = 'Biodata berhasil disimpan';
             }
@@ -296,7 +298,8 @@ class BiodataController extends Controller
         DB::beginTransaction();
         try {
             $registration->update(array_merge($validated, [
-                'status_pendaftaran' => 'telah_mengisi'
+                'status_pendaftaran' => 'telah_mengisi',
+                'status_seleksi' => 'belum_mengikuti_seleksi' // SET DEFAULT
             ]));
 
             DB::commit();

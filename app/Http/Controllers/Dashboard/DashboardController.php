@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Models\Announcement;
 use App\Models\ContentSetting;
+use App\Models\Quota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,7 +38,6 @@ class DashboardController extends Controller
             'success_payments' => Payment::whereIn('status', ['success', 'lunas'])->count(),
             'pending_payments' => Payment::whereIn('status', ['pending', 'waiting_payment'])->count(),
             'total_users' => User::count(),
-            // Tambahan stats untuk announcement
             'eligible_for_announcement' => $this->getEligibleRegistrationsCount(),
             'sent_announcements' => Announcement::where('status', 'sent')->count(),
         ];
@@ -52,7 +52,6 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Data untuk announcement preview
         $recentAnnouncements = Announcement::with('registration.user')
             ->orderBy('created_at', 'desc')
             ->limit(3)
@@ -65,7 +64,6 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Ambil data registrasi dengan relasi yang benar
         $registration = Registration::with(['package', 'package.prices' => function($query) {
             $query->where('is_active', true)->orderBy('order');
         }])
@@ -73,16 +71,29 @@ class DashboardController extends Controller
         ->first();
 
         $documentProgress = 0;
+        $uploadedDocuments = [];
+        $uploadedCount = 0;
+        $totalDocuments = 4;
+
         if ($registration) {
-            $uploadedCount = 0;
-            if ($registration->kartu_keluaga_path) $uploadedCount++;
-            if ($registration->ijazah_path) $uploadedCount++;
-            if ($registration->akta_kelahiran_path) $uploadedCount++;
-            if ($registration->pas_foto_path) $uploadedCount++;
-            $documentProgress = ($uploadedCount / 4) * 100;
+            $documents = [
+                'kartu_keluarga' => $registration->kartu_keluaga_path,
+                'ijazah' => $registration->ijazah_path,
+                'akta_kelahiran' => $registration->akta_kelahiran_path,
+                'pas_foto' => $registration->pas_foto_path
+            ];
+
+            foreach ($documents as $type => $path) {
+                $isUploaded = !empty($path);
+                $uploadedDocuments[$type] = $isUploaded;
+                if ($isUploaded) {
+                    $uploadedCount++;
+                }
+            }
+
+            $documentProgress = ($uploadedCount / $totalDocuments) * 100;
         }
 
-        // Ambil data pembayaran
         $payments = collect();
         $latestPayment = null;
         $hasSuccessfulPayment = false;
@@ -96,7 +107,6 @@ class DashboardController extends Controller
             $hasSuccessfulPayment = $payments->whereIn('status', ['success', 'lunas'])->isNotEmpty();
         }
 
-        // Ambil pengumuman untuk santri
         $userAnnouncements = collect();
         if ($registration) {
             $userAnnouncements = Announcement::where('registration_id', $registration->id)
@@ -106,24 +116,31 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        // Ambil program unggulan untuk ditampilkan di dashboard
         $contentSettings = ContentSetting::first();
         $programUnggulan = $contentSettings ? ($contentSettings->program_unggulan_data ?? []) : [];
 
-        // Hitung total progress
-        $totalProgress = $this->calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment);
+        $totalProgress = $this->calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment, $uploadedDocuments);
 
-        // Stats untuk dashboard santri
+        $quota = Quota::getActiveQuota();
+        $quotaAvailable = $quota ? $quota->isAvailable() : false;
+
         $stats = [
             'document_progress' => $documentProgress,
+            'uploaded_count' => $uploadedCount,
+            'total_documents' => $totalDocuments,
+            'uploaded_documents' => $uploadedDocuments,
             'total_payments' => $payments->count(),
             'success_payments' => $payments->whereIn('status', ['success', 'lunas'])->count(),
             'pending_payments' => $payments->whereIn('status', ['pending', 'waiting_payment'])->count(),
             'announcements_count' => $userAnnouncements->count(),
             'total_progress' => $totalProgress,
+            'quota_available' => $quotaAvailable,
+            'quota_remaining' => $quota ? $quota->sisa : 0,
+            'quota_total' => $quota ? $quota->kuota : 0,
+            'quota_percentage' => $quota ? $quota->persentase_terpakai : 0,
+
         ];
 
-        // Generate barcode URL jika ada registrasi
         $barcodeUrl = null;
         $barcodeDownloadUrl = null;
         $barcodeInfoUrl = null;
@@ -136,6 +153,9 @@ class DashboardController extends Controller
         return view('dashboard.calon_santri.index', compact(
             'registration',
             'documentProgress',
+            'uploadedDocuments',
+            'uploadedCount',
+            'totalDocuments',
             'payments',
             'latestPayment',
             'hasSuccessfulPayment',
@@ -145,35 +165,114 @@ class DashboardController extends Controller
             'totalProgress',
             'barcodeUrl',
             'barcodeDownloadUrl',
-            'barcodeInfoUrl'
+            'barcodeInfoUrl',
+            'quota',
+            'quotaAvailable'
         ));
+    }
+
+    /**
+     * API untuk mendapatkan progress dokumen terbaru
+     */
+    public function getDocumentProgress()
+    {
+        try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.',
+                    'progress' => 0,
+                    'uploaded_count' => 0,
+                    'total_documents' => 4,
+                    'uploaded_documents' => []
+                ], 404);
+            }
+
+            $uploadedDocuments = [];
+            $uploadedCount = 0;
+            $totalDocuments = 4;
+
+            $documents = [
+                'kartu_keluarga' => $registration->kartu_keluaga_path,
+                'ijazah' => $registration->ijazah_path,
+                'akta_kelahiran' => $registration->akta_kelahiran_path,
+                'pas_foto' => $registration->pas_foto_path
+            ];
+
+            foreach ($documents as $type => $path) {
+                $isUploaded = !empty($path);
+                $uploadedDocuments[$type] = $isUploaded;
+                if ($isUploaded) {
+                    $uploadedCount++;
+                }
+            }
+
+            $documentProgress = ($uploadedCount / $totalDocuments) * 100;
+
+            return response()->json([
+                'success' => true,
+                'progress' => $documentProgress,
+                'uploaded_count' => $uploadedCount,
+                'total_documents' => $totalDocuments,
+                'uploaded_documents' => $uploadedDocuments,
+                'all_documents_complete' => $uploadedCount === $totalDocuments
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Get document progress error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil progress dokumen: ' . $e->getMessage(),
+                'progress' => 0,
+                'uploaded_count' => 0,
+                'total_documents' => 4,
+                'uploaded_documents' => []
+            ], 500);
+        }
     }
 
     /**
      * Hitung total progress pendaftaran
      */
-    private function calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment)
+    private function calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment, $uploadedDocuments = [])
     {
-        $totalProgress = 25; // Step 1: Buat Akun selalu complete
+        $totalProgress = 25;
 
         if ($registration) {
-            $totalProgress += 25; // Step 2: Isi Biodata
+            $totalProgress += 25;
         }
 
-        if ($registration && $registration->hasAllDocuments()) {
-            $totalProgress += 25; // Step 3: Upload Dokumen lengkap
-        } elseif ($registration) {
-            // Jika dokumen belum lengkap, hitung berdasarkan progress dokumen
-            $totalProgress += ($documentProgress / 100) * 25;
+        if ($registration) {
+            $documentContribution = ($documentProgress / 100) * 25;
+            $totalProgress += $documentContribution;
         }
 
         if ($hasSuccessfulPayment) {
-            $totalProgress += 25; // Step 4: Pembayaran lunas
-        } elseif ($registration && $registration->hasAllDocuments()) {
-            $totalProgress += 10; // Step 4: Siap bayar (partial progress)
+            $totalProgress += 25;
+        } elseif ($registration && $this->allDocumentsUploaded($uploadedDocuments)) {
+            $totalProgress += 10;
         }
 
         return min(100, round($totalProgress));
+    }
+
+    /**
+     * Cek apakah semua dokumen sudah diupload
+     */
+    private function allDocumentsUploaded($uploadedDocuments)
+    {
+        if (empty($uploadedDocuments)) {
+            return false;
+        }
+
+        return count(array_filter($uploadedDocuments)) === 4;
     }
 
     /**

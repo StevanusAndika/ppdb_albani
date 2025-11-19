@@ -8,6 +8,7 @@ use App\Models\Registration;
 use App\Models\Package;
 use App\Models\Price;
 use App\Models\ContentSetting;
+use App\Models\Quota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +32,17 @@ class PaymentController extends Controller
 
         $hasSuccessfulPayment = $registration ? $registration->hasSuccessfulPayment() : false;
 
-        return view('dashboard.calon_santri.payments.index', compact('payments', 'hasSuccessfulPayment', 'registration'));
+        // Cek ketersediaan kuota
+        $quota = Quota::getActiveQuota();
+        $quotaAvailable = $quota ? $quota->isAvailable() : false;
+
+        return view('dashboard.calon_santri.payments.index', compact(
+            'payments',
+            'hasSuccessfulPayment',
+            'registration',
+            'quota',
+            'quotaAvailable'
+        ));
     }
 
     /**
@@ -54,6 +65,18 @@ class PaymentController extends Controller
         if (!$registration->hasAllDocuments()) {
             return redirect()->route('santri.dashboard')
                 ->with('error', 'Anda belum melengkapi semua dokumen. Silakan upload semua dokumen terlebih dahulu sebelum melakukan pembayaran.');
+        }
+
+        // CEK KETERSEDIAAN KUOTA
+        $quota = Quota::getActiveQuota();
+        if (!$quota) {
+            return redirect()->route('santri.payments.index')
+                ->with('error', 'Maaf, belum ada kuota pendaftaran yang tersedia. Silakan hubungi admin.');
+        }
+
+        if (!$quota->isAvailable()) {
+            return redirect()->route('santri.payments.index')
+                ->with('error', 'Maaf, kuota pendaftaran sudah penuh. Silakan coba lagi di periode berikutnya.');
         }
 
         // Cek apakah sudah ada pembayaran yang berhasil
@@ -94,7 +117,8 @@ class PaymentController extends Controller
         return view('dashboard.calon_santri.payments.create', compact(
             'registration',
             'packagePrices',
-            'programUnggulanName'
+            'programUnggulanName',
+            'quota'
         ));
     }
 
@@ -116,6 +140,16 @@ class PaymentController extends Controller
         // Cek apakah sudah ada pembayaran berhasil
         if ($registration->hasSuccessfulPayment()) {
             return back()->with('error', 'Anda sudah memiliki pembayaran yang berhasil. Tidak perlu melakukan pembayaran lagi.');
+        }
+
+        // CEK KETERSEDIAAN KUOTA SEBELUM PROSES PEMBAYARAN
+        $quota = Quota::getActiveQuota();
+        if (!$quota) {
+            return back()->with('error', 'Maaf, belum ada kuota pendaftaran yang tersedia. Silakan hubungi admin.');
+        }
+
+        if (!$quota->isAvailable()) {
+            return back()->with('error', 'Maaf, kuota pendaftaran sudah penuh. Pembayaran tidak dapat diproses.');
         }
 
         $request->validate([
@@ -146,6 +180,12 @@ class PaymentController extends Controller
                 throw new \Exception('Jumlah pembayaran tidak valid. Silakan hubungi admin. Package: ' . ($package->name ?? 'Unknown'));
             }
 
+            // RESERVE KUOTA SEBELUM MEMBUAT PEMBAYARAN
+            $quotaReserved = Quota::reserveQuota();
+            if (!$quotaReserved) {
+                throw new \Exception('Kuota pendaftaran sudah penuh. Pembayaran tidak dapat diproses.');
+            }
+
             // Generate payment code
             $paymentCode = 'PAY-' . date('YmdHis') . '-' . strtoupper(uniqid());
 
@@ -163,7 +203,9 @@ class PaymentController extends Controller
                 'payment_id' => $payment->id,
                 'amount' => $totalAmount,
                 'method' => $request->payment_method,
-                'payment_code' => $paymentCode
+                'payment_code' => $paymentCode,
+                'quota_reserved' => true,
+                'quota_remaining' => $quota->sisa
             ]);
 
             if ($request->payment_method === 'cash') {
@@ -250,16 +292,21 @@ class PaymentController extends Controller
                     return redirect($invoice['invoice_url']);
 
                 } else {
+                    // BATALKAN RESERVASI KUOTA JIKA GAGAL
+                    Quota::releaseQuota();
                     DB::rollBack();
                     Log::error('Xendit invoice creation failed:', [
                         'error' => $xenditResult['message'],
-                        'payment_id' => $payment->id
+                        'payment_id' => $payment->id,
+                        'quota_released' => true
                     ]);
                     return back()->with('error', 'Gagal membuat pembayaran: ' . $xenditResult['message']);
                 }
             }
 
         } catch (\Exception $e) {
+            // BATALKAN RESERVASI KUOTA JIKA ADA ERROR
+            Quota::releaseQuota();
             DB::rollBack();
             Log::error('Payment store error: ' . $e->getMessage());
             Log::error('Payment store trace: ' . $e->getTraceAsString());
@@ -391,7 +438,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Xendit webhook handler - DIPERBAIKI dengan kirim bukti pembayaran
+     * Xendit webhook handler - DIPERBAIKI dengan handle kuota untuk failed payment
      */
     public function webhook(Request $request)
     {
@@ -468,6 +515,7 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
+            $oldStatus = $payment->status;
             $newStatus = $this->mapXenditStatus($status);
 
             $updateData = [
@@ -484,65 +532,15 @@ class PaymentController extends Controller
 
             Log::info('Payment updated successfully', [
                 'payment_id' => $payment->id,
-                'old_status' => $payment->getOriginal('status'),
+                'old_status' => $oldStatus,
                 'new_status' => $newStatus
             ]);
 
+            // HANDLE KUOTA BERDASARKAN STATUS
+            $this->handleQuotaBasedOnPaymentStatus($oldStatus, $newStatus, $payment);
+
             // Kirim notifikasi WhatsApp berdasarkan status
-            $fonnte = app('fonnte');
-            $user = $payment->user;
-
-            switch ($newStatus) {
-                case 'success':
-                    // Ambil data program unggulan dengan benar
-                    $programUnggulanName = 'Tidak ada program unggulan';
-                    if ($payment->registration->program_unggulan_id) {
-                        $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
-                        if ($programUnggulan) {
-                            $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-                        }
-                    }
-
-                    // Kirim bukti pembayaran sukses
-                    $fonnte->sendPaymentSuccess(
-                        $user->getFormattedPhoneNumber(),
-                        $user->name,
-                        $payment->payment_code,
-                        number_format($payment->amount, 0, ',', '.'),
-                        $payment->registration->package->name ?? 'Paket Pendaftaran',
-                        $programUnggulanName
-                    );
-
-                    // Update status pendaftaran
-                    $payment->registration->update([
-                        'status_pendaftaran' => 'diterima'
-                    ]);
-
-                    Log::info('Registration status updated to diterima', [
-                        'registration_id' => $payment->registration->id
-                    ]);
-                    break;
-
-                case 'failed':
-                    $failureReason = $request->failure_reason ?? 'Tidak diketahui';
-                    $fonnte->sendPaymentFailed(
-                        $user->getFormattedPhoneNumber(),
-                        $user->name,
-                        $payment->payment_code,
-                        number_format($payment->amount, 0, ',', '.'),
-                        $failureReason
-                    );
-                    break;
-
-                case 'expired':
-                    $fonnte->sendPaymentExpired(
-                        $user->getFormattedPhoneNumber(),
-                        $user->name,
-                        $payment->payment_code,
-                        number_format($payment->amount, 0, ',', '.')
-                    );
-                    break;
-            }
+            $this->sendPaymentNotification($payment, $newStatus, $request);
 
             DB::commit();
 
@@ -558,6 +556,105 @@ class PaymentController extends Controller
             Log::error('Webhook processing error: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json(['message' => 'Error processing webhook: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Handle kuota berdasarkan status payment
+     */
+    private function handleQuotaBasedOnPaymentStatus($oldStatus, $newStatus, $payment)
+    {
+        // Jika payment berhasil dari status pending/waiting
+        if (($oldStatus === 'pending' || $oldStatus === 'waiting_payment') && $newStatus === 'success') {
+            // Kuota sudah di-reserve di store(), hanya log
+            Log::info('Payment success - kuota sudah di-reserve sebelumnya', [
+                'payment_id' => $payment->id,
+                'quota_status' => 'reserved'
+            ]);
+        }
+        // Jika payment gagal/expired dari status pending/waiting
+        elseif (($oldStatus === 'pending' || $oldStatus === 'waiting_payment') &&
+                 in_array($newStatus, ['failed', 'expired'])) {
+            // BATALKAN RESERVASI KUOTA
+            $released = Quota::releaseQuota();
+            Log::info('Payment failed/expired - kuota released', [
+                'payment_id' => $payment->id,
+                'from_status' => $oldStatus,
+                'to_status' => $newStatus,
+                'quota_released' => $released
+            ]);
+        }
+        // Jika payment berhasil dari status failed/expired (retry success)
+        elseif (in_array($oldStatus, ['failed', 'expired']) && $newStatus === 'success') {
+            // RESERVE KUOTA KEMBALI karena ini adalah retry yang berhasil
+            $reserved = Quota::reserveQuota();
+            Log::info('Retry payment success - kuota reserved', [
+                'payment_id' => $payment->id,
+                'from_status' => $oldStatus,
+                'to_status' => $newStatus,
+                'quota_reserved' => $reserved
+            ]);
+        }
+    }
+
+    /**
+     * Send payment notification based on status
+     */
+    private function sendPaymentNotification($payment, $status, $request)
+    {
+        $fonnte = app('fonnte');
+        $user = $payment->user;
+
+        switch ($status) {
+            case 'success':
+                // Ambil data program unggulan dengan benar
+                $programUnggulanName = 'Tidak ada program unggulan';
+                if ($payment->registration->program_unggulan_id) {
+                    $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
+                    if ($programUnggulan) {
+                        $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+                    }
+                }
+
+                // Kirim bukti pembayaran sukses
+                $fonnte->sendPaymentSuccess(
+                    $user->getFormattedPhoneNumber(),
+                    $user->name,
+                    $payment->payment_code,
+                    number_format($payment->amount, 0, ',', '.'),
+                    $payment->registration->package->name ?? 'Paket Pendaftaran',
+                    $programUnggulanName
+                );
+
+                // Update status pendaftaran
+                $payment->registration->update([
+                    'status_pendaftaran' => 'diterima'
+                ]);
+
+                Log::info('Registration status updated to diterima', [
+                    'registration_id' => $payment->registration->id
+                ]);
+                break;
+
+            case 'failed':
+                $failureReason = $request->failure_reason ?? 'Tidak diketahui';
+                $fonnte->sendPaymentFailed(
+                    $user->getFormattedPhoneNumber(),
+                    $user->name,
+                    $payment->payment_code,
+                    number_format($payment->amount, 0, ',', '.'),
+                    $failureReason
+                );
+                break;
+
+            case 'expired':
+                $fonnte->sendPaymentExpired(
+                    $user->getFormattedPhoneNumber(),
+                    $user->name,
+                    $payment->payment_code,
+                    number_format($payment->amount, 0, ',', '.')
+                );
+                break;
         }
     }
 
@@ -580,7 +677,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Check payment status manually - DIPERBAIKI untuk auto sync
+     * Check payment status manually - DIPERBAIKI untuk auto sync dengan handle kuota
      */
     public function checkStatus($paymentCode)
     {
@@ -592,6 +689,7 @@ class PaymentController extends Controller
         }
 
         $statusUpdated = false;
+        $oldStatus = $payment->status;
 
         // Jika payment via xendit dan masih pending, check status di xendit
         if ($payment->payment_method === 'xendit' && $payment->isPending() && $payment->xendit_id) {
@@ -604,46 +702,34 @@ class PaymentController extends Controller
                     $newStatus = $this->mapXenditStatus($invoice['status']);
 
                     if ($newStatus !== $payment->status) {
-                        $payment->update([
-                            'status' => $newStatus,
-                            'xendit_response' => array_merge($payment->xendit_response ?? [], $invoice)
-                        ]);
+                        DB::beginTransaction();
+                        try {
+                            $payment->update([
+                                'status' => $newStatus,
+                                'xendit_response' => array_merge($payment->xendit_response ?? [], $invoice)
+                            ]);
 
-                        $statusUpdated = true;
+                            // Handle kuota berdasarkan perubahan status
+                            $this->handleQuotaBasedOnPaymentStatus($oldStatus, $newStatus, $payment);
 
-                        Log::info('Payment status updated manually', [
-                            'payment_id' => $payment->id,
-                            'old_status' => $payment->getOriginal('status'),
-                            'new_status' => $newStatus
-                        ]);
+                            $statusUpdated = true;
 
-                        // Jika status berubah menjadi success, kirim notifikasi
-                        if ($newStatus === 'success') {
-                            $fonnte = app('fonnte');
-                            $user = $payment->user;
+                            Log::info('Payment status updated manually', [
+                                'payment_id' => $payment->id,
+                                'old_status' => $oldStatus,
+                                'new_status' => $newStatus
+                            ]);
 
-                            // Ambil data program unggulan
-                            $programUnggulanName = 'Tidak ada program unggulan';
-                            if ($payment->registration->program_unggulan_id) {
-                                $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
-                                if ($programUnggulan) {
-                                    $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-                                }
+                            // Jika status berubah menjadi success, kirim notifikasi
+                            if ($newStatus === 'success') {
+                                $this->sendPaymentNotification($payment, $newStatus, request());
                             }
 
-                            $fonnte->sendPaymentSuccess(
-                                $user->getFormattedPhoneNumber(),
-                                $user->name,
-                                $payment->payment_code,
-                                number_format($payment->amount, 0, ',', '.'),
-                                $payment->registration->package->name ?? 'Paket Pendaftaran',
-                                $programUnggulanName
-                            );
+                            DB::commit();
 
-                            // Update status pendaftaran
-                            $payment->registration->update([
-                                'status_pendaftaran' => 'diterima'
-                            ]);
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            Log::error('Error updating payment status: ' . $e->getMessage());
                         }
                     }
                 }
@@ -669,7 +755,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * Retry expired payment
+     * Retry expired payment dengan pengecekan kuota
      */
     public function retryPayment($paymentCode)
     {
@@ -690,12 +776,22 @@ class PaymentController extends Controller
             return back()->with('error', 'Anda sudah memiliki pembayaran yang berhasil.');
         }
 
+        // CEK KETERSEDIAAN KUOTA SEBELUM RETRY
+        $quota = Quota::getActiveQuota();
+        if (!$quota) {
+            return back()->with('error', 'Maaf, belum ada kuota pendaftaran yang tersedia. Silakan hubungi admin.');
+        }
+
+        if (!$quota->isAvailable()) {
+            return back()->with('error', 'Maaf, kuota pendaftaran sudah penuh. Tidak dapat melakukan pembayaran ulang.');
+        }
+
         // Redirect ke create payment
         return redirect()->route('santri.payments.create');
     }
 
     /**
-     * Manual sync payment status
+     * Manual sync payment status dengan handle kuota
      */
     public function manualSync($paymentCode)
     {
@@ -714,14 +810,33 @@ class PaymentController extends Controller
                 if ($invoiceResult['success']) {
                     $invoice = $invoiceResult['data'];
                     $newStatus = $this->mapXenditStatus($invoice['status']);
+                    $oldStatus = $payment->status;
 
                     if ($newStatus !== $payment->status) {
-                        $payment->update([
-                            'status' => $newStatus,
-                            'xendit_response' => array_merge($payment->xendit_response ?? [], $invoice)
-                        ]);
+                        DB::beginTransaction();
+                        try {
+                            $payment->update([
+                                'status' => $newStatus,
+                                'xendit_response' => array_merge($payment->xendit_response ?? [], $invoice)
+                            ]);
 
-                        return back()->with('success', 'Status pembayaran berhasil disinkronisasi.');
+                            // Handle kuota berdasarkan perubahan status
+                            $this->handleQuotaBasedOnPaymentStatus($oldStatus, $newStatus, $payment);
+
+                            // Kirim notifikasi jika status berubah
+                            if ($newStatus === 'success') {
+                                $this->sendPaymentNotification($payment, $newStatus, request());
+                            }
+
+                            DB::commit();
+
+                            return back()->with('success', 'Status pembayaran berhasil disinkronisasi.');
+
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            Log::error('Manual sync transaction error: ' . $e->getMessage());
+                            return back()->with('error', 'Terjadi kesalahan saat sinkronisasi: ' . $e->getMessage());
+                        }
                     } else {
                         return back()->with('info', 'Status pembayaran sudah up-to-date.');
                     }
@@ -735,5 +850,33 @@ class PaymentController extends Controller
         }
 
         return back()->with('info', 'Tidak ada pembaruan status.');
+    }
+
+    /**
+     * Check quota availability for AJAX
+     */
+    public function checkQuota()
+    {
+        try {
+            $quota = Quota::getActiveQuota();
+            $isAvailable = $quota ? $quota->isAvailable() : false;
+
+            return response()->json([
+                'success' => true,
+                'available' => $isAvailable,
+                'quota' => $quota ? [
+                    'total' => $quota->kuota,
+                    'used' => $quota->terpakai,
+                    'remaining' => $quota->sisa,
+                    'percentage' => $quota->persentase_terpakai
+                ] : null
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Check quota error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memeriksa kuota'
+            ], 500);
+        }
     }
 }

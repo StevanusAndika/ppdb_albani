@@ -77,7 +77,7 @@ class ManageUserController extends Controller
 
             $message = 'User berhasil ditambahkan.';
             if ($request->password_option === 'generate') {
-                $message .= " Password acak: <strong>{$password}</strong> - Harap dicatat!";
+                $message .= "Harap catat data-data yang telah anda buat!";
             }
 
             return redirect()->route('admin.manage-users.index')

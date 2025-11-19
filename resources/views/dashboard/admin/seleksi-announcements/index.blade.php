@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Pengumuman Kelulusan - Pondok Pesantren Bani Syahid')
+@section('title', 'Undangan Tes Seleksi - Pondok Pesantren Bani Syahid')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
@@ -12,8 +12,8 @@
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
                 <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
                 <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium">Dashboard</a>
-                <a href="{{ route('admin.announcements.index') }}" class="text-primary hover:text-secondary font-medium font-bold">Pengumuman</a>
-                <a href="{{ route('admin.seleksi-announcements.index') }}" class="text-primary hover:text-secondary font-medium">Undangan Seleksi</a>
+                <a href="{{ route('admin.announcements.index') }}" class="text-primary hover:text-secondary font-medium">Pengumuman Kelulusan</a>
+                <a href="{{ route('admin.seleksi-announcements.index') }}" class="text-primary hover:text-secondary font-medium font-bold">Undangan Seleksi</a>
 
                 <form action="{{ route('logout') }}" method="POST" class="ml-4">
                     @csrf
@@ -33,8 +33,8 @@
             <div class="flex flex-col space-y-2">
                 <a href="{{ url('/') }}" class="text-primary">Beranda</a>
                 <a href="{{ route('admin.dashboard') }}" class="text-primary">Dashboard</a>
-                <a href="{{ route('admin.announcements.index') }}" class="text-primary font-bold">Pengumuman</a>
-                <a href="{{ route('admin.seleksi-announcements.index') }}" class="text-primary">Undangan Seleksi</a>
+                <a href="{{ route('admin.announcements.index') }}" class="text-primary">Pengumuman Kelulusan</a>
+                <a href="{{ route('admin.seleksi-announcements.index') }}" class="text-primary font-bold">Undangan Seleksi</a>
 
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
@@ -46,8 +46,8 @@
 
     <!-- Header -->
     <header class="py-8 px-4 text-center">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Pengumuman Kelulusan</h1>
-        <p class="text-secondary">Kirim pesan kelulusan kepada calon santri yang memenuhi syarat</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Undangan Tes Seleksi</h1>
+        <p class="text-secondary">Kirim undangan tes seleksi kepada calon santri yang memenuhi syarat</p>
     </header>
 
     <!-- Main Content -->
@@ -57,8 +57,8 @@
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl shadow-md p-6 mb-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Calon Santri yang Memenuhi Syarat</h3>
-                        <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">
+                        <h3 class="text-lg font-semibold text-gray-800">Calon Santri yang Memenuhi Syarat Seleksi</h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
                             {{ $eligibleRegistrations->count() }} calon santri
                         </span>
                     </div>
@@ -69,7 +69,7 @@
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                 <tr>
                                     <th class="px-4 py-3">Nama Calon Santri</th>
-                                    <th class="px-4 py-3">Status Seleksi</th>
+                                    <th class="px-4 py-3">Status Dokumen</th>
                                     <th class="px-4 py-3">Paket</th>
                                     <th class="px-4 py-3">Telepon</th>
                                     <th class="px-4 py-3">Aksi</th>
@@ -84,18 +84,21 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         @php
-                                            $statusSeleksiColor = match($registration->status_seleksi) {
-                                                'sudah_mengikuti_seleksi' => 'green',
-                                                'belum_mengikuti_seleksi' => 'yellow',
+                                            $statusColor = match($registration->status_pendaftaran) {
+                                                'diterima' => 'green',
+                                                'telah_dilihat' => 'blue',
+                                                'menunggu_diverifikasi' => 'yellow',
+                                                'perlu_review' => 'orange',
+                                                'ditolak' => 'red',
                                                 default => 'gray'
                                             };
                                         @endphp
-                                        <span class="bg-{{ $statusSeleksiColor }}-100 text-{{ $statusSeleksiColor }}-800 text-xs px-2 py-1 rounded-full">
-                                            {{ $registration->status_seleksi_label }}
+                                        <span class="bg-{{ $statusColor }}-100 text-{{ $statusColor }}-800 text-xs px-2 py-1 rounded-full">
+                                            {{ $registration->status_label }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                        <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
                                             {{ $registration->package->name ?? 'Tidak ada paket' }}
                                         </span>
                                     </td>
@@ -103,15 +106,12 @@
                                         {{ $registration->user->phone_number ?? 'Tidak ada telepon' }}
                                     </td>
                                     <td class="px-4 py-3">
-                                        <div class="flex space-x-2">
-                                            <button
-                                                onclick="sendIndividualMessage({{ $registration->id }})"
-                                                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition duration-200"
-                                            >
-                                                <i class="fas fa-paper-plane mr-1"></i> Chat
-                                            </button>
-                                            
-                                        </div>
+                                        <button
+                                            onclick="openIndividualModal({{ $registration->id }}, '{{ $registration->nama_lengkap }}')"
+                                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition duration-200"
+                                        >
+                                            <i class="fas fa-calendar-alt mr-1"></i> Undang
+                                        </button>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -121,21 +121,21 @@
                     @else
                     <div class="text-center py-8">
                         <i class="fas fa-users text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">Belum ada calon santri yang memenuhi syarat</p>
+                        <p class="text-gray-500">Belum ada calon santri yang memenuhi syarat seleksi</p>
                         <p class="text-gray-400 text-sm mt-2">
                             @if($sentCount > 0)
-                                Semua calon santri yang memenuhi syarat sudah dikirimi pesan
+                                Semua calon santri yang memenuhi syarat sudah dikirimi undangan
                             @else
-                                Syarat: Dokumen lengkap, pembayaran lunas, dan status diterima
+                                Syarat: Dokumen lengkap, pembayaran lunas, status belum mengikuti seleksi
                             @endif
                         </p>
                     </div>
                     @endif
                 </div>
 
-                <!-- Riwayat Pengumuman -->
+                <!-- Riwayat Undangan Seleksi -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Pengumuman</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Undangan Seleksi</h3>
 
                     @if($announcements->count() > 0)
                     <div class="space-y-4">
@@ -151,7 +151,7 @@
                                         <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Individual</span>
                                         @endif
                                     </div>
-                                    <p class="text-sm text-gray-600 mt-1">{{ $announcement->message }}</p>
+                                    <p class="text-sm text-gray-600 mt-1">{{ Str::limit($announcement->message, 150) }}</p>
                                     <div class="flex items-center mt-2 text-xs text-gray-500 flex-wrap gap-2">
                                         <span>
                                             <i class="fas fa-users mr-1"></i>
@@ -184,7 +184,7 @@
                     @else
                     <div class="text-center py-8">
                         <i class="fas fa-history text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500">Belum ada riwayat pengumuman</p>
+                        <p class="text-gray-500">Belum ada riwayat undangan seleksi</p>
                     </div>
                     @endif
                 </div>
@@ -199,28 +199,28 @@
                     <div class="space-y-4">
                         <!-- Kirim ke yang memenuhi syarat -->
                         <div class="border border-gray-200 rounded-lg p-4">
-                            <h4 class="font-medium text-gray-800 mb-2">Kirim ke Calon Santri Lolos</h4>
-                            <p class="text-sm text-gray-600 mb-3">Kirim pesan ke semua calon santri yang memenuhi syarat</p>
+                            <h4 class="font-medium text-gray-800 mb-2">Kirim Undangan Seleksi</h4>
+                            <p class="text-sm text-gray-600 mb-3">Kirim undangan dengan range tanggal ke calon santri yang memenuhi syarat</p>
                             <button
-                                onclick="sendBulkMessage()"
+                                onclick="openBulkModal()"
                                 class="w-full bg-primary hover:bg-secondary text-white py-2 rounded-lg transition duration-200 flex items-center justify-center"
                                 {{ $eligibleRegistrations->count() === 0 ? 'disabled' : '' }}
                             >
                                 <i class="fas fa-paper-plane mr-2"></i>
-                                Kirim ({{ $eligibleRegistrations->count() }})
+                                Kirim Undangan ({{ $eligibleRegistrations->count() }})
                             </button>
                         </div>
 
                         <!-- Kirim ke semua santri -->
                         <div class="border border-gray-200 rounded-lg p-4">
                             <h4 class="font-medium text-gray-800 mb-2">Kirim ke Semua Santri</h4>
-                            <p class="text-sm text-gray-600 mb-3">Kirim pesan ke semua user dengan role calon_santri</p>
+                            <p class="text-sm text-gray-600 mb-3">Kirim undangan ke semua user dengan role calon_santri</p>
                             <button
-                                onclick="sendToAllSantri()"
+                                onclick="openAllSantriModal()"
                                 class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg transition duration-200 flex items-center justify-center"
                             >
                                 <i class="fas fa-broadcast-tower mr-2"></i>
-                                Kirim ke Semua
+                                Kirim ke Semua Santri
                             </button>
                         </div>
                     </div>
@@ -228,11 +228,15 @@
 
                 <!-- Info Panel -->
                 <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                    <h4 class="font-semibold text-blue-800 mb-3">Syarat Kelulusan</h4>
+                    <h4 class="font-semibold text-blue-800 mb-3">Syarat Undangan Seleksi</h4>
                     <ul class="text-sm text-blue-700 space-y-2">
                         <li class="flex items-start">
                             <i class="fas fa-check-circle mt-1 mr-2 text-green-500"></i>
-                            <span>Status pendaftaran: <strong>Diterima</strong></span>
+                            <span>Status pendaftaran: <strong>Diterima/Telah Dilihat/Menunggu Verifikasi/Perlu Review</strong></span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2 text-green-500"></i>
+                            <span>Status seleksi: <strong>Belum Mengikuti Seleksi</strong></span>
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-check-circle mt-1 mr-2 text-green-500"></i>
@@ -255,11 +259,11 @@
                     <div class="space-y-2 text-sm text-green-700">
                         <div class="flex justify-between">
                             <span>Total Terkirim:</span>
-                            <span class="font-semibold">{{ $sentCount }} pesan</span>
+                            <span class="font-semibold">{{ $sentCount }} undangan</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Total Gagal:</span>
-                            <span class="font-semibold">{{ $failedCount }} pesan</span>
+                            <span class="font-semibold">{{ $failedCount }} undangan</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Siap Dikirim:</span>
@@ -272,63 +276,139 @@
     </main>
 </div>
 
-<!-- Modal Status Seleksi -->
-<div id="statusSeleksiModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+<!-- Modal Individual -->
+<div id="individualModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-semibold mb-4">Update Status Seleksi</h3>
-        <form id="statusSeleksiForm">
+        <h3 class="text-lg font-semibold mb-4">Kirim Undangan Individual</h3>
+        <form id="individualForm">
             @csrf
-            <input type="hidden" id="statusSeleksiRegistrationId" name="registration_id">
+            <input type="hidden" id="individualRegistrationId" name="registration_id">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Nama Calon Santri</label>
-                <input type="text" id="statusSeleksiSantriName" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" readonly>
+                <input type="text" id="individualSantriName" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" readonly>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status Seleksi *</label>
-                <select id="statusSeleksiSelect" name="status_seleksi" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
-                    <option value="belum_mengikuti_seleksi">Belum Mengikuti Seleksi</option>
-                    <option value="sudah_mengikuti_seleksi">Sudah Mengikuti Seleksi</option>
-                </select>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Seleksi *</label>
+                <input type="date" id="individualTanggalSeleksi" name="tanggal_seleksi" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
             </div>
             <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeStatusSeleksiModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
-                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Update Status</button>
+                <button type="button" onclick="closeIndividualModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Kirim Undangan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Bulk -->
+<div id="bulkModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4">Kirim Undangan Massal</h3>
+        <form id="bulkForm">
+            @csrf
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai *</label>
+                <input type="date" id="bulkTanggalMulai" name="tanggal_mulai" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai *</label>
+                <input type="date" id="bulkTanggalSelesai" name="tanggal_selesai" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div class="mb-4 p-3 bg-blue-50 rounded-md">
+                <p class="text-sm text-blue-700">Akan mengirim undangan ke <strong>{{ $eligibleRegistrations->count() }}</strong> calon santri</p>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeBulkModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary">Kirim Massal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal All Santri -->
+<div id="allSantriModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4">Kirim ke Semua Santri</h3>
+        <form id="allSantriForm">
+            @csrf
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai *</label>
+                <input type="date" id="allSantriTanggalMulai" name="tanggal_mulai" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai *</label>
+                <input type="date" id="allSantriTanggalSelesai" name="tanggal_selesai" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+            </div>
+            <div class="mb-4 p-3 bg-purple-50 rounded-md">
+                <p class="text-sm text-purple-700">Akan mengirim undangan ke <strong>semua</strong> calon santri terdaftar</p>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeAllSantriModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600">Kirim ke Semua</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-// Modal Functions untuk Status Seleksi
-function openStatusSeleksiModal(registrationId, santriName, currentStatus) {
-    document.getElementById('statusSeleksiRegistrationId').value = registrationId;
-    document.getElementById('statusSeleksiSantriName').value = santriName;
-    document.getElementById('statusSeleksiSelect').value = currentStatus;
-    document.getElementById('statusSeleksiModal').classList.remove('hidden');
+// Modal Functions
+function openIndividualModal(registrationId, santriName) {
+    document.getElementById('individualRegistrationId').value = registrationId;
+    document.getElementById('individualSantriName').value = santriName;
+    document.getElementById('individualModal').classList.remove('hidden');
 }
 
-function closeStatusSeleksiModal() {
-    document.getElementById('statusSeleksiModal').classList.add('hidden');
-    document.getElementById('statusSeleksiForm').reset();
+function closeIndividualModal() {
+    document.getElementById('individualModal').classList.add('hidden');
+    document.getElementById('individualForm').reset();
 }
 
-// Form Submission untuk Status Seleksi
-document.getElementById('statusSeleksiForm').addEventListener('submit', function(e) {
+function openBulkModal() {
+    document.getElementById('bulkModal').classList.remove('hidden');
+}
+
+function closeBulkModal() {
+    document.getElementById('bulkModal').classList.add('hidden');
+    document.getElementById('bulkForm').reset();
+}
+
+function openAllSantriModal() {
+    document.getElementById('allSantriModal').classList.remove('hidden');
+}
+
+function closeAllSantriModal() {
+    document.getElementById('allSantriModal').classList.add('hidden');
+    document.getElementById('allSantriForm').reset();
+}
+
+// Form Submissions
+document.getElementById('individualForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const registrationId = document.getElementById('statusSeleksiRegistrationId').value;
+    const registrationId = document.getElementById('individualRegistrationId').value;
     const formData = new FormData(this);
 
-    updateStatusSeleksi(registrationId, formData);
+    sendIndividualSeleksi(registrationId, formData);
 });
 
-// API Function untuk Update Status Seleksi
-function updateStatusSeleksi(registrationId, formData) {
-    const button = document.querySelector('#statusSeleksiForm button[type="submit"]');
+document.getElementById('bulkForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    sendBulkSeleksi(formData);
+});
+
+document.getElementById('allSantriForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    sendToAllSantriSeleksi(formData);
+});
+
+// API Functions
+function sendIndividualSeleksi(registrationId, formData) {
+    const button = document.querySelector('#individualForm button[type="submit"]');
     const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengupdate...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim...';
     button.disabled = true;
 
-    fetch(`/admin/announcements/update-status-seleksi/${registrationId}`, {
+    fetch(`/admin/seleksi-announcements/send-individual/${registrationId}`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -338,44 +418,8 @@ function updateStatusSeleksi(registrationId, formData) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showAlert('success', 'Status seleksi berhasil diupdate!');
-            closeStatusSeleksiModal();
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        } else {
-            showAlert('error', 'Gagal mengupdate status: ' + data.message);
-        }
-    })
-    .catch(error => {
-        showAlert('error', 'Terjadi kesalahan: ' + error);
-    })
-    .finally(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-    });
-}
-
-// Fungsi-fungsi yang sudah ada sebelumnya (sendIndividualMessage, sendBulkMessage, sendToAllSantri, dll)
-function sendIndividualMessage(registrationId) {
-    if (!confirm('Kirim pesan kelulusan kepada calon santri ini?')) return;
-
-    const button = event.target;
-    const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim...';
-    button.disabled = true;
-
-    fetch(`/admin/announcements/send-individual/${registrationId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('success', 'Pesan berhasil dikirim! Status seleksi diupdate menjadi "Sudah Mengikuti Seleksi"');
+            showAlert('success', 'Undangan seleksi berhasil dikirim!');
+            closeIndividualModal();
 
             if (data.remove_from_list) {
                 const row = document.querySelector(`tr[data-registration-id="${registrationId}"]`);
@@ -388,37 +432,35 @@ function sendIndividualMessage(registrationId) {
                 }
             }
         } else {
-            showAlert('error', 'Gagal mengirim pesan: ' + data.message);
+            showAlert('error', 'Gagal mengirim undangan: ' + data.message);
         }
     })
     .catch(error => {
         showAlert('error', 'Terjadi kesalahan: ' + error);
     })
     .finally(() => {
-        button.innerHTML = '<i class="fas fa-paper-plane mr-1"></i> Chat';
+        button.innerHTML = originalText;
         button.disabled = false;
     });
 }
 
-function sendBulkMessage() {
-    if (!confirm(`Kirim pesan kelulusan ke semua {{ $eligibleRegistrations->count() }} calon santri yang memenuhi syarat? Status seleksi akan diupdate menjadi "Sudah Mengikuti Seleksi".`)) return;
-
-    const button = event.target;
+function sendBulkSeleksi(formData) {
+    const button = document.querySelector('#bulkForm button[type="submit"]');
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim...';
     button.disabled = true;
 
-    fetch('/admin/announcements/send-bulk', {
+    fetch('/admin/seleksi-announcements/send-bulk', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
+        },
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            let successMessage = `Berhasil! ${data.data.success} pesan terkirim. Status seleksi diupdate menjadi "Sudah Mengikuti Seleksi"`;
+            let successMessage = `Berhasil! ${data.data.success} undangan terkirim`;
 
             if (data.data.failed > 0) {
                 successMessage += `, ${data.data.failed} gagal`;
@@ -429,6 +471,7 @@ function sendBulkMessage() {
             }
 
             showAlert('success', successMessage);
+            closeBulkModal();
 
             if (data.data.successful_registrations && data.data.successful_registrations.length > 0) {
                 data.data.successful_registrations.forEach(registrationId => {
@@ -451,37 +494,35 @@ function sendBulkMessage() {
                 }, 2000);
             }
         } else {
-            showAlert('error', 'Gagal mengirim pesan: ' + data.message);
-            button.innerHTML = originalText;
-            button.disabled = false;
+            showAlert('error', 'Gagal mengirim undangan: ' + data.message);
         }
     })
     .catch(error => {
         showAlert('error', 'Terjadi kesalahan: ' + error);
+    })
+    .finally(() => {
         button.innerHTML = originalText;
         button.disabled = false;
     });
 }
 
-function sendToAllSantri() {
-    if (!confirm('Kirim pesan kelulusan ke SEMUA calon santri? Pastikan ini adalah pengumuman resmi. Status seleksi akan diupdate.')) return;
-
-    const button = event.target;
+function sendToAllSantriSeleksi(formData) {
+    const button = document.querySelector('#allSantriForm button[type="submit"]');
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim...';
     button.disabled = true;
 
-    fetch('/admin/announcements/send-all-santri', {
+    fetch('/admin/seleksi-announcements/send-all-santri', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
+        },
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            let successMessage = `Berhasil! ${data.data.success} pesan terkirim`;
+            let successMessage = `Berhasil! ${data.data.success} undangan terkirim`;
 
             if (data.data.failed > 0) {
                 successMessage += `, ${data.data.failed} gagal`;
@@ -492,25 +533,26 @@ function sendToAllSantri() {
             }
 
             showAlert('success', successMessage);
+            closeAllSantriModal();
             setTimeout(() => {
                 location.reload();
             }, 2000);
         } else {
-            showAlert('error', 'Gagal mengirim pesan: ' + data.message);
+            showAlert('error', 'Gagal mengirim undangan: ' + data.message);
         }
     })
     .catch(error => {
         showAlert('error', 'Terjadi kesalahan: ' + error);
     })
     .finally(() => {
-        button.innerHTML = '<i class="fas fa-broadcast-tower mr-2"></i> Kirim ke Semua';
+        button.innerHTML = originalText;
         button.disabled = false;
     });
 }
 
 // Helper Functions
 function updateEligibleCount() {
-    const countElement = document.querySelector('.bg-green-100.text-green-800');
+    const countElement = document.querySelector('.bg-blue-100.text-blue-800');
     const table = document.querySelector('tbody');
     const rows = table ? table.querySelectorAll('tr') : [];
     const currentCount = rows.length;
@@ -519,9 +561,9 @@ function updateEligibleCount() {
         countElement.textContent = `${currentCount} calon santri`;
     }
 
-    const bulkButton = document.querySelector('button[onclick="sendBulkMessage()"]');
+    const bulkButton = document.querySelector('button[onclick="openBulkModal()"]');
     if (bulkButton) {
-        bulkButton.innerHTML = `<i class="fas fa-paper-plane mr-2"></i> Kirim (${currentCount})`;
+        bulkButton.innerHTML = `<i class="fas fa-paper-plane mr-2"></i> Kirim Undangan (${currentCount})`;
         bulkButton.disabled = currentCount === 0;
 
         if (currentCount === 0) {
@@ -557,8 +599,14 @@ document.getElementById('mobile-menu-button')?.addEventListener('click', functio
     if (mobileMenu) mobileMenu.classList.toggle('hidden');
 });
 
-// Update count on page load
+// Set min date untuk input tanggal
 document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        input.min = today;
+    });
+
     updateEligibleCount();
 });
 </script>
@@ -582,27 +630,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-.icon-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Animation for modal */
+.modal-enter {
+    animation: modalEnter 0.3s ease-out;
 }
 
-.transition-all {
-    transition: all 0.3s ease;
-}
-
-.hover-scale:hover {
-    transform: scale(1.05);
-}
-
-/* Animation for row removal */
-tr {
-    transition: all 0.3s ease;
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* Disabled state styling */
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Row removal animation */
+tr {
+    transition: all 0.3s ease;
 }
 </style>
 @endsection

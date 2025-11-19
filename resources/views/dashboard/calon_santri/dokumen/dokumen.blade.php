@@ -66,18 +66,11 @@
                     @endif
                 </div>
 
-
-
                 <div class="flex gap-3">
-
-
                     <!-- Tombol Selesaikan Pendaftaran akan muncul otomatis via JavaScript -->
                     <div id="completeRegistrationButtonContainer"></div>
                 </div>
             </div>
-
-            <!-- Package Info -->
-           
         </div>
     </header>
 
@@ -86,7 +79,7 @@
         <div id="autoRefreshNotice" class="hidden mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center">
             <div class="flex items-center justify-center space-x-2">
                 <i class="fas fa-sync-alt animate-spin"></i>
-                <span class="font-semibold">Semua dokumen telah lengkap! Halaman akan direfresh otomatis dalam <span id="countdown">5</span> detik...</span>
+                <span class="font-semibold">Semua dokumen telah lengkap! Halaman akan direfresh otomatis dalam <span id="countdown">3</span> detik...</span>
             </div>
         </div>
 
@@ -312,6 +305,9 @@
 
                     <!-- Tombol akan diupdate via JavaScript -->
                     <div id="dynamicActionButton"></div>
+
+                    <!-- Tombol Hapus Semua Dokumen -->
+                    <div id="deleteAllButtonContainer"></div>
                 </div>
             </div>
             @else
@@ -449,22 +445,56 @@
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {
-                    // Update uploadedDocuments based on server response
-                    documentTypes.forEach(type => {
-                        const hasDocument = data.progress.details && data.progress.details[type];
-                        if (hasDocument !== undefined) {
-                            uploadedDocuments[type] = hasDocument;
-                        }
-                    });
-                    saveDocumentState();
-                    updateAllDocumentUI();
-                    updateProgress();
-                    updateActionButtons(); // Update tombol setelah sync
+                    // Update progress
+                    updateProgressFromServer(data.progress);
+
+                    // Cek jika semua dokumen sudah lengkap
+                    if (data.progress.all_complete) {
+                        showCompleteNotification();
+                    }
                 }
             }
         } catch (error) {
             console.error('Failed to sync with server:', error);
         }
+    }
+
+    // Update progress dari server
+    function updateProgressFromServer(progress) {
+        const progressText = document.getElementById('progressText');
+        const progressBar = document.getElementById('overallProgressBar');
+        const statusMessage = document.getElementById('statusMessage');
+
+        if (progressText) {
+            progressText.textContent = `${progress.uploaded_count}/4 Dokumen`;
+        }
+
+        if (progressBar) {
+            progressBar.style.width = `${progress.percentage}%`;
+        }
+
+        if (statusMessage) {
+            if (progress.all_complete) {
+                statusMessage.innerHTML = `
+                    <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full">
+                        <i class="fas fa-check-circle text-xl"></i>
+                        <span class="font-semibold">Semua dokumen telah lengkap! Anda bisa menyelesaikan pendaftaran.</span>
+                    </div>
+                `;
+            } else {
+                const remaining = 4 - progress.uploaded_count;
+                statusMessage.innerHTML = `
+                    <div class="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-6 py-3 rounded-full">
+                        <i class="fas fa-info-circle text-xl"></i>
+                        <span class="font-semibold">Lengkapi ${remaining} dokumen lagi untuk menyelesaikan pendaftaran.</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Update action buttons
+        updateActionButtons(progress.uploaded_count);
+        updateHeaderButton(progress.uploaded_count);
     }
 
     // Initialize when DOM is loaded
@@ -473,14 +503,178 @@
         loadDocumentState();
         initializeDocumentUpload();
         initializeDragAndDrop();
-        updateProgress(); // Initial progress update
-        updateAllDocumentUI(); // Initial UI update
-        updateActionButtons(); // Initial tombol action
-        updateHeaderButton(); // Initial tombol header
+        updateProgress();
+        updateAllDocumentUI();
+        updateActionButtons();
+        updateHeaderButton();
+        checkQuotaForDeleteAll();
 
         // Sync with server on load
         syncWithServer();
     });
+
+    // Fungsi untuk memeriksa kuota dan menampilkan tombol hapus semua
+    async function checkQuotaForDeleteAll() {
+        try {
+            const response = await fetch('/santri/documents/check-quota-delete-all', {
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const deleteAllContainer = document.getElementById('deleteAllButtonContainer');
+
+                if (deleteAllContainer && data.show_delete_all) {
+                    deleteAllContainer.innerHTML = `
+                        <button onclick="confirmDeleteAllDocuments()" class="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-trash-alt mr-2"></i> Hapus Semua Dokumen
+                        </button>
+                    `;
+                } else if (deleteAllContainer) {
+                    deleteAllContainer.innerHTML = '';
+                }
+            }
+        } catch (error) {
+            console.error('Failed to check quota for delete all:', error);
+        }
+    }
+
+    // Konfirmasi hapus semua dokumen
+    window.confirmDeleteAllDocuments = function() {
+        Swal.fire({
+            title: 'Hapus Semua Dokumen?',
+            html: `
+                <div class="text-left">
+                    <p class="mb-4">Anda akan menghapus <strong>semua dokumen</strong> yang telah diupload. Tindakan ini:</p>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-gray-700 mb-4">
+                        <li>Menghapus semua file dari sistem</li>
+                        <li>Mengosongkan data dokumen di database</li>
+                        <li>Tidak dapat dibatalkan</li>
+                        <li>Anda harus mengupload ulang semua dokumen</li>
+                    </ul>
+                    <p class="text-red-600 font-semibold">Pastikan Anda benar-benar ingin melanjutkan!</p>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Hapus Semua!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteAllDocuments();
+            }
+        });
+    };
+
+    // Fungsi hapus semua dokumen
+    async function deleteAllDocuments() {
+        if (uploadInProgress) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Tunggu Sebentar',
+                text: 'Tunggu hingga proses upload selesai sebelum menghapus dokumen.',
+                confirmButtonText: 'Mengerti'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Menghapus Semua Dokumen...',
+            text: 'Sedang menghapus semua file dokumen',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            const response = await fetch('/santri/documents/delete-all', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Reset semua state dokumen
+                documentTypes.forEach(type => {
+                    uploadedDocuments[type] = false;
+                });
+                saveDocumentState();
+
+                // Update UI untuk semua dokumen - HAPUS TOMBOL LIHAT, DOWNLOAD, HAPUS
+                updateAllDocumentUIAfterDeleteAll();
+                updateProgress();
+                updateActionButtons(0);
+                updateHeaderButton(0);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    html: `
+                        <p>${data.message}</p>
+                        <p class="text-sm text-gray-600 mt-2">${data.deleted_count} dokumen telah dihapus.</p>
+                    `,
+                    confirmButtonText: 'OK'
+                });
+
+                // Sembunyikan tombol hapus semua setelah berhasil
+                const deleteAllContainer = document.getElementById('deleteAllButtonContainer');
+                if (deleteAllContainer) {
+                    deleteAllContainer.innerHTML = '';
+                }
+
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            console.error('Delete all documents error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menghapus',
+                text: error.message || 'Terjadi kesalahan saat menghapus semua dokumen.',
+                confirmButtonText: 'Mengerti'
+            });
+        }
+    }
+
+    // Update UI khusus setelah hapus semua - HAPUS TOMBOL LIHAT, DOWNLOAD, HAPUS
+    function updateAllDocumentUIAfterDeleteAll() {
+        documentTypes.forEach(type => {
+            const statusElement = document.getElementById(`${type}Status`);
+            const fileInfo = document.getElementById(`${type}FileInfo`);
+            const fileNameElement = document.getElementById(`${type}FileName`);
+
+            if (statusElement) {
+                statusElement.className = 'status-badge bg-red-100 text-red-800';
+                statusElement.innerHTML = '<i class="fas fa-times mr-1"></i><span class="status-text">Belum Diunggah</span>';
+            }
+
+            if (fileInfo) {
+                fileInfo.classList.add('hidden');
+
+                // Hapus semua tombol action jika ada
+                const existingActions = fileInfo.querySelector('.file-actions');
+                if (existingActions) {
+                    existingActions.remove();
+                }
+            }
+
+            if (fileNameElement) {
+                fileNameElement.textContent = '';
+            }
+        });
+    }
 
     function initializeDocumentUpload() {
         documentTypes.forEach(type => {
@@ -691,17 +885,18 @@
                     uploadedDocuments[documentType] = true;
                     saveDocumentState();
                     updateDocumentUI(documentType, true, data.file_name, data.file_path);
-                    updateProgress();
-                    updateActionButtons(); // Update tombol setelah upload
-                    updateHeaderButton(); // Update tombol di header
+
+                    // Update progress dari response
+                    updateProgressFromUpload(data);
+
+                    checkQuotaForDeleteAll(); // Cek ulang kuota setelah upload
 
                     // Show success notification
                     showSuccessNotification('Dokumen berhasil diunggah!');
 
-                    // Auto refresh jika semua dokumen lengkap
+                    // Tampilkan notifikasi lengkap hanya jika SEMUA dokumen sudah lengkap
                     if (data.all_documents_complete) {
-                        showSuccessNotification('Semua dokumen telah lengkap! Anda dapat menyelesaikan pendaftaran.');
-                        showAutoRefreshNotice();
+                        showCompleteNotification();
                     }
 
                 } else {
@@ -731,6 +926,45 @@
                 confirmButtonText: 'Mengerti'
             });
         });
+    }
+
+    // Update progress dari response upload
+    function updateProgressFromUpload(data) {
+        const progressText = document.getElementById('progressText');
+        const progressBar = document.getElementById('overallProgressBar');
+        const statusMessage = document.getElementById('statusMessage');
+
+        if (progressText) {
+            progressText.textContent = `${data.uploaded_count}/4 Dokumen`;
+        }
+
+        if (progressBar) {
+            const percentage = (data.uploaded_count / 4) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        if (statusMessage) {
+            if (data.all_documents_complete) {
+                statusMessage.innerHTML = `
+                    <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full">
+                        <i class="fas fa-check-circle text-xl"></i>
+                        <span class="font-semibold">Semua dokumen telah lengkap! Anda bisa menyelesaikan pendaftaran.</span>
+                    </div>
+                `;
+            } else {
+                const remaining = 4 - data.uploaded_count;
+                statusMessage.innerHTML = `
+                    <div class="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-6 py-3 rounded-full">
+                        <i class="fas fa-info-circle text-xl"></i>
+                        <span class="font-semibold">Lengkapi ${remaining} dokumen lagi untuk menyelesaikan pendaftaran.</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Update action buttons
+        updateActionButtons(data.uploaded_count);
+        updateHeaderButton(data.uploaded_count);
     }
 
     function updateAllDocumentUI() {
@@ -792,6 +1026,12 @@
                 fileInfo.classList.remove('hidden');
             } else {
                 fileInfo.classList.add('hidden');
+
+                // Hapus tombol action jika ada
+                const existingActions = fileInfo.querySelector('.file-actions');
+                if (existingActions) {
+                    existingActions.remove();
+                }
             }
         }
     }
@@ -835,8 +1075,10 @@
     }
 
     // Update tombol action di section progress
-    function updateActionButtons() {
-        const uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+    function updateActionButtons(uploadedCount = null) {
+        if (uploadedCount === null) {
+            uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+        }
         const percentage = (uploadedCount / 4) * 100;
         const actionButtons = document.getElementById('dynamicActionButton');
 
@@ -858,8 +1100,10 @@
     }
 
     // Update tombol di header
-    function updateHeaderButton() {
-        const uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+    function updateHeaderButton(uploadedCount = null) {
+        if (uploadedCount === null) {
+            uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+        }
         const percentage = (uploadedCount / 4) * 100;
         const headerButtonContainer = document.getElementById('completeRegistrationButtonContainer');
 
@@ -900,25 +1144,33 @@
         }
     }
 
-    function showAutoRefreshNotice() {
+    // Fungsi untuk menampilkan notifikasi lengkap
+    function showCompleteNotification() {
         const notice = document.getElementById('autoRefreshNotice');
         const countdownElement = document.getElementById('countdown');
 
-        notice.classList.remove('hidden');
-        notice.classList.add('auto-refresh-notice');
+        if (notice && countdownElement) {
+            notice.classList.remove('hidden');
+            notice.classList.add('auto-refresh-notice');
 
-        let countdown = 5;
-        countdownElement.textContent = countdown;
-
-        autoRefreshTimer = setInterval(() => {
-            countdown--;
+            let countdown = 3;
             countdownElement.textContent = countdown;
 
-            if (countdown <= 0) {
+            // Hentikan timer sebelumnya jika ada
+            if (autoRefreshTimer) {
                 clearInterval(autoRefreshTimer);
-                window.location.reload();
             }
-        }, 1000);
+
+            autoRefreshTimer = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(autoRefreshTimer);
+                    window.location.reload();
+                }
+            }, 1000);
+        }
     }
 
     // Konfirmasi sebelum menyelesaikan pendaftaran
@@ -1065,9 +1317,11 @@
                         uploadedDocuments[documentType] = false;
                         saveDocumentState();
                         updateDocumentUI(documentType, false);
-                        updateProgress();
-                        updateActionButtons(); // Update tombol setelah delete
-                        updateHeaderButton(); // Update tombol di header
+
+                        // Update progress dari response
+                        updateProgressFromUpload(data);
+
+                        checkQuotaForDeleteAll(); // Cek ulang kuota setelah delete
 
                         Swal.fire({
                             icon: 'success',

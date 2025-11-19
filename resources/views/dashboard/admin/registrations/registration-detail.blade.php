@@ -1,4 +1,4 @@
- @extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Detail Pendaftaran - Pondok Pesantren Bani Syahid')
 
 @section('styles')
@@ -32,6 +32,12 @@
     .status-badge.diterima { @apply bg-green-100 text-green-800; }
     .status-badge.perlu_review { @apply bg-purple-100 text-purple-800; }
 
+    .status-seleksi-badge {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    }
+    .status-seleksi-badge.sudah_mengikuti_seleksi { @apply bg-green-100 text-green-800; }
+    .status-seleksi-badge.belum_mengikuti_seleksi { @apply bg-yellow-100 text-yellow-800; }
+
     .document-item {
         @apply flex items-center justify-between p-3 border border-gray-200 rounded-lg mb-2;
     }
@@ -52,10 +58,16 @@
     .btn-secondary { @apply bg-gray-500 text-white hover:bg-gray-600; }
 
     .requirement-item {
-        @apply flex items-center space-x-2 p-2 rounded-lg border;
+        @apply flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border;
     }
-    .requirement-met { @apply bg-green-50 border-green-200 text-green-800; }
-    .requirement-not-met { @apply bg-red-50 border-red-200 text-red-800; }
+    .requirement-met { @apply bg-green-50 border-green-200; }
+    .requirement-not-met { @apply bg-red-50 border-red-200; }
+
+    .requirement-icon {
+        @apply flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center;
+    }
+    .requirement-icon.met { @apply bg-green-100 text-green-600; }
+    .requirement-icon.not-met { @apply bg-red-100 text-red-600; }
 
     .whatsapp-btn {
         @apply bg-green-500 text-white hover:bg-green-600;
@@ -66,7 +78,7 @@
     }
 
     .current-status {
-        @apply bg-primary text-white px-3 py-2 rounded-lg text-center mb-3;
+        @apply bg-gradient-to-r from-primary to-secondary text-white px-4 py-3 rounded-xl text-center mb-4 shadow-md;
     }
 
     .document-icon {
@@ -91,9 +103,28 @@
         @apply p-4 border-t flex justify-end space-x-3;
     }
 
-    /* Debug info untuk troubleshooting */
-    .debug-info {
-        @apply bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-sm;
+    .checkbox-group {
+        @apply flex items-center space-x-2 p-3 border border-gray-200 rounded-lg mb-2;
+    }
+    .checkbox-group label {
+        @apply flex-1 cursor-pointer;
+    }
+    .rejection-reason {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm;
+    }
+
+    .stats-card {
+        @apply bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4;
+    }
+
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle {
+        transition: stroke-dashoffset 0.35s;
+        transform: rotate(90deg);
+        transform-origin: 50% 50%;
     }
 
     @media (max-width: 768px) {
@@ -140,6 +171,9 @@
                     <span class="status-badge {{ $registration->status_pendaftaran }} text-xs md:text-sm">
                         {{ $registration->status_label }}
                     </span>
+                    <span class="status-seleksi-badge {{ $registration->status_seleksi }} text-xs md:text-sm">
+                        {{ $registration->status_seleksi_label }}
+                    </span>
                     @if($registration->needs_re_review)
                     <span class="needs-review-badge" title="Data telah diperbarui setelah penolakan">
                         <i class="fas fa-exclamation-circle mr-1"></i>
@@ -171,92 +205,246 @@
         <!-- Status & Actions & Requirements -->
         <div class="detail-section">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                <!-- Status & Requirements -->
-                <div class="lg:col-span-2">
+                <!-- Kolom 1: Persyaratan Pendaftaran -->
+                <div class="space-y-4">
                     <h3 class="text-lg font-bold text-gray-800 mb-3">Persyaratan Pendaftaran</h3>
-                    <div class="space-y-2">
-                        <div class="requirement-item {{ $registration->is_documents_complete ? 'requirement-met' : 'requirement-not-met' }}">
-                            <i class="fas {{ $registration->is_documents_complete ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }}"></i>
-                            <span class="text-sm">Dokumen Lengkap ({{ $registration->uploaded_documents_count }}/4)</span>
+
+                    <!-- Card Persyaratan -->
+                    <div class="stats-card">
+                        <div class="space-y-3">
+                            <!-- Dokumen Lengkap -->
+                            <div class="requirement-item {{ $registration->is_documents_complete ? 'requirement-met' : 'requirement-not-met' }}">
+                                <div class="flex items-center space-x-3">
+                                    <div class="requirement-icon {{ $registration->is_documents_complete ? 'met' : 'not-met' }}">
+                                        <i class="fas {{ $registration->is_documents_complete ? 'fa-check-circle' : 'fa-times-circle' }} text-lg"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800 text-sm">Dokumen Lengkap</p>
+                                        <p class="text-xs text-gray-600">{{ $registration->uploaded_documents_count }}/4 dokumen</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-semibold {{ $registration->is_documents_complete ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $registration->is_documents_complete ? 'LENGKAP' : 'BELUM' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Biodata Lengkap -->
+                            <div class="requirement-item {{ $registration->is_biodata_complete ? 'requirement-met' : 'requirement-not-met' }}">
+                                <div class="flex items-center space-x-3">
+                                    <div class="requirement-icon {{ $registration->is_biodata_complete ? 'met' : 'not-met' }}">
+                                        <i class="fas {{ $registration->is_biodata_complete ? 'fa-check-circle' : 'fa-times-circle' }} text-lg"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800 text-sm">Biodata Lengkap</p>
+                                        <p class="text-xs text-gray-600">Data pribadi & orang tua</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-semibold {{ $registration->is_biodata_complete ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $registration->is_biodata_complete ? 'LENGKAP' : 'BELUM' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Pembayaran Lunas -->
+                            <div class="requirement-item {{ $registration->has_successful_payment ? 'requirement-met' : 'requirement-not-met' }}">
+                                <div class="flex items-center space-x-3">
+                                    <div class="requirement-icon {{ $registration->has_successful_payment ? 'met' : 'not-met' }}">
+                                        <i class="fas {{ $registration->has_successful_payment ? 'fa-check-circle' : 'fa-times-circle' }} text-lg"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800 text-sm">Pembayaran Lunas</p>
+                                        <p class="text-xs text-gray-600">Status pembayaran</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-semibold {{ $registration->has_successful_payment ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $registration->has_successful_payment ? 'LUNAS' : 'BELUM' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Status Seleksi -->
+                            <div class="requirement-item {{ $registration->status_seleksi === 'sudah_mengikuti_seleksi' ? 'requirement-met' : 'bg-yellow-50 border-yellow-200' }}">
+                                <div class="flex items-center space-x-3">
+                                    <div class="requirement-icon {{ $registration->status_seleksi === 'sudah_mengikuti_seleksi' ? 'met' : 'bg-yellow-100 text-yellow-600' }}">
+                                        <i class="fas {{ $registration->status_seleksi === 'sudah_mengikuti_seleksi' ? 'fa-check-circle' : 'fa-hourglass-half' }} text-lg"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800 text-sm">Status Seleksi</p>
+                                        <p class="text-xs text-gray-600">Tes Seleksi</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-semibold {{ $registration->status_seleksi === 'sudah_mengikuti_seleksi' ? 'text-green-600' : 'text-yellow-600' }}">
+                                        {{ $registration->status_seleksi_label }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="requirement-item {{ $registration->is_biodata_complete ? 'requirement-met' : 'requirement-not-met' }}">
-                            <i class="fas {{ $registration->is_biodata_complete ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }}"></i>
-                            <span class="text-sm">Biodata Lengkap</span>
-                        </div>
-                        <div class="requirement-item {{ $registration->has_successful_payment ? 'requirement-met' : 'requirement-not-met' }}">
-                            <i class="fas {{ $registration->has_successful_payment ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }}"></i>
-                            <span class="text-sm">Pembayaran Lunas</span>
+
+                        <!-- Progress Ring -->
+                        <div class="mt-4 flex items-center justify-center">
+                            <div class="relative">
+                                <svg class="w-20 h-20" viewBox="0 0 36 36">
+                                    <path class="text-gray-200"
+                                        stroke="currentColor"
+                                        stroke-width="3"
+                                        fill="transparent"
+                                        d="M18 2.0845
+                                          a 15.9155 15.9155 0 0 1 0 31.831
+                                          a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    />
+                                    <path class="text-primary"
+                                        stroke="currentColor"
+                                        stroke-width="3"
+                                        stroke-dasharray="100, 100"
+                                        fill="transparent"
+                                        d="M18 2.0845
+                                          a 15.9155 15.9155 0 0 1 0 31.831
+                                          a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    />
+                                    <text x="18" y="20.5" class="text-2xl font-bold text-gray-800 text-center" dominant-baseline="middle" text-anchor="middle">
+                                        {{ $registration->uploaded_documents_count }}/4
+                                    </text>
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex flex-col space-y-2">
+                <!-- Kolom 2: Status Seleksi -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Kelola Status Seleksi</h3>
+
+                    <!-- Card Status Seleksi -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                        <div class="text-center mb-4">
+                            <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-clipboard-check text-green-600 text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800">Status Seleksi Saat Ini</h4>
+                            <p class="text-sm text-gray-600 mt-1">{{ $registration->status_seleksi_label }}</p>
+                        </div>
+
+                        <!-- Dropdown Status Seleksi -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Ubah Status Seleksi</label>
+                                <select id="statusSeleksiDropdown" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
+                                    <option value="belum_mengikuti_seleksi" {{ $registration->status_seleksi === 'belum_mengikuti_seleksi' ? 'selected' : '' }}>Belum Mengikuti Seleksi</option>
+                                    <option value="sudah_mengikuti_seleksi" {{ $registration->status_seleksi === 'sudah_mengikuti_seleksi' ? 'selected' : '' }}>Sudah Mengikuti Seleksi</option>
+                                </select>
+                            </div>
+                            <button onclick="updateStatusSeleksi()" class="w-full action-btn btn-success">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Update Status Seleksi</span>
+                            </button>
+                        </div>
+
+                        <!-- Info Tambahan -->
+                        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                                <p class="text-xs text-blue-700">
+                                    Status seleksi digunakan untuk menandai apakah calon santri sudah mengikuti proses tes seleksi.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kolom 3: Action Buttons -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Aksi Admin</h3>
+
                     <!-- Status Saat Ini -->
                     <div class="current-status">
-                        <span class="text-sm font-medium">Status Saat Ini:</span>
-                        <div class="font-bold">{{ $registration->status_label }}</div>
+                        <div class="flex items-center justify-center space-x-2 mb-2">
+                            <i class="fas fa-flag text-white"></i>
+                            <span class="font-medium">Status Pendaftaran</span>
+                        </div>
+                        <div class="font-bold text-lg">{{ $registration->status_label }}</div>
                     </div>
 
-                    <!-- PERBAIKAN: Tombol Terima dan Tolak - SELALU AKTIF TAPI DENGAN VALIDASI -->
-                    <div class="grid grid-cols-2 gap-2">
-                        <!-- Tombol Terima - SELALU AKTIF, validasi di backend -->
+                    <!-- Tombol Aksi Utama -->
+                    <div class="grid grid-cols-2 gap-3">
                         <button onclick="updateStatus('diterima')"
                                 class="action-btn btn-success"
                                 title="Terima pendaftaran ini">
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-check-circle"></i>
                             <span>Terima</span>
                         </button>
 
-                        <!-- Tombol Tolak - SELALU AKTIF -->
                         <button onclick="showRejectModal()"
                                 class="action-btn btn-danger"
                                 title="Tolak pendaftaran ini">
-                            <i class="fas fa-times"></i>
+                            <i class="fas fa-times-circle"></i>
                             <span>Tolak</span>
                         </button>
                     </div>
 
-                    <!-- Tombol Tambahan Berdasarkan Status -->
-                    @if($registration->status_pendaftaran === 'ditolak' && !$registration->needs_re_review)
-                    <button onclick="sendWhatsAppNotification()"
-                            class="action-btn whatsapp-btn w-full"
-                            title="Kirim notifikasi WhatsApp">
-                        <i class="fab fa-whatsapp"></i>
-                        <span>Kirim WhatsApp</span>
-                    </button>
-                    @endif
+                    <!-- Tombol Tambahan -->
+                    <div class="space-y-2">
+                        @if($registration->status_pendaftaran === 'ditolak' && !$registration->needs_re_review)
+                        <button onclick="sendWhatsAppNotification()"
+                                class="action-btn whatsapp-btn w-full"
+                                title="Kirim notifikasi WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>Kirim WhatsApp</span>
+                        </button>
+                        @endif
 
-                    @if($registration->status_pendaftaran === 'perlu_review')
-                    <button onclick="updateStatus('menunggu_diverifikasi')"
-                            class="action-btn btn-warning w-full"
-                            title="Reset status ke menunggu verifikasi">
-                        <i class="fas fa-redo"></i>
-                        <span>Reset ke Menunggu</span>
-                    </button>
-                    @endif
+                        @if($registration->status_pendaftaran === 'perlu_review')
+                        <button onclick="updateStatus('menunggu_diverifikasi')"
+                                class="action-btn btn-warning w-full"
+                                title="Reset status ke menunggu verifikasi">
+                            <i class="fas fa-redo"></i>
+                            <span>Reset ke Menunggu</span>
+                        </button>
+                        @endif
 
-                    @if($registration->status_pendaftaran === 'telah_mengisi')
-                    <button onclick="updateStatus('telah_dilihat')"
-                            class="action-btn btn-info w-full"
-                            title="Tandai sebagai telah dilihat">
-                        <i class="fas fa-eye"></i>
-                        <span>Tandai Dilihat</span>
-                    </button>
-                    @endif
+                        @if($registration->status_pendaftaran === 'telah_mengisi')
+                        <button onclick="updateStatus('telah_dilihat')"
+                                class="action-btn btn-info w-full"
+                                title="Tandai sebagai telah dilihat">
+                            <i class="fas fa-eye"></i>
+                            <span>Tandai Dilihat</span>
+                        </button>
+                        @endif
 
-                    @if(in_array($registration->status_pendaftaran, ['diterima', 'ditolak', 'menunggu_diverifikasi']))
-                    <button onclick="updateStatus('perlu_review')"
-                            class="action-btn btn-warning w-full"
-                            title="Tandai perlu review ulang">
-                        <i class="fas fa-undo"></i>
-                        <span>Perlu Review</span>
-                    </button>
-                    @endif
+                        @if(in_array($registration->status_pendaftaran, ['diterima', 'ditolak', 'menunggu_diverifikasi']))
+                        <button onclick="updateStatus('perlu_review')"
+                                class="action-btn btn-warning w-full"
+                                title="Tandai perlu review ulang">
+                            <i class="fas fa-undo"></i>
+                            <span>Perlu Review</span>
+                        </button>
+                        @endif
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-4">
+                        <div class="grid grid-cols-2 gap-2 text-center">
+                            <div>
+                                <div class="text-lg font-bold text-primary">{{ $registration->uploaded_documents_count }}</div>
+                                <div class="text-xs text-gray-600">Dokumen</div>
+                            </div>
+                            <div>
+                                <div class="text-lg font-bold text-green-600">
+                                    {{ $registration->has_successful_payment ? '✓' : '✗' }}
+                                </div>
+                                <div class="text-xs text-gray-600">Pembayaran</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Konten Utama -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             <!-- Left Column -->
             <div class="lg:col-span-2 space-y-4 md:space-y-6">
@@ -504,7 +692,7 @@
                     </div>
                 </div>
 
-                <!-- Dokumen - TANPA FITUR UPLOAD -->
+                <!-- Dokumen -->
                 <div class="detail-section">
                     <h2 class="detail-section-title">Dokumen</h2>
                     <div class="space-y-3">
@@ -637,11 +825,11 @@
     </main>
 </div>
 
-<!-- Reject Modal -->
+<!-- Reject Modal dengan Form Dokumen -->
 <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 class="text-lg font-bold text-gray-800">Tolak Pendaftaran</h3>
+            <h3 class="text-lg font-bold text-gray-800">Tolak Pendaftaran & Kelola Dokumen</h3>
             <button onclick="closeRejectModal()" class="text-gray-500 hover:text-gray-700">
                 <i class="fas fa-times text-xl"></i>
             </button>
@@ -649,12 +837,83 @@
         <form id="rejectForm">
             @csrf
             <div class="modal-body">
+                <!-- Pilihan Dokumen yang Akan Dihapus -->
+               <div class="mb-4">
+                <h4 class="font-medium text-white mb-3">Pilih dokumen yang akan dihapus:</h4>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="keep_kartu_keluarga" name="keep_kartu_keluarga" value="1" checked>
+                        <label for="keep_kartu_keluarga" class="flex items-center">
+                            <i class="fas fa-id-card text-blue-500 mr-2"></i>
+                            <span class="text-white">Kartu Keluarga</span>
+                            @if($registration->kartu_keluaga_path)
+                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            @else
+                            <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
+                            @endif
+                        </label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="keep_ijazah" name="keep_ijazah" value="1" checked>
+                        <label for="keep_ijazah" class="flex items-center">
+                            <i class="fas fa-graduation-cap text-white mr-2"></i>
+                            <span class="text-white">Ijazah</span>
+                            @if($registration->ijazah_path)
+                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            @else
+                            <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
+                            @endif
+                        </label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="keep_akta_kelahiran" name="keep_akta_kelahiran" value="1" checked>
+                        <label for="keep_akta_kelahiran" class="flex items-center">
+                            <i class="fas fa-birthday-cake text-purple-500 mr-2"></i>
+                            <span class="text-white">Akta Kelahiran</span>
+                            @if($registration->akta_kelahiran_path)
+                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            @else
+                            <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
+                            @endif
+                        </label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="keep_pas_foto" name="keep_pas_foto" value="1" checked>
+                        <label for="keep_pas_foto" class="flex items-center">
+                            <i class="fas fa-camera text-orange-500 mr-2"></i>
+                            <span class="text-white">Pas Foto</span>
+                            @if($registration->pas_foto_path)
+                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            @else
+                            <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
+                            @endif
+                        </label>
+                    </div>
+
+                    <p class="text-xs text-white mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Centang dokumen yang ingin dipertahankan. Dokumen yang tidak dicentang akan dihapus dari sistem.
+                    </p>
+                </div>
+
+                <!-- Alasan Penolakan -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Penolakan</label>
-                    <textarea id="rejectReason" rows="4"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                              placeholder="Berikan alasan penolakan yang jelas..."></textarea>
+                    <textarea id="rejectReason" name="reject_reason" rows="4" required
+                              class="rejection-reason"
+                              placeholder="Berikan alasan penolakan yang jelas dan informatif...">{{ old('reject_reason', $registration->catatan_admin) }}</textarea>
                 </div>
+
+                <!-- Catatan Admin Sebelumnya -->
+                @if($registration->catatan_admin)
+                <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h4 class="font-medium text-yellow-800 mb-2">Catatan Admin Sebelumnya:</h4>
+                    <p class="text-sm text-yellow-700">{{ $registration->catatan_admin }}</p>
+                </div>
+                @endif
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="closeRejectModal()"
@@ -733,8 +992,49 @@
 
 @section('scripts')
 <script>
-    // PERBAIKAN: Tombol Terima sekarang SELALU AKTIF
-    // Validasi akan dilakukan di backend/side JavaScript
+    // Update status seleksi
+    function updateStatusSeleksi() {
+        const statusSeleksi = document.getElementById('statusSeleksiDropdown').value;
+
+        fetch(`{{ route('admin.registrations.update-status-seleksi', $registration->id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                status_seleksi: statusSeleksi
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat memperbarui status seleksi.',
+                confirmButtonText: 'OK'
+            });
+        });
+    }
 
     // Update status function dengan validasi yang lebih baik
     function updateStatus(status) {
@@ -754,7 +1054,7 @@
             'perlu_review': 'menandai sebagai perlu review ulang'
         };
 
-        // PERBAIKAN: Untuk status 'diterima', berikan warning jika persyaratan belum lengkap
+        // Untuk status 'diterima', berikan warning jika persyaratan belum lengkap
         if (status === 'diterima') {
             const isComplete = {{ $registration->is_documents_complete && $registration->is_biodata_complete && $registration->has_successful_payment ? 'true' : 'false' }};
 
@@ -820,6 +1120,7 @@
             },
             body: JSON.stringify({
                 status: status,
+                status_seleksi: document.getElementById('statusSeleksiDropdown').value,
                 catatan: status === 'ditolak' ? document.getElementById('rejectReason')?.value || 'Data tidak memenuhi persyaratan' : null
             })
         })
@@ -853,19 +1154,68 @@
         });
     }
 
-    // Reject modal functions
+    // Reject modal functions dengan form dokumen
     function showRejectModal() {
         document.getElementById('rejectModal').classList.remove('hidden');
     }
 
     function closeRejectModal() {
         document.getElementById('rejectModal').classList.add('hidden');
-        document.getElementById('rejectReason').value = '';
     }
 
     document.getElementById('rejectForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        updateStatus('ditolak');
+
+        const rejectReason = document.getElementById('rejectReason').value;
+
+        if (!rejectReason.trim()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Harap berikan alasan penolakan.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        const formData = new FormData(this);
+
+        fetch(`{{ route('admin.registrations.update-documents-rejection', $registration->id) }}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeRejectModal();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat menolak pendaftaran.',
+                confirmButtonText: 'OK'
+            });
+        });
     });
 
     // WhatsApp notification functions
@@ -932,7 +1282,7 @@
         });
     });
 
-    // Document modal functions - TAMPILKAN DOKUMEN HANYA DI MODAL
+    // Document modal functions
     function showDocumentModal(documentType, title) {
         const viewUrl = `{{ route('admin.registrations.view-document', [$registration->id, 'DOC_TYPE']) }}`.replace('DOC_TYPE', documentType);
         const downloadUrl = `{{ route('admin.registrations.download-document', [$registration->id, 'DOC_TYPE']) }}`.replace('DOC_TYPE', documentType);

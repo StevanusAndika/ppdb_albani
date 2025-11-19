@@ -18,6 +18,61 @@
     </nav>
 
     <main class="max-w-6xl mx-auto py-8 px-4">
+        <!-- Kuota Information Card -->
+        @if($quota)
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 {{ $quotaAvailable ? 'border-green-500' : 'border-red-500' }}">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">
+                        Informasi Kuota Pendaftaran
+                        @if($quotaAvailable)
+                        <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full ml-2">Tersedia</span>
+                        @else
+                        <span class="text-sm bg-red-100 text-red-800 px-2 py-1 rounded-full ml-2">Penuh</span>
+                        @endif
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Total Kuota:</span>
+                            <span class="font-semibold ml-2">{{ $quota->kuota }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Terpakai:</span>
+                            <span class="font-semibold ml-2">{{ $quota->terpakai }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Sisa:</span>
+                            <span class="font-semibold ml-2 {{ $quotaAvailable ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $quota->sisa }}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Persentase:</span>
+                            <span class="font-semibold ml-2">{{ number_format($quota->persentase_terpakai, 1) }}%</span>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="mt-3">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-{{ $quotaAvailable ? 'green' : 'red' }}-500 h-2.5 rounded-full"
+                                 style="width: {{ $quota->persentase_terpakai }}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                @if(!$quotaAvailable && !$hasSuccessfulPayment)
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                        <span class="text-red-800 font-medium">Kuota sudah penuh</span>
+                    </div>
+                    <p class="text-red-600 text-sm mt-1">Tidak dapat melakukan pembayaran baru</p>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
+
         <div class="bg-white rounded-xl shadow-md p-6 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
@@ -26,17 +81,24 @@
                 </div>
 
                 <div class="flex gap-3">
-                    @if(!$hasSuccessfulPayment)
+                    @if(!$hasSuccessfulPayment && $quotaAvailable)
                     <a href="{{ route('santri.payments.create') }}"
                        class="bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg font-semibold transition duration-300 flex items-center gap-2">
                         <i class="fas fa-plus"></i>
                         Buat Pembayaran Baru
                     </a>
-                    @else
+                    @elseif($hasSuccessfulPayment)
                     <div class="bg-green-100 border border-green-200 rounded-lg px-4 py-3">
                         <div class="flex items-center gap-2 text-green-800">
                             <i class="fas fa-check-circle"></i>
                             <span class="font-semibold">Pembayaran Sudah Lunas</span>
+                        </div>
+                    </div>
+                    @elseif(!$quotaAvailable)
+                    <div class="bg-red-100 border border-red-200 rounded-lg px-4 py-3">
+                        <div class="flex items-center gap-2 text-red-800">
+                            <i class="fas fa-times-circle"></i>
+                            <span class="font-semibold">Kuota Penuh</span>
                         </div>
                     </div>
                     @endif
@@ -181,10 +243,8 @@
                                     </form>
                                     @endif
 
-                                    
-
                                     <!-- Retry Button untuk payment expired -->
-                                    @if($payment->status === 'expired' && !$hasSuccessfulPayment)
+                                    @if($payment->status === 'expired' && !$hasSuccessfulPayment && $quotaAvailable)
                                     <a href="{{ route('santri.payments.retry', $payment->payment_code) }}"
                                        class="text-red-600 hover:text-red-900 transition duration-200 p-2 rounded-full hover:bg-red-50"
                                        title="Coba Lagi">
@@ -229,10 +289,16 @@
                 <i class="fas fa-receipt text-4xl text-gray-300 mb-4"></i>
                 <h3 class="text-xl font-bold text-gray-600 mb-2">Belum Ada Pembayaran</h3>
                 <p class="text-gray-500 mb-6">Anda belum melakukan pembayaran apapun</p>
+                @if($quotaAvailable)
                 <a href="{{ route('santri.payments.create') }}"
                    class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition duration-300">
                     Buat Pembayaran Pertama
                 </a>
+                @else
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 inline-block">
+                    <p class="text-red-600">Tidak dapat membuat pembayaran karena kuota sudah penuh</p>
+                </div>
+                @endif
             </div>
             @endif
         </div>
@@ -263,6 +329,12 @@
                         <i class="fas fa-sync-alt text-orange-500 mt-1 mr-3"></i>
                         <span>Status pembayaran online diperiksa otomatis setiap 30 detik</span>
                     </div>
+                    @if($quota)
+                    <div class="flex items-start">
+                        <i class="fas fa-users text-indigo-500 mt-1 mr-3"></i>
+                        <span>Kuota tersedia: {{ $quota->sisa }} dari {{ $quota->kuota }} slot</span>
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -291,21 +363,6 @@
         </div>
     </main>
 </div>
-
-<!-- Payment Detail Modal -->
-{{-- <div id="paymentDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-800">Detail Pembayaran</h3>
-            <button onclick="hidePaymentDetail()" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        <div id="paymentDetailContent">
-            <!-- Content will be loaded via AJAX -->
-        </div>
-    </div>
-</div> --}}
 
 <script>
 // Auto sync untuk pembayaran pending
@@ -347,9 +404,30 @@ function checkPaymentStatus(paymentCode) {
     });
 }
 
+// Check kuota availability
+function checkQuotaAvailability() {
+    fetch(`/santri/payments/check-quota`, {
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (!data.available) {
+                // Jika kuota habis, show notification
+                showQuotaFullNotification();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking quota:', error);
+    });
+}
+
 // Show notification ketika status berubah
 function showStatusUpdateNotification() {
-    // Buat notifikasi
     const notification = document.createElement('div');
     notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
     notification.innerHTML = `
@@ -361,66 +439,37 @@ function showStatusUpdateNotification() {
 
     document.body.appendChild(notification);
 
-    // Hapus notifikasi setelah 3 detik
     setTimeout(() => {
         notification.remove();
     }, 3000);
 }
 
-function showPaymentDetail(paymentId) {
-    // Show loading
-    const modal = document.getElementById('paymentDetailModal');
-    const content = document.getElementById('paymentDetailContent');
-
-    content.innerHTML = `
-        <div class="text-center py-8">
-            <i class="fas fa-spinner fa-spin text-2xl text-primary mb-2"></i>
-            <p>Memuat detail pembayaran...</p>
+// Show notification ketika kuota penuh
+function showQuotaFullNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <span>Kuota pendaftaran sudah penuh!</span>
         </div>
     `;
 
-    modal.classList.remove('hidden');
+    document.body.appendChild(notification);
 
-    // Fetch payment detail
-    fetch(`/santri/payments/${paymentId}/detail`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                content.innerHTML = data.html;
-            } else {
-                content.innerHTML = `
-                    <div class="text-center py-8 text-red-600">
-                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                        <p>Gagal memuat detail pembayaran</p>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            content.innerHTML = `
-                <div class="text-center py-8 text-red-600">
-                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                    <p>Terjadi kesalahan</p>
-                </div>
-            `;
-        });
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
 }
-
-function hidePaymentDetail() {
-    document.getElementById('paymentDetailModal').classList.add('hidden');
-}
-
-// Close modal when clicking outside
-document.getElementById('paymentDetailModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        hidePaymentDetail();
-    }
-});
 
 // Jalankan auto sync ketika halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
     autoSyncPayments();
+
+    // Check kuota setiap 2 menit
+    setInterval(() => {
+        checkQuotaAvailability();
+    }, 120000);
 
     // Juga check status setiap 60 detik untuk semua payment
     setInterval(() => {
@@ -431,10 +480,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 60000);
 });
-
-// Auto refresh page every 30 seconds if there are pending payments
-@if($payments->whereIn('status', ['pending', 'waiting_payment', 'processing'])->count() > 0)
-// Auto sync sudah aktif, tidak perlu refresh halaman otomatis
-@endif
 </script>
 @endsection

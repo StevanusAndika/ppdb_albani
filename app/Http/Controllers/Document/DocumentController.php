@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Document;
 use App\Http\Controllers\Controller;
 use App\Models\Registration;
 use App\Models\Package;
+use App\Models\Quota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ use Intervention\Image\Encoders\PngEncoder;
 class DocumentController extends Controller
 {
     private $allowedMimes = ['pdf', 'jpeg', 'jpg', 'png'];
-    private $maxFileSize = 5120; // 5MB in KB
+    private $maxFileSize = 5120;
     private $imageManager;
 
     public function __construct()
@@ -29,7 +30,6 @@ class DocumentController extends Controller
     {
         $user = Auth::user();
 
-        // Load registration dengan package dan programUnggulan
         $registration = Registration::with(['package', 'programUnggulan'])
             ->where('user_id', $user->id)
             ->first();
@@ -39,13 +39,11 @@ class DocumentController extends Controller
                 ->with('error', 'Silakan isi biodata terlebih dahulu sebelum mengunggah dokumen.');
         }
 
-        // Cek jika status pendaftaran = diterima
         if ($registration->status_pendaftaran === 'diterima') {
             return redirect()->route('santri.dashboard')
                 ->with('error', 'Anda tidak dapat mengunggah atau mengedit dokumen karena status pendaftaran sudah DITERIMA.');
         }
 
-        // Pastikan package terload dengan benar
         if ($registration->package_id && !$registration->relationLoaded('package')) {
             $package = Package::find($registration->package_id);
             $registration->setRelation('package', $package);
@@ -54,7 +52,6 @@ class DocumentController extends Controller
         $totalBiaya = $registration->total_biaya;
         $programUnggulanId = $registration->program_unggulan_id;
 
-        // Handle program unggulan name
         $programUnggulanName = 'Belum dipilih';
         if ($registration->programUnggulan) {
             $programUnggulanName = $registration->programUnggulan->name ?? "Program #{$programUnggulanId}";
@@ -72,9 +69,6 @@ class DocumentController extends Controller
 
     public function upload(Request $request, $documentType)
     {
-        // Pastikan response selalu JSON
-        $response = response()->json([], 200, [], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-
         try {
             $user = Auth::user();
             if (!$user) {
@@ -93,7 +87,6 @@ class DocumentController extends Controller
                 ], 400);
             }
 
-            // Cek jika status pendaftaran = diterima
             if ($registration->status_pendaftaran === 'diterima') {
                 return response()->json([
                     'success' => false,
@@ -108,7 +101,6 @@ class DocumentController extends Controller
                 ], 400);
             }
 
-            // Validasi file
             $validator = validator($request->all(), [
                 'file' => 'required|file|mimes:' . implode(',', $this->allowedMimes) . '|max:' . $this->maxFileSize
             ]);
@@ -122,32 +114,31 @@ class DocumentController extends Controller
 
             $file = $request->file('file');
 
-            // Hapus file lama jika ada
             $this->deleteOldFile($registration, $documentType);
 
-            // Upload file baru
             $filePath = $this->uploadFile($file, $documentType, $user, $registration);
 
-            // Update path di database
             $column = $this->getDocumentColumn($documentType);
             $registration->update([$column => $filePath]);
 
-            // Refresh model untuk mendapatkan data terbaru
             $registration->refresh();
 
-            // Check jika semua dokumen sudah lengkap
-            $allComplete = $registration->hasAllDocuments();
+            $allComplete = $this->checkAllDocumentsComplete($registration);
+            $uploadedCount = $this->getUploadedDocumentsCount($registration);
+
             if ($allComplete) {
                 $registration->markAsPending();
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Dokumen berhasil diunggah.' . ($allComplete ? ' Semua dokumen telah lengkap!' : ''),
+                'message' => 'Dokumen berhasil diunggah.',
                 'file_path' => $filePath,
                 'file_name' => basename($filePath),
                 'document_type' => $documentType,
                 'all_documents_complete' => $allComplete,
+                'uploaded_count' => $uploadedCount,
+                'total_documents' => 4,
                 'refresh_required' => $allComplete
             ]);
 
@@ -166,6 +157,93 @@ class DocumentController extends Controller
     }
 
     /**
+     * Check if all documents are complete
+     */
+    private function checkAllDocumentsComplete($registration)
+    {
+        $requiredDocuments = [
+            'kartu_keluaga_path',
+            'ijazah_path',
+            'akta_kelahiran_path',
+            'pas_foto_path'
+        ];
+
+        foreach ($requiredDocuments as $documentPath) {
+            if (empty($registration->$documentPath)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Get count of uploaded documents
+     */
+    private function getUploadedDocumentsCount($registration)
+    {
+        $requiredDocuments = [
+            'kartu_keluaga_path',
+            'ijazah_path',
+            'akta_kelahiran_path',
+            'pas_foto_path'
+        ];
+
+        $uploadedCount = 0;
+        foreach ($requiredDocuments as $documentPath) {
+            if (!empty($registration->$documentPath)) {
+                $uploadedCount++;
+            }
+        }
+
+        return $uploadedCount;
+    }
+
+    /**
+     * Check if all documents are complete via API
+     */
+    public function checkAllDocumentsCompleteApi()
+    {
+        try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.',
+                    'all_complete' => false
+                ], 404);
+            }
+
+            $allComplete = $this->checkAllDocumentsComplete($registration);
+            $uploadedCount = $this->getUploadedDocumentsCount($registration);
+
+            return response()->json([
+                'success' => true,
+                'all_complete' => $allComplete,
+                'uploaded_count' => $uploadedCount,
+                'total_documents' => 4,
+                'message' => $allComplete ?
+                    'Semua dokumen telah lengkap!' :
+                    "Masih ada " . (4 - $uploadedCount) . " dokumen yang belum diunggah."
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Check all documents complete error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memeriksa kelengkapan dokumen: ' . $e->getMessage(),
+                'all_complete' => false
+            ], 500);
+        }
+    }
+
+    /**
      * Upload file dengan struktur folder yang efisien
      */
     private function uploadFile($file, $documentType, $user, $registration)
@@ -174,18 +252,16 @@ class DocumentController extends Controller
         $fileName = $this->generateFileName($file, $documentType, $originalExtension);
         $folderPath = $this->getEfficientFolderPath($user, $registration);
 
-        // Buat folder jika belum ada
         if (!Storage::disk('public')->exists($folderPath)) {
             Storage::disk('public')->makeDirectory($folderPath, 0755, true);
         }
 
         $fullPath = $folderPath . '/' . $fileName;
 
-        // Untuk file gambar, optimalkan tanpa mengubah format
         if (in_array($originalExtension, ['jpeg', 'jpg', 'png'])) {
             try {
                 $image = $this->imageManager->read($file->getRealPath());
-                $image->scaleDown(1200); // Optimasi ukuran
+                $image->scaleDown(1200);
 
                 if ($originalExtension === 'png') {
                     $encodedImage = $image->encode(new PngEncoder());
@@ -198,12 +274,10 @@ class DocumentController extends Controller
 
             } catch (\Exception $e) {
                 \Log::warning('Image processing failed, using direct upload: ' . $e->getMessage());
-                // Fallback: upload langsung
                 $file->storeAs($folderPath, $fileName, 'public');
                 return $fullPath;
             }
         } else {
-            // Untuk PDF, upload langsung
             $file->storeAs($folderPath, $fileName, 'public');
             return $fullPath;
         }
@@ -217,7 +291,6 @@ class DocumentController extends Controller
         $userName = $this->sanitizeFileName($user->name);
         $userId = $user->id;
 
-        // Gunakan ID pendaftaran untuk konsistensi
         $registrationId = $registration->id_pendaftaran ?? 'user_' . $userId;
 
         return "documents/{$registrationId}_{$userName}";
@@ -272,10 +345,7 @@ class DocumentController extends Controller
 
         if ($oldFilePath && Storage::disk('public')->exists($oldFilePath)) {
             try {
-                // Hapus file
                 Storage::disk('public')->delete($oldFilePath);
-
-                // Cek dan hapus folder jika kosong
                 $this->cleanupEmptyFolders($oldFilePath);
 
             } catch (\Exception $e) {
@@ -294,10 +364,8 @@ class DocumentController extends Controller
     {
         $directory = dirname($filePath);
 
-        // Cek jika directory adalah folder documents/...
         if (strpos($directory, 'documents/') === 0) {
             try {
-                // Cek jika folder kosong
                 $filesInDirectory = Storage::disk('public')->files($directory);
                 $subdirectories = Storage::disk('public')->directories($directory);
 
@@ -323,7 +391,6 @@ class DocumentController extends Controller
                 ], 404);
             }
 
-            // Cek jika status pendaftaran = diterima
             if ($registration->status_pendaftaran === 'diterima') {
                 return response()->json([
                     'success' => false,
@@ -343,10 +410,15 @@ class DocumentController extends Controller
             $column = $this->getDocumentColumn($documentType);
             $registration->update([$column => null]);
 
+            $allComplete = $this->checkAllDocumentsComplete($registration);
+            $uploadedCount = $this->getUploadedDocumentsCount($registration);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Dokumen berhasil dihapus.',
-                'document_type' => $documentType
+                'document_type' => $documentType,
+                'all_documents_complete' => $allComplete,
+                'uploaded_count' => $uploadedCount
             ]);
 
         } catch (\Exception $e) {
@@ -360,6 +432,156 @@ class DocumentController extends Controller
                 'success' => false,
                 'message' => 'Gagal menghapus dokumen: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Check quota availability for delete all documents button
+     */
+    public function checkQuotaForDeleteAll()
+    {
+        try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.',
+                    'show_delete_all' => false
+                ], 404);
+            }
+
+            $activeQuota = Quota::where('is_active', true)->first();
+
+            if (!$activeQuota) {
+                return response()->json([
+                    'success' => true,
+                    'show_delete_all' => true,
+                    'quota_available' => true
+                ]);
+            }
+
+            $usedQuota = Registration::where('status_pendaftaran', 'diterima')
+                ->orWhere('status_pendaftaran', 'menunggu_diverifikasi')
+                ->count();
+
+            $availableQuota = $activeQuota->quota - $usedQuota;
+
+            $showDeleteAll = $availableQuota <= 0;
+
+            return response()->json([
+                'success' => true,
+                'show_delete_all' => $showDeleteAll,
+                'quota_available' => $availableQuota > 0,
+                'available_quota' => $availableQuota,
+                'message' => $showDeleteAll ?
+                    'Kuota telah penuh. Anda dapat menghapus semua dokumen.' :
+                    'Masih tersedia kuota. Tidak dapat menghapus semua dokumen.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Check quota error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memeriksa kuota: ' . $e->getMessage(),
+                'show_delete_all' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete all documents
+     */
+    public function deleteAllDocuments()
+    {
+        try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
+
+            if (!$registration) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi tidak ditemukan.'
+                ], 404);
+            }
+
+            if ($registration->status_pendaftaran === 'diterima') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak dapat menghapus dokumen karena status pendaftaran sudah DITERIMA.'
+                ], 403);
+            }
+
+            $deletedDocuments = [];
+            $documentTypes = ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'];
+
+            foreach ($documentTypes as $documentType) {
+                $column = $this->getDocumentColumn($documentType);
+                $filePath = $registration->$column;
+
+                if ($filePath && Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                    $registration->update([$column => null]);
+                    $deletedDocuments[] = $documentType;
+                }
+            }
+
+            $this->cleanupAllEmptyFolders($registration);
+
+            \Log::info('All documents deleted', [
+                'user_id' => $user->id,
+                'registration_id' => $registration->id,
+                'deleted_documents' => $deletedDocuments
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Semua dokumen berhasil dihapus.',
+                'deleted_count' => count($deletedDocuments),
+                'deleted_documents' => $deletedDocuments,
+                'all_documents_complete' => false,
+                'uploaded_count' => 0,
+                'document_progress' => 0,
+                'refresh_dashboard' => true
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Delete all documents error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus semua dokumen: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Clean up all empty folders for registration
+     */
+    private function cleanupAllEmptyFolders($registration)
+    {
+        try {
+            $user = Auth::user();
+            $folderPath = $this->getEfficientFolderPath($user, $registration);
+
+            if (Storage::disk('public')->exists($folderPath)) {
+                Storage::disk('public')->deleteDirectory($folderPath);
+
+                \Log::info('Document folder deleted', [
+                    'folder_path' => $folderPath,
+                    'user_id' => $user->id
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Error cleaning up document folders: ' . $e->getMessage());
         }
     }
 
@@ -459,7 +681,6 @@ class DocumentController extends Controller
                 ], 404);
             }
 
-            // Cek jika status pendaftaran = diterima
             if ($registration->status_pendaftaran === 'diterima') {
                 return response()->json([
                     'success' => false,
@@ -467,10 +688,11 @@ class DocumentController extends Controller
                 ], 403);
             }
 
-            if (!$registration->hasAllDocuments()) {
+            if (!$this->checkAllDocumentsComplete($registration)) {
+                $uploadedCount = $this->getUploadedDocumentsCount($registration);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Semua dokumen harus diunggah sebelum menyelesaikan pendaftaran.'
+                    'message' => "Semua dokumen harus diunggah sebelum menyelesaikan pendaftaran. ({$uploadedCount}/4 dokumen)"
                 ], 400);
             }
 
@@ -516,9 +738,17 @@ class DocumentController extends Controller
                 ], 404);
             }
 
+            $uploadedCount = $this->getUploadedDocumentsCount($registration);
+            $allComplete = $this->checkAllDocumentsComplete($registration);
+
             return response()->json([
                 'success' => true,
-                'progress' => $registration->upload_progress
+                'progress' => [
+                    'uploaded_count' => $uploadedCount,
+                    'total_documents' => 4,
+                    'percentage' => ($uploadedCount / 4) * 100,
+                    'all_complete' => $allComplete
+                ]
             ]);
 
         } catch (\Exception $e) {
@@ -547,26 +777,23 @@ class DocumentController extends Controller
                 ], 404);
             }
 
-            // Check if all documents are uploaded
-            if (!$registration->hasAllDocuments()) {
+            if (!$this->checkAllDocumentsComplete($registration)) {
+                $uploadedCount = $this->getUploadedDocumentsCount($registration);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Semua dokumen harus diunggah sebelum dapat didownload.'
+                    'message' => "Semua dokumen harus diunggah sebelum dapat didownload. ({$uploadedCount}/4 dokumen)"
                 ], 400);
             }
 
-            // Create ZIP file
             $zipFileName = "Dokumen_Pendaftaran_{$user->name}.zip";
             $zipPath = storage_path("app/temp/{$zipFileName}");
 
-            // Ensure temp directory exists
             if (!file_exists(dirname($zipPath))) {
                 mkdir(dirname($zipPath), 0755, true);
             }
 
             $zip = new \ZipArchive();
             if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
-                // Add each document to ZIP
                 $documents = [
                     'kartu_keluarga' => $registration->kartu_keluaga_path,
                     'ijazah' => $registration->ijazah_path,
@@ -591,7 +818,6 @@ class DocumentController extends Controller
 
                 $zip->close();
 
-                // Return ZIP file as download
                 return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
 
             } else {
@@ -604,7 +830,6 @@ class DocumentController extends Controller
                 'exception' => $e
             ]);
 
-            // Clean up temp file if exists
             if (file_exists($zipPath)) {
                 unlink($zipPath);
             }

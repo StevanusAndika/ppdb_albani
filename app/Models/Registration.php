@@ -60,6 +60,7 @@ class Registration extends Model
         'akta_kelahiran_path',
         'pas_foto_path',
         'status_pendaftaran',
+        'status_seleksi',
         'catatan_admin',
         'dilihat_pada',
         'ditolak_pada',
@@ -77,6 +78,7 @@ class Registration extends Model
 
     protected $appends = [
         'status_label',
+        'status_seleksi_label',
         'total_biaya',
         'formatted_total_biaya',
         'qr_code_url',
@@ -95,6 +97,11 @@ class Registration extends Model
         static::creating(function ($registration) {
             if (empty($registration->id_pendaftaran)) {
                 $registration->id_pendaftaran = 'PSB-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+
+            // Set default status_seleksi jika tidak diisi
+            if (empty($registration->status_seleksi)) {
+                $registration->status_seleksi = 'belum_mengikuti_seleksi';
             }
         });
 
@@ -183,6 +190,19 @@ class Registration extends Model
         return $statuses[$this->status_pendaftaran] ?? $this->status_pendaftaran;
     }
 
+    /**
+     * Get status seleksi label
+     */
+    public function getStatusSeleksiLabelAttribute()
+    {
+        $statuses = [
+            'sudah_mengikuti_seleksi' => 'Sudah Mengikuti Seleksi',
+            'belum_mengikuti_seleksi' => 'Belum Mengikuti Seleksi'
+        ];
+
+        return $statuses[$this->status_seleksi] ?? $this->status_seleksi;
+    }
+
     public function getTotalBiayaAttribute()
     {
         if ($this->relationLoaded('package') && $this->package) {
@@ -259,6 +279,40 @@ class Registration extends Model
             'status_pendaftaran' => 'perlu_review',
             'diperbarui_setelah_ditolak' => false
         ]);
+    }
+
+    /**
+     * Update status seleksi - Sudah Mengikuti Seleksi
+     */
+    public function markAsSudahSeleksi()
+    {
+        $this->update([
+            'status_seleksi' => 'sudah_mengikuti_seleksi'
+        ]);
+    }
+
+    /**
+     * Update status seleksi - Belum Mengikuti Seleksi
+     */
+    public function markAsBelumSeleksi()
+    {
+        $this->update([
+            'status_seleksi' => 'belum_mengikuti_seleksi'
+        ]);
+    }
+
+    /**
+     * Update status seleksi dengan custom value
+     */
+    public function updateStatusSeleksi($status)
+    {
+        if (in_array($status, ['sudah_mengikuti_seleksi', 'belum_mengikuti_seleksi'])) {
+            $this->update([
+                'status_seleksi' => $status
+            ]);
+            return true;
+        }
+        return false;
     }
 
     public function hasAllDocuments()
@@ -428,6 +482,32 @@ class Registration extends Model
     }
 
     /**
+     * Hapus dokumen tertentu
+     */
+    public function deleteDocument($documentType)
+    {
+        $documentFields = [
+            'kartu_keluarga' => 'kartu_keluaga_path',
+            'ijazah' => 'ijazah_path',
+            'akta_kelahiran' => 'akta_kelahiran_path',
+            'pas_foto' => 'pas_foto_path'
+        ];
+
+        if (isset($documentFields[$documentType])) {
+            $field = $documentFields[$documentType];
+
+            if ($this->$field && Storage::disk('public')->exists($this->$field)) {
+                Storage::disk('public')->delete($this->$field);
+                $this->$field = null;
+                $this->save();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Cek apakah dokumen sudah expired (lebih dari 3 tahun)
      */
     public function isDocumentsExpired()
@@ -549,5 +629,135 @@ class Registration extends Model
     public function programUnggulan()
     {
         return $this->belongsTo(ContentSetting::class, 'program_unggulan_id');
+    }
+
+    /**
+     * Scope untuk registrasi dengan status seleksi tertentu
+     */
+    public function scopeStatusSeleksi($query, $status)
+    {
+        return $query->where('status_seleksi', $status);
+    }
+
+    /**
+     * Scope untuk registrasi yang sudah mengikuti seleksi
+     */
+    public function scopeSudahSeleksi($query)
+    {
+        return $query->where('status_seleksi', 'sudah_mengikuti_seleksi');
+    }
+
+    /**
+     * Scope untuk registrasi yang belum mengikuti seleksi
+     */
+    public function scopeBelumSeleksi($query)
+    {
+        return $query->where('status_seleksi', 'belum_mengikuti_seleksi');
+    }
+
+    /**
+     * Cek apakah sudah mengikuti seleksi
+     */
+    public function isSudahSeleksi()
+    {
+        return $this->status_seleksi === 'sudah_mengikuti_seleksi';
+    }
+
+    /**
+     * Cek apakah belum mengikuti seleksi
+     */
+    public function isBelumSeleksi()
+    {
+        return $this->status_seleksi === 'belum_mengikuti_seleksi';
+    }
+
+    /**
+     * Get status seleksi options untuk dropdown
+     */
+    public static function getStatusSeleksiOptions()
+    {
+        return [
+            'belum_mengikuti_seleksi' => 'Belum Mengikuti Seleksi',
+            'sudah_mengikuti_seleksi' => 'Sudah Mengikuti Seleksi'
+        ];
+    }
+
+    /**
+     * Get status pendaftaran options untuk dropdown
+     */
+    public static function getStatusPendaftaranOptions()
+    {
+        return [
+            'belum_mendaftar' => 'Belum Mendaftar',
+            'telah_mengisi' => 'Telah Mengisi',
+            'telah_dilihat' => 'Telah Dilihat',
+            'menunggu_diverifikasi' => 'Menunggu Diverifikasi',
+            'ditolak' => 'Ditolak',
+            'diterima' => 'Diterima',
+            'perlu_review' => 'Perlu Review Ulang'
+        ];
+    }
+
+    /**
+     * Get all document information
+     */
+    public function getDocumentInfo()
+    {
+        $documents = [
+            'kartu_keluarga' => [
+                'name' => 'Kartu Keluarga',
+                'path' => $this->kartu_keluaga_path,
+                'icon' => 'fas fa-id-card',
+                'field' => 'kartu_keluaga_path',
+                'exists' => !empty($this->kartu_keluaga_path) && Storage::disk('public')->exists($this->kartu_keluaga_path)
+            ],
+            'ijazah' => [
+                'name' => 'Ijazah',
+                'path' => $this->ijazah_path,
+                'icon' => 'fas fa-graduation-cap',
+                'field' => 'ijazah_path',
+                'exists' => !empty($this->ijazah_path) && Storage::disk('public')->exists($this->ijazah_path)
+            ],
+            'akta_kelahiran' => [
+                'name' => 'Akta Kelahiran',
+                'path' => $this->akta_kelahiran_path,
+                'icon' => 'fas fa-birthday-cake',
+                'field' => 'akta_kelahiran_path',
+                'exists' => !empty($this->akta_kelahiran_path) && Storage::disk('public')->exists($this->akta_kelahiran_path)
+            ],
+            'pas_foto' => [
+                'name' => 'Pas Foto',
+                'path' => $this->pas_foto_path,
+                'icon' => 'fas fa-camera',
+                'field' => 'pas_foto_path',
+                'exists' => !empty($this->pas_foto_path) && Storage::disk('public')->exists($this->pas_foto_path)
+            ]
+        ];
+
+        return $documents;
+    }
+
+    /**
+     * Get registration statistics
+     */
+    public static function getStatistics()
+    {
+        $total = self::count();
+        $menunggu = self::where('status_pendaftaran', 'menunggu_diverifikasi')->count();
+        $diterima = self::where('status_pendaftaran', 'diterima')->count();
+        $ditolak = self::where('status_pendaftaran', 'ditolak')->count();
+        $perlu_review = self::where('status_pendaftaran', 'perlu_review')->count();
+        $sudah_seleksi = self::where('status_seleksi', 'sudah_mengikuti_seleksi')->count();
+        $belum_seleksi = self::where('status_seleksi', 'belum_mengikuti_seleksi')->count();
+
+        return [
+            'total' => $total,
+            'menunggu' => $menunggu,
+            'diterima' => $diterima,
+            'ditolak' => $ditolak,
+            'perlu_review' => $perlu_review,
+            'sudah_seleksi' => $sudah_seleksi,
+            'belum_seleksi' => $belum_seleksi
+        ];
     }
 }

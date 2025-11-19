@@ -10,7 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #057572;
             min-height: 100vh;
         }
         .card-glass {
@@ -24,7 +24,7 @@
     <div class="max-w-4xl mx-auto px-4">
         <!-- Header -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Pondok Pesantren Bani Syahid</h1>
+            <h1 class="text-3xl font-bold text-white mb-2">Pondok Pesantren Al-Quran Bani Syahid</h1>
             <p class="text-white/90">Informasi Calon Santri</p>
         </div>
 
@@ -33,8 +33,8 @@
             <!-- ID Pendaftaran & Status -->
             <div class="flex justify-between items-start mb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800">{{ $registration->nama_lengkap }}</h2>
-                    <p class="text-gray-600">ID: {{ $registration->id_pendaftaran }}</p>
+
+                    <p class="text-gray-600 font-bold">ID: {{ $registration->id_pendaftaran }}</p>
                 </div>
                 <div class="text-right">
                     <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold
@@ -68,20 +68,17 @@
             <!-- Information Grid -->
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Data Pribadi -->
-                {{-- <div class="space-y-4">
+                <div class="space-y-4">
                     <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
                         <i class="fas fa-user mr-2 text-blue-600"></i>Data Pribadi
                     </h3>
 
                     <div class="space-y-3">
                         <div>
-                            <label class="text-sm text-gray-500">NIK</label>
-                            <p class="font-medium">{{ $registration->nik }}</p>
+                            <label class="text-sm text-gray-500">Nama Lengkap</label>
+                            <p class="font-medium">{{ $registration->nama_lengkap }}</p>
                         </div>
-                        <div>
-                            <label class="text-sm text-gray-500">Tempat, Tanggal Lahir</label>
-                            <p class="font-medium">{{ $registration->tempat_lahir }}, {{ $registration->tanggal_lahir->format('d/m/Y') }}</p>
-                        </div>
+
                         <div>
                             <label class="text-sm text-gray-500">Jenis Kelamin</label>
                             <p class="font-medium">{{ ucfirst($registration->jenis_kelamin) }}</p>
@@ -91,55 +88,11 @@
                             <p class="font-medium">{{ ucfirst($registration->agama) }}</p>
                         </div>
                     </div>
-                </div> --}}
+                </div>
 
-                <!-- Kontak & Alamat -->
-                {{-- <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
-                        <i class="fas fa-address-book mr-2 text-green-600"></i>Kontak & Alamat
-                    </h3>
 
-                    <div class="space-y-3">
-                        <div>
-                            <label class="text-sm text-gray-500">Alamat</label>
-                            <p class="font-medium">{{ $registration->alamat_tinggal }}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-500">Kecamatan, Kota</label>
-                            <p class="font-medium">{{ $registration->kecamatan }}, {{ $registration->kota }}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-500">Telpon Orang Tua</label>
-                            <p class="font-medium">{{ $registration->nomor_telpon_orang_tua }}</p>
-                        </div>
-                    </div>
-                </div> --}}
 
-                <!-- Data Orang Tua -->
-                {{-- <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">
-                        <i class="fas fa-users mr-2 text-purple-600"></i>Data Orang Tua
-                    </h3>
 
-                    <div class="space-y-3">
-                        <div>
-                            <label class="text-sm text-gray-500">Nama Ayah</label>
-                            <p class="font-medium">{{ $registration->nama_ayah_kandung }}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-500">Pekerjaan Ayah</label>
-                            <p class="font-medium">{{ $registration->pekerjaan_ayah }}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-500">Nama Ibu</label>
-                            <p class="font-medium">{{ $registration->nama_ibu_kandung }}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-500">Pekerjaan Ibu</label>
-                            <p class="font-medium">{{ $registration->pekerjaan_ibu }}</p>
-                        </div>
-                    </div>
-                </div> --}}
 
                 <!-- Pendidikan -->
                 <div class="space-y-4">
@@ -156,10 +109,7 @@
                             <label class="text-sm text-gray-500">Sekolah Terakhir</label>
                             <p class="font-medium">{{ $registration->nama_sekolah_terakhir }}</p>
                         </div>
-                        <div>
-                            <label class="text-sm text-gray-500">Alamat Sekolah</label>
-                            <p class="font-medium">{{ $registration->alamat_sekolah_terakhir }}</p>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -183,20 +133,13 @@
             @endif
 
             <!-- Catatan Admin -->
-            @if($registration->catatan_admin)
-            <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <h4 class="font-semibold text-yellow-800 mb-2">
-                    <i class="fas fa-exclamation-circle mr-2"></i>Catatan Admin
-                </h4>
-                <p class="text-yellow-700">{{ $registration->catatan_admin }}</p>
-            </div>
-            @endif
+
         </div>
 
         <!-- Footer -->
         <div class="text-center text-white/80">
-            <p>© 2025 Pondok Pesantren Bani Syahid. All rights reserved.</p>
-            <p class="text-sm mt-1">Halaman ini dapat diakses dengan scan barcode</p>
+            <p>© 2025 Pondok Pesantren Al-Quran Bani Syahid.</p>
+
         </div>
     </div>
 </body>
