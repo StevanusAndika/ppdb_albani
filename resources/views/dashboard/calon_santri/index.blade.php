@@ -261,85 +261,91 @@
             <!-- Right: Main Content -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Status Summary Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Biodata Card -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                                <i class="fas fa-user-edit text-white text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Biodata</p>
-                                @if($registration)
-                                    <p class="text-lg font-semibold text-gray-900">Lengkap</p>
-                                @else
-                                    <p class="text-lg font-semibold text-gray-900">Belum</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
-                    <!-- Dokumen Card -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                                <i class="fas fa-file-alt text-white text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Dokumen</p>
-                                @if($registration && $registration->hasAllDocuments())
-                                    <p class="text-lg font-semibold text-gray-900">Lengkap</p>
-                                @elseif($registration)
-                                    <p class="text-lg font-semibold text-gray-900">{{ round($documentProgress) }}%</p>
-                                @else
-                                    <p class="text-lg font-semibold text-gray-900">Belum</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+    <!-- Biodata Card -->
+    <div class="bg-white rounded-xl shadow-md p-3 flex items-center">
+        <div class="flex items-center space-x-4 w-full">
+            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                <i class="fas fa-user-edit text-white text-xl"></i>
+            </div>
+            <div class="flex flex-col justify-center flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-600 break-words">Biodata</p>
+                @if($registration)
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">Lengkap</p>
+                @else
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">Belum</p>
+                @endif
+            </div>
+        </div>
+    </div>
 
-                    <!-- Pembayaran Card -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                                <i class="fas fa-credit-card text-white text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Pembayaran</p>
-                                @if($hasSuccessfulPayment)
-                                    <p class="text-lg font-semibold text-gray-900">Lunas</p>
-                                @elseif($registration && $registration->hasAllDocuments())
-                                    <p class="text-lg font-semibold text-gray-900">Siap Bayar</p>
-                                @else
-                                    <p class="text-lg font-semibold text-gray-900">Menunggu</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+    <!-- Dokumen Card -->
+    <div class="bg-white rounded-xl shadow-md p-3 flex items-center">
+        <div class="flex items-center space-x-4 w-full">
+            <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                <i class="fas fa-file-alt text-white text-xl"></i>
+            </div>
+            <div class="flex flex-col justify-center flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-600 break-words">Dokumen</p>
+                @if($registration && $registration->hasAllDocuments())
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">Lengkap</p>
+                @elseif($registration)
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">
+                        {{ round($documentProgress) }}%
+                    </p>
+                @else
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">Belum</p>
+                @endif
+            </div>
+        </div>
+    </div>
 
-                    <!-- Kuota Card -->
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 {{ $quotaAvailable ? 'bg-green-500' : 'bg-red-500' }} rounded-md p-3">
-                                <i class="fas fa-users text-white text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Kuota Pendaftaran</p>
-                                @if($quota)
-                                    <p class="text-lg font-semibold {{ $quotaAvailable ? 'text-green-700' : 'text-red-700' }}">
-                                        {{ $quota->sisa }} / {{ $quota->kuota }}
-                                    </p>
-                                    <p class="text-xs {{ $quotaAvailable ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ $quotaAvailable ? 'Tersedia' : 'Penuh' }}
-                                    </p>
-                                @else
-                                    <p class="text-lg font-semibold text-gray-700">-</p>
-                                    <p class="text-xs text-gray-500">Belum tersedia</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Pembayaran Card -->
+    <div class="bg-white rounded-xl shadow-md p-3 flex items-center">
+        <div class="flex items-center space-x-4 w-full">
+            <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                <i class="fas fa-credit-card text-white text-xl"></i>
+            </div>
+            <div class="flex flex-col justify-center flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-600 break-words">Pembayaran</p>
+                @if($hasSuccessfulPayment)
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">Lunas</p>
+                @elseif($registration && $registration->hasAllDocuments())
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">Siap Bayar</p>
+                @else
+                    <p class="text-md font-semibold text-gray-900 break-words truncate">Menunggu</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Kuota Card -->
+    <div class="bg-white rounded-xl shadow-md p-3 flex items-center">
+        <div class="flex items-center space-x-4 w-full">
+            <div class="flex-shrink-0 {{ $quotaAvailable ? 'bg-green-500' : 'bg-red-500' }} rounded-md p-3">
+                <i class="fas fa-users text-white text-xl"></i>
+            </div>
+            <div class="flex flex-col justify-center flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-600 break-words">Kuota Pendaftaran</p>
+
+                @if($quota)
+                    <p class="text-lg font-semibold break-words {{ $quotaAvailable ? 'text-green-700' : 'text-red-700' }}">
+                        {{ $quota->sisa }} / {{ $quota->kuota }}
+                    </p>
+                    <p class="text-xs break-words {{ $quotaAvailable ? 'text-green-600' : 'text-red-600' }}">
+                        {{ $quotaAvailable ? 'Tersedia' : 'Penuh' }}
+                    </p>
+                @else
+                    <p class="text-lg font-semibold text-gray-700 break-words">-</p>
+                    <p class="text-xs text-gray-500 break-words">Belum tersedia</p>
+                @endif
+            </div>
+        </div>
+    </div>
+
+</div>
+
 
                 <!-- Informasi Kuota Pendaftaran -->
                 <div class="bg-white rounded-xl shadow-md p-6">
@@ -497,13 +503,11 @@
                     </div>
                     @endif
                 </div>
-
-                <!-- Progress Steps -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-xl font-bold text-primary mb-4">Progress Pendaftaran</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         <!-- Step 1: Buat Akun -->
-                        <div class="p-4 border-2 border-green-500 bg-green-50 rounded-xl">
+                        <div class="p-2 border-2 border-green-500 bg-green-50 rounded-xl">
                             <div class="flex items-center gap-3">
                                 <div class="step-number bg-green-500 text-white">1</div>
                                 <div>
@@ -513,8 +517,10 @@
                             </div>
                         </div>
 
-                        <!-- Step 2: Isi Biodata -->
-                        <div class="p-4 border-2 {{ $registration ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
+
+
+                        <!-- Step 2 -->
+                        <div class="p-2 border-2 {{ $registration ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
                             <div class="flex items-center gap-3">
                                 <div class="step-number {{ $registration ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600' }}">2</div>
                                 <div>
@@ -526,8 +532,8 @@
                             </div>
                         </div>
 
-                        <!-- Step 3: Upload Dokumen -->
-                        <div class="p-4 border-2 {{ $registration && $registration->hasAllDocuments() ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
+                        <!-- Step 3 -->
+                        <div class="p-2 border-2 {{ $registration && $registration->hasAllDocuments() ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
                             <div class="flex items-center gap-3">
                                 <div class="step-number {{ $registration && $registration->hasAllDocuments() ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600' }}">3</div>
                                 <div>
@@ -545,8 +551,8 @@
                             </div>
                         </div>
 
-                        <!-- Step 4: Pembayaran -->
-                        <div class="p-4 border-2 {{ $hasSuccessfulPayment ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
+                        <!-- Step 4 -->
+                        <div class="p-2 border-2 {{ $hasSuccessfulPayment ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
                             <div class="flex items-center gap-3">
                                 <div class="step-number {{ $hasSuccessfulPayment ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600' }}">4</div>
                                 <div>
@@ -564,8 +570,8 @@
                             </div>
                         </div>
 
-                        <!-- Step 5: Wawancara -->
-                        <div class="p-4 border-2 {{ $registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']) ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
+                        <!-- Step 5 -->
+                        <div class="p-2 border-2 {{ $registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']) ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
                             <div class="flex items-center gap-3">
                                 <div class="step-number {{ $registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']) ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600' }}">5</div>
                                 <div>
@@ -579,22 +585,25 @@
                                     </p>
                                 </div>
                             </div>
-                            </div>
-
-                    <!-- Progress Bar -->
-                    @if($registration)
-                    <div class="mt-6">
-                        <div class="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Progress Keseluruhan</span>
-                            <span>{{ $totalProgress }}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-primary h-3 rounded-full transition-all duration-300"
-                                 style="width: {{ $totalProgress }}%"></div>
                         </div>
                     </div>
+
+
+                    {{-- Progress Bar --}}
+                    @if($registration)
+                        <div class="mt-6">
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Progress Keseluruhan</span>
+                                <span>{{ $totalProgress }}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-primary h-3 rounded-full transition-all duration-300"
+                                    style="width: {{ $totalProgress }}%"></div>
+                            </div>
+                        </div>
                     @endif
                 </div>
+
 
                 <!-- Barcode Section -->
                 @if($registration && $barcodeUrl)
@@ -658,6 +667,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-primary">Kelengkapan Dokumen</h3>
                         <div class="flex gap-2">
+                            @if($registration)
                             @if($registration && $registration->hasAllDocuments())
                             <button onclick="downloadAllDocuments()" class="bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-700 transition duration-300 text-sm flex items-center">
                                 <i class="fas fa-file-archive mr-1"></i> Download Semua Data ZIP
@@ -666,6 +676,7 @@
                             <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary text-sm font-medium bg-gray-100 px-3 py-1 rounded-full">
                                 Kelola Dokumen
                             </a>
+                            @endif
                         </div>
                     </div>
 

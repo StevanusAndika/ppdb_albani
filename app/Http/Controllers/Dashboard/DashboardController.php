@@ -119,7 +119,8 @@ class DashboardController extends Controller
         $contentSettings = ContentSetting::first();
         $programUnggulan = $contentSettings ? ($contentSettings->program_unggulan_data ?? []) : [];
 
-        $totalProgress = $this->calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment, $uploadedDocuments);
+        
+        $totalProgress = $this->calculateTotalProgress($registration, $documentProgress, $hasSuccessfulPayment, $uploadedDocuments); // tambahin parameter wawancara
 
         $quota = Quota::getActiveQuota();
         $quotaAvailable = $quota ? $quota->isAvailable() : false;
