@@ -10,7 +10,7 @@
             <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
 
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
-                <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
+                <a href="{{ route('santri.dashboard') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
                 <a href="#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
                 <a href="{{ route('santri.settings.index') }}" class="text-primary hover:text-secondary font-medium">Pengaturan</a>
                 <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
@@ -344,41 +344,41 @@
                 <!-- Informasi Kuota Pendaftaran -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-primary">Informasi Kuota Pendaftaran</h3>
-                        <button onclick="checkQuotaAvailability()" class="bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition duration-300 text-sm flex items-center">
-                            <i class="fas fa-sync-alt mr-1"></i> Periksa Ulang
-                        </button>
+                        <h3 class="text-xl font-bold text-primary">Informasi Kuota Kapasitas Pendaftaran</h3>
+                        <!-- <button onclick="checkQuotaAvailability()" class="bg-primary text-white rounded-full hover:bg-secondary transition duration-300 text-sm">
+                            <i class="fas fa-sync-alt mr-2"></i> Muat Ulang
+                        </button> -->
                     </div>
 
                     @if($quota)
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div class="text-center p-4 rounded-lg {{ $quotaAvailable ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200' }}">
                                 <div class="text-2xl font-bold {{ $quotaAvailable ? 'text-green-600' : 'text-red-600' }} mb-2">
                                     {{ $quota->sisa }}
                                 </div>
                                 <p class="text-sm font-medium text-gray-600">Sisa Kuota</p>
-                            </div>
+                            </div> -->
 
-                            <div class="text-center p-4 rounded-lg bg-blue-50 border border-blue-200">
+                            <!-- <div class="text-center p-4 rounded-lg bg-blue-50 border border-blue-200">
                                 <div class="text-2xl font-bold text-blue-600 mb-2">
                                     {{ $quota->terpakai }}
                                 </div>
                                 <p class="text-sm font-medium text-gray-600">Terpakai</p>
-                            </div>
+                            </div> -->
 
-                            <div class="text-center p-4 rounded-lg bg-purple-50 border border-purple-200">
+                            <!-- <div class="text-center p-4 rounded-lg bg-purple-50 border border-purple-200">
                                 <div class="text-2xl font-bold text-purple-600 mb-2">
                                     {{ $quota->kuota }}
                                 </div>
                                 <p class="text-sm font-medium text-gray-600">Total Kuota</p>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Progress Bar Kuota -->
                         <div class="mb-4">
                             <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                <span>Persentase Kuota Terpakai</span>
-                                <span>{{ number_format($quota->persentase_terpakai, 1) }}%</span>
+                                <span>Sisa Kuota kapasitas: {{ $quota->sisa }} dari {{ $quota->kuota }}</span>
+                                <span>Terisi: {{ number_format($quota->persentase_terpakai, 1) }}%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-3">
                                 <div class="h-3 rounded-full transition-all duration-300
@@ -398,7 +398,7 @@
                                     </p>
                                     <p class="text-sm {{ $quotaAvailable ? 'text-green-600' : 'text-red-600' }} mt-1">
                                         @if($quotaAvailable)
-                                            Saat ini masih tersedia {{ $quota->sisa }} kuota dari total {{ $quota->kuota }} kuota pendaftaran.
+                                            Saat ini masih tersedia {{ $quota->sisa }} kuota dari total {{ $quota->kuota }} kuota kapasitas pendaftaran.
                                             @if($quota->sisa <= 5)
                                                 <strong class="block mt-1">Segera lakukan pembayaran sebelum kuota habis!</strong>
                                             @endif
@@ -441,7 +441,7 @@
                                 @endif
                             @else
                                 <a href="{{ route('santri.biodata.index') }}" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-secondary transition duration-300 text-sm">
-                                    Mulai Pendaftaran
+                                    <i class="fas fa-user-plus mr-2"></i> Mulai Pendaftaran
                                 </a>
                             @endif
                         </div>
@@ -563,7 +563,23 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- Step 5: Wawancara -->
+                        <div class="p-4 border-2 {{ $registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']) ? 'border-green-500 bg-green-50' : 'border-gray-300' }} rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="step-number {{ $registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']) ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600' }}">5</div>
+                                <div>
+                                    <h4 class="font-semibold {{ $registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']) ? 'text-green-800' : 'text-gray-600' }}">Wawancara</h4>
+                                    <p class="text-sm {{ $registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']) ? 'text-green-600' : 'text-gray-500' }}">
+                                        @if($registration && in_array($registration->status_pendaftaran, ['diterima', 'perlu_review']))
+                                            Selesai
+                                        @else
+                                            Menunggu
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                            </div>
 
                     <!-- Progress Bar -->
                     @if($registration)
