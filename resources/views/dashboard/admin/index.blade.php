@@ -10,7 +10,7 @@
             <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
 
             <div class="hidden md:flex space-x-6 items-center desktop-menu">
-                <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
+                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
                 <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary hover:text-secondary font-medium">Profil</a>
                 <a href="{{ route('admin.registrations.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
                 <a href="{{ route('admin.transactions.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
@@ -145,7 +145,7 @@
 
                 <!-- Additional Stats Cards untuk Announcement -->
                 @if(isset($stats['eligible_for_announcement']) && isset($stats['sent_announcements']))
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="bg-white rounded-xl shadow-md p-6">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 bg-teal-500 rounded-md p-3">
@@ -166,6 +166,17 @@
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Pengumuman Terkirim</p>
                                 <p class="text-2xl font-semibold text-gray-900">{{ $stats['sent_announcements'] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-gray-500 rounded-md p-3">
+                                <i class="fas fa-users text-white text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Sisa Kuota</p>
+                                <p class="text-2xl font-semibold text-gray-900">{{ $stats['sisa_kuota'] }}/{{ $stats['kuota_total'] }}</p>
                             </div>
                         </div>
                     </div>

@@ -40,6 +40,8 @@ class DashboardController extends Controller
             'total_users' => User::count(),
             'eligible_for_announcement' => $this->getEligibleRegistrationsCount(),
             'sent_announcements' => Announcement::where('status', 'sent')->count(),
+            'sisa_kuota' => Quota::getActiveQuota() ? Quota::getActiveQuota()->sisa : 0,
+            'kuota_total' => Quota::getActiveQuota() ? Quota::getActiveQuota()->kuota : 0,
         ];
 
         $recentRegistrations = Registration::with(['user', 'package'])
