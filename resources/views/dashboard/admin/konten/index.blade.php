@@ -148,8 +148,24 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Visi</label>
-                                    <textarea name="visi_deskripsi" rows="3"
-                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">{{ old('visi_deskripsi', $settings->visi_deskripsi) }}</textarea>
+
+                                    <div id="visi-list-wrapper" class="space-y-2">
+                                        <div id="visi-list-container" class="space-y-2"></div>
+
+                                        <div class="flex gap-2 mt-2">
+                                            <button type="button" onclick="addVisiItem()"
+                                                    class="bg-green-500 hover:bg-green-600 text-white font-medium py-1 px-3 rounded-lg transition duration-200">
+                                                <i class="fas fa-plus mr-1"></i> Tambah Item
+                                            </button>
+                                            <button type="button" onclick="addVisiItem('')"
+                                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-1 px-3 rounded-lg transition duration-200">
+                                                Duplikat Kosong
+                                            </button>
+                                        </div>
+
+                                        <input type="hidden" name="visi_deskripsi" id="visi_deskripsi_input" value="{{ old('visi_deskripsi', $settings->visi_deskripsi) }}">
+                                        <p class="text-xs text-gray-500 mt-1">Item akan disimpan sebagai HTML &lt;ul&gt; di database.</p>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -160,8 +176,24 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Misi</label>
-                                    <textarea name="misi_deskripsi" rows="3"
-                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">{{ old('misi_deskripsi', $settings->misi_deskripsi) }}</textarea>
+
+                                    <div id="misi-list-wrapper" class="space-y-2">
+                                        <div id="misi-list-container" class="space-y-2"></div>
+
+                                        <div class="flex gap-2 mt-2">
+                                            <button type="button" onclick="addMisiItem()"
+                                                    class="bg-green-500 hover:bg-green-600 text-white font-medium py-1 px-3 rounded-lg transition duration-200">
+                                                <i class="fas fa-plus mr-1"></i> Tambah Item
+                                            </button>
+                                            <button type="button" onclick="addMisiItem('')"
+                                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-1 px-3 rounded-lg transition duration-200">
+                                                Duplikat Kosong
+                                            </button>
+                                        </div>
+
+                                        <input type="hidden" name="misi_deskripsi" id="misi_deskripsi_input" value="{{ old('misi_deskripsi', $settings->misi_deskripsi) }}">
+                                        <p class="text-xs text-gray-500 mt-1">Item akan disimpan sebagai HTML &lt;ul&gt; di database.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -464,6 +496,159 @@
 
 @section('scripts')
 <script>
+// Visi list dynamic: define addVisiItem globally, populate from hidden input, serialize to hidden input before submit
+(function(){
+    const containerId = 'visi-list-container';
+    const hiddenInputId = 'visi_deskripsi_input';
+    let visiIndex = 0;
+
+    function createVisiItemElement(value = ''){
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex gap-2 items-center';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent';
+        input.value = value || '';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'text-red-600 hover:text-red-800 px-3 py-2';
+        btn.innerHTML = '<i class="fas fa-trash"></i>';
+        btn.addEventListener('click', function(){ wrapper.remove(); });
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(btn);
+        visiIndex++;
+        return wrapper;
+    }
+
+    window.addVisiItem = function(value = ''){
+        const container = document.getElementById(containerId);
+        if(!container) return;
+        container.appendChild(createVisiItemElement(value));
+    }
+
+    function populateVisi(){
+        const container = document.getElementById(containerId);
+        if(!container) return;
+
+        let initialVisi = '';
+        try{
+            const hidden = document.getElementById(hiddenInputId);
+            initialVisi = hidden ? hidden.value : '';
+        }catch(e){
+            initialVisi = '';
+        }
+
+        try{
+            const tmp = document.createElement('div');
+            tmp.innerHTML = initialVisi || '';
+            const lis = tmp.querySelectorAll('li');
+            if(lis && lis.length){
+                lis.forEach(li => window.addVisiItem(li.textContent.trim()));
+            } else if(initialVisi && initialVisi.trim()){
+                // fallback: treat raw text as single item
+                window.addVisiItem(initialVisi.trim());
+            } else {
+                window.addVisiItem('');
+            }
+        }catch(e){
+            window.addVisiItem('');
+        }
+    }
+
+    function escapeHtml(s){
+        if(!s) return '';
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        populateVisi();
+        populateMisi();
+
+        const contentForm = document.querySelector('form[action="' + '{{ route('admin.content.update') }}' + '"]') || document.querySelector('form');
+        if(contentForm){
+            contentForm.addEventListener('submit', function(){
+                // Visi
+                const visiInputs = Array.from(document.querySelectorAll('#' + containerId + ' input[type="text"]'));
+                const visiItems = visiInputs.map(i => i.value.trim()).filter(v => v !== '');
+                const visiHtml = visiItems.length ? '<ul>' + visiItems.map(i => '<li>' + escapeHtml(i) + '</li>').join('') + '</ul>' : '';
+                const visiHidden = document.getElementById(hiddenInputId);
+                if(visiHidden) visiHidden.value = visiHtml;
+
+                // Misi
+                const misiContainerId = 'misi-list-container';
+                const misiHiddenId = 'misi_deskripsi_input';
+                const misiInputs = Array.from(document.querySelectorAll('#' + misiContainerId + ' input[type="text"]'));
+                const misiItems = misiInputs.map(i => i.value.trim()).filter(v => v !== '');
+                const misiHtml = misiItems.length ? '<ul>' + misiItems.map(i => '<li>' + escapeHtml(i) + '</li>').join('') + '</ul>' : '';
+                const misiHidden = document.getElementById(misiHiddenId);
+                if(misiHidden) misiHidden.value = misiHtml;
+            });
+        }
+    });
+})();
+// --- Misi list manager ---
+(function(){
+    const containerId = 'misi-list-container';
+    const hiddenInputId = 'misi_deskripsi_input';
+    let misiIndex = 0;
+
+    function createMisiItemElement(value = ''){
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex gap-2 items-center';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent';
+        input.value = value || '';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'text-red-600 hover:text-red-800 px-3 py-2';
+        btn.innerHTML = '<i class="fas fa-trash"></i>';
+        btn.addEventListener('click', function(){ wrapper.remove(); });
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(btn);
+        misiIndex++;
+        return wrapper;
+    }
+
+    window.addMisiItem = function(value = ''){
+        const container = document.getElementById(containerId);
+        if(!container) return;
+        container.appendChild(createMisiItemElement(value));
+    }
+
+    function populateMisi(){
+        const container = document.getElementById(containerId);
+        if(!container) return;
+
+        let initial = '';
+        try{
+            const hidden = document.getElementById(hiddenInputId);
+            initial = hidden ? hidden.value : '';
+        }catch(e){ initial = ''; }
+
+        try{
+            const tmp = document.createElement('div');
+            tmp.innerHTML = initial || '';
+            const lis = tmp.querySelectorAll('li');
+            if(lis && lis.length){
+                lis.forEach(li => window.addMisiItem(li.textContent.trim()));
+            } else if(initial && initial.trim()){
+                window.addMisiItem(initial.trim());
+            } else {
+                window.addMisiItem('');
+            }
+        }catch(e){ window.addMisiItem(''); }
+    }
+
+    // populate on load
+    document.addEventListener('DOMContentLoaded', function(){ populateMisi(); });
+})();
 function deleteFile(fileType) {
     Swal.fire({
         title: 'Hapus File?',
