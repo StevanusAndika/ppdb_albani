@@ -1,0 +1,51 @@
+frontend:
+authentifikasi:
+perbaiki responsive di halaman login,register dan lupa password
+disetiap  yang ada tabel tambahin buat sort data secara ascending dan descending
+
+dashboard calon santri:
+fix halaman upload dokumen  di halaman uppload dokumen(hilangkan refresh setiap detik,cukup periksa refresh ketika dokumen diupload/diupdated).
+untuk halaman welcome.blade.php implementasi per konten dari admin/konten dan untuk visi misi buat per point
+ketika accordion terbuka di faq,buat agar footer full
+
+dashboard admin:
+buat footer dashboard di views/dashboard/admin/index.blade.php full(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+
+buat footernya full di halaman admin/registrations/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+
+rapihkan halaman admin/registrations/registration-detail.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+
+buat footernya full di halaman admin/quota/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+
+buat footernya full di halaman admin/billing/packages/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+
+buat footernya full di halaman admin/billing/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+
+tambahkan footer navbar di halaman admin/konten/index.blade.php (cek dashboard komponen di layouts/components/admin/footer.blade.php dan layouts/components/admin/navbar.blade.php )
+
+buat footernya full di halaman admin/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) di tab google aja
+
+tambahin alert ketika mau hapus data di  halaman admin/billing/prices/index.blade.php dan admin/billing/packages/index.blade.php
+
+buat untuk di admin/billing/packages/index.blade.php untuk nama paket ambil value langsung  dari tipe paket
+
+tambahin alert ketika mau hapus data di  halaman admin/billing/index.blade.php dan admin/billing/packages/index.blade.php dengan sweetalert
+
+untuk kelola konten buat 1 layout aja
+pecah file js dan modal disetiap file (yang ada )
+
+backend:
+
+perbaiki tombol sinkronisasi dan download invoice pdf di halaman views/dashboard/calon_santri/payments/index.blade.php(error 403 di hosting)
+
+ketika registrasi buat agar nomor dan email yg sudah didaftarkan tidak bisa digunakan lagi
+
+perbaiki untuk annoucement kelulusan dan tes seleksi tidak bentrok
+
+tambahin di  admin/registrationcontroller biar admin bisa lihat invoice dalam pembayaran cash dan xendit
+
+tambahin status pembayaran di halaman qr code
+
+tambahin total biaya di admin/paket  dan ambil tipe paketnya di http://localhost:8000/admin/billing/packages dan http://localhost:8000/admin/billing/packages/1/prices
+
+

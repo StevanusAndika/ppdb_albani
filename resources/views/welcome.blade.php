@@ -717,9 +717,8 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                     <h3 class="text-xl font-bold mb-4">Tentang Kami</h3>
                     <ul class="space-y-2">
                         <li><a href="#visi-misi" class="hover:text-accent transition duration-300">Visi & Misi</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Sejarah</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Struktur Organisasi</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Fasilitas</a></li>
+                        <li><a href="#" class="hover:text-accent transition duration-300">Galeri</a></li>
+                       
                     </ul>
                 </div>
 
@@ -728,9 +727,7 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                     <h3 class="text-xl font-bold mb-4">Program</h3>
                     <ul class="space-y-2">
                         <li><a href="#program" class="hover:text-accent transition duration-300">Tahfidz Al-Qur'an</a></li>
-                        <li><a href="#program" class="hover:text-accent transition duration-300">Pendidikan Formal</a></li>
-                        <li><a href="#program" class="hover:text-accent transition duration-300">Keterampilan Digital</a></li>
-                        <li><a href="#program" class="hover:text-accent transition duration-300">Ekstrakurikuler</a></li>
+
                     </ul>
                 </div>
 
@@ -755,16 +752,25 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                            class="hover:text-accent transition duration-300">
                            Alamat
                         </a>
-                        <li><a href="tel:+6287748115931" class="hover:text-accent transition duration-300">Telepon: +62 877-4811-5931</a></li>
-                        <li><a href="https://wa.me/6287748115931" target="_blank" class="hover:text-accent transition duration-300">WhatsApp</a></li>
+                        <li><a href="https://wa.me/6287748115931" class="hover:text-accent transition duration-300">WhatsApp Developers</a></li>
+                        <li><a href="https://wa.me/6287748115931" target="_blank" class="hover:text-accent transition duration-300">WhatsApp Admin PPDB</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Sosial Media</a></li>
                     </ul>
                 </div>
             </div>
 
-            <div class="border-t border-white/20 mt-8 pt-8 text-center">
-                <p>&copy; 2025 {{ $contentSettings->judul ?? 'PPDB Pesantren AI-Our\'an Bani Syahid' }}. All rights reserved.</p>
-            </div>
+           <div class="border-t border-white/20 mt-8 pt-8 text-center">
+            <p>&copy; <?php echo date('Y'); ?>
+                <a
+                    href="https://www.instagram.com/unip_rpl/?igsh=MTFnbGF0ZzltcnNqNw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-white hover:text-yellow-300 underline transition-colors duration-200"
+                >
+                    {{ $contentSettings->judul ?? 'Software Engineering Student' }}
+                </a>. All rights reserved.
+            </p>
+        </div>
         </div>
     </footer>
 

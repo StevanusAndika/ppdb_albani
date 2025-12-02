@@ -61,20 +61,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
-    <nav class="bg-white shadow-md py-3 px-4 md:px-6 rounded-xl mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
-            <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
-            <div class="flex flex-wrap gap-2 md:gap-4 items-center">
-                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium text-sm">Dashboard</a>
-                <a href="{{ route('admin.registrations.index') }}" class="text-primary hover:text-secondary font-medium text-sm">Pendaftaran</a>
-                <a href="{{ route('admin.manage-users.index') }}" class="text-primary hover:text-secondary font-medium text-sm">Kelola User</a>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full transition duration-300 text-sm">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+      @include('layouts.components.admin.navbar')
 
     <main class="max-w-7xl mx-auto py-6 px-3 md:px-4">
         <!-- Header -->
@@ -269,6 +256,7 @@
             </div>
             @endif
         </div>
+
     </main>
 
     <!-- Reject Modal -->
@@ -297,7 +285,9 @@
             </form>
         </div>
     </div>
+      @include('layouts.components.admin.footer')
 </div>
+
 @endsection
 
 @section('scripts')

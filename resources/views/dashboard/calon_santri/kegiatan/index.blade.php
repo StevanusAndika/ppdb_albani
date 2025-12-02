@@ -4,107 +4,89 @@
 
 @section('styles')
 <style>
-    .kegiatan-accordion {
+    .schedule-table-container {
         background: white;
         border-radius: 12px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
     }
 
-    .kegiatan-item {
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .schedule-table thead {
+        background: linear-gradient(135deg, #057572, #0a948f);
+        color: white;
+    }
+
+    .schedule-table th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .schedule-table tbody tr {
         border-bottom: 1px solid #e5e7eb;
         transition: all 0.3s ease;
     }
 
-    .kegiatan-item:last-child {
-        border-bottom: none;
-    }
-
-    .kegiatan-header {
-        padding: 1.5rem;
-        cursor: pointer;
-        display: flex;
-        justify-content: between;
-        align-items: center;
-        transition: all 0.3s ease;
-    }
-
-    .kegiatan-header:hover {
+    .schedule-table tbody tr:hover {
         background-color: #f8fafc;
     }
 
-    .kegiatan-header.active {
-        background-color: #f0f9ff;
-        border-left: 4px solid #057572;
+    .schedule-table tbody tr:last-child {
+        border-bottom: none;
     }
 
-    .kegiatan-time {
-        background: #057572;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
+    .schedule-table td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: top;
+    }
+
+    .time-cell {
+        width: 15%;
         font-weight: 600;
-        font-size: 0.875rem;
-        margin-right: 1rem;
-        flex-shrink: 0;
-    }
-
-    .kegiatan-title {
-        flex: 1;
-        font-weight: 600;
-        color: #1f2937;
-        font-size: 1rem;
-    }
-
-    .kegiatan-icon {
-        transition: transform 0.3s ease;
         color: #057572;
+        background-color: #f0f9ff;
+        border-right: 1px solid #e5e7eb;
     }
 
-    .kegiatan-header.active .kegiatan-icon {
-        transform: rotate(180deg);
+    .activity-cell {
+        width: 85%;
+        color: #4b5563;
+        line-height: 1.6;
     }
 
-    .kegiatan-content {
-        padding: 0 1.5rem;
-        max-height: 0;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        background-color: #fafafa;
-    }
-
-    .kegiatan-content.active {
-        padding: 1.5rem;
-        max-height: 500px;
-    }
-
-    .kegiatan-list {
+    .activity-list {
         list-style: none;
         padding: 0;
         margin: 0;
     }
 
-    .kegiatan-list-item {
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e5e7eb;
+    .activity-list-item {
+        padding: 0.5rem 0;
         display: flex;
         align-items: flex-start;
-        color: #4b5563;
     }
 
-    .kegiatan-list-item:last-child {
-        border-bottom: none;
+    .activity-list-item:not(:last-child) {
+        border-bottom: 1px dashed #e5e7eb;
     }
 
-    .kegiatan-bullet {
+    .activity-bullet {
         color: #057572;
         margin-right: 0.75rem;
         margin-top: 0.25rem;
         flex-shrink: 0;
     }
 
-    .kegiatan-text {
+    .activity-text {
         flex: 1;
-        line-height: 1.6;
     }
 
     .daily-schedule {
@@ -128,22 +110,37 @@
         margin-bottom: 2rem;
     }
 
+    .no-data {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .no-data-icon {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+
     @media (max-width: 768px) {
-        .kegiatan-header {
-            padding: 1rem;
+        .schedule-table-container {
+            overflow-x: auto;
         }
 
-        .kegiatan-time {
-            font-size: 0.75rem;
-            padding: 0.375rem 0.75rem;
+        .schedule-table {
+            min-width: 600px;
         }
 
-        .kegiatan-title {
-            font-size: 0.9rem;
+        .schedule-table th,
+        .schedule-table td {
+            padding: 0.75rem 1rem;
         }
 
-        .kegiatan-content.active {
-            padding: 1rem;
+        .time-cell {
+            width: 20%;
+        }
+
+        .activity-cell {
+            width: 80%;
         }
 
         .daily-schedule {
@@ -156,48 +153,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
-    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
-
-            <div class="hidden md:flex space-x-6 items-center desktop-menu">
-                <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="{{ route('santri.dashboard') }}#profile" class="text-primary hover:text-secondary font-medium">Profil</a>
-                <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
-                <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
-                <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
-                <a href="{{ route('santri.faq.index') }}" class="text-primary hover:text-secondary font-medium">FAQ</a>
-                <a href="{{ route('santri.kegiatan.index') }}" class="text-primary hover:text-secondary font-medium font-bold border-b-2 border-primary">Kegiatan</a>
-                <form action="{{ route('logout') }}" method="POST" class="ml-4">
-                    @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
-                </form>
-            </div>
-
-            <div class="md:hidden flex items-center">
-                <button id="mobile-menu-button" class="text-primary focus:outline-none">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white p-4 rounded-xl shadow-lg">
-            <div class="flex flex-col space-y-2">
-                <a href="{{ url('/') }}" class="text-primary">Beranda</a>
-                <a href="{{ route('santri.dashboard') }}#profile" class="text-primary">Profil</a>
-                <a href="{{ route('santri.biodata.index') }}" class="text-primary">Pendaftaran</a>
-                <a href="{{ route('santri.documents.index') }}" class="text-primary">Dokumen</a>
-                <a href="{{ route('santri.payments.index') }}" class="text-primary">Pembayaran</a>
-                <a href="{{ route('santri.faq.index') }}" class="text-primary">FAQ</a>
-                <a href="{{ route('santri.kegiatan.index') }}" class="text-primary font-bold">Kegiatan</a>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full bg-primary text-white py-2 rounded-full mt-2">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    @include('layouts.components.calon_santri.navbar')
 
     <!-- Header -->
     <header class="py-8 px-4 text-center">
@@ -241,35 +197,57 @@
             </div>
         </div>
 
-        <!-- Kegiatan Accordion -->
-        <div class="kegiatan-accordion" id="kegiatanAccordion">
+        <!-- Kegiatan Table -->
+        <div class="schedule-table-container">
             @if(count($kegiatan) > 0)
-                @foreach($kegiatan as $index => $item)
-                <div class="kegiatan-item" data-kegiatan-index="{{ $index }}">
-                    <div class="kegiatan-header" onclick="toggleKegiatan({{ $index }})">
-                        <div class="kegiatan-time">{{ $item['waktu'] ?? 'Waktu tidak tersedia' }}</div>
-                        <div class="kegiatan-title">Sesi Kegiatan {{ $index + 1 }}</div>
-                        <div class="kegiatan-icon">
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                    <div class="kegiatan-content" id="kegiatan-content-{{ $index }}">
-                        <ul class="kegiatan-list">
-                            @foreach($item['kegiatan'] as $kegiatanItem)
-                            <li class="kegiatan-list-item">
-                                <div class="kegiatan-bullet">
-                                    <i class="fas fa-circle text-xs"></i>
-                                </div>
-                                <div class="kegiatan-text">{{ $kegiatanItem }}</div>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-                @endforeach
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Kegiatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($kegiatan as $item)
+                        <tr>
+                            <td class="time-cell">
+                                <div class="font-semibold text-lg">{{ $item['waktu'] ?? 'Waktu tidak tersedia' }}</div>
+                                @if(isset($item['icon']))
+                                    <div class="mt-2 text-primary">
+                                        <i class="{{ $item['icon'] }}"></i>
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="activity-cell">
+                                <ul class="activity-list">
+                                    @if(is_array($item['kegiatan']))
+                                        @foreach($item['kegiatan'] as $kegiatanItem)
+                                        <li class="activity-list-item">
+                                            <div class="activity-bullet">
+                                                <i class="fas fa-circle text-xs"></i>
+                                            </div>
+                                            <div class="activity-text">{{ $kegiatanItem }}</div>
+                                        </li>
+                                        @endforeach
+                                    @else
+                                        <li class="activity-list-item">
+                                            <div class="activity-bullet">
+                                                <i class="fas fa-circle text-xs"></i>
+                                            </div>
+                                            <div class="activity-text">{{ $item['kegiatan'] }}</div>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             @else
-                <div class="text-center py-12">
-                    <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
+                <div class="no-data">
+                    <div class="no-data-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
                     <h3 class="text-xl font-semibold text-gray-600 mb-2">Belum Ada Jadwal Kegiatan</h3>
                     <p class="text-gray-500">Jadwal kegiatan harian pesantren sedang dalam proses persiapan.</p>
                 </div>
@@ -306,11 +284,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-primary text-white py-8 px-4 mt-12">
-        <div class="max-w-7xl mx-auto text-center">
-            <p>&copy; 2025 PPDB Pesantren Al-Qur'an Bani Syahid</p>
-        </div>
-    </footer>
+    @include('layouts.components.calon_santri.footer')
 </div>
 @endsection
 
@@ -322,45 +296,14 @@
         if (mobileMenu) mobileMenu.classList.toggle('hidden');
     });
 
-    // Kegiatan Accordion Functionality
-    function toggleKegiatan(index) {
-        const content = document.getElementById(`kegiatan-content-${index}`);
-        const header = document.querySelector(`[data-kegiatan-index="${index}"] .kegiatan-header`);
-
-        // Toggle active class
-        header.classList.toggle('active');
-        content.classList.toggle('active');
-
-        // Close other kegiatan (optional - remove if you want multiple open)
-        document.querySelectorAll('.kegiatan-item').forEach((item, i) => {
-            if (i !== index) {
-                const otherContent = document.getElementById(`kegiatan-content-${i}`);
-                const otherHeader = item.querySelector('.kegiatan-header');
-                otherHeader.classList.remove('active');
-                otherContent.classList.remove('active');
+    // Add striping effect to table rows
+    document.addEventListener('DOMContentLoaded', function() {
+        const tableRows = document.querySelectorAll('.schedule-table tbody tr');
+        tableRows.forEach((row, index) => {
+            if (index % 2 === 0) {
+                row.style.backgroundColor = '#fafafa';
             }
         });
-    }
-
-    // Auto-open first kegiatan on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        @if(count($kegiatan) > 0)
-            // Open first kegiatan by default
-            toggleKegiatan(0);
-        @endif
-    });
-
-    // Add keyboard navigation
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            // Close all kegiatan when ESC is pressed
-            document.querySelectorAll('.kegiatan-header.active').forEach(header => {
-                header.classList.remove('active');
-            });
-            document.querySelectorAll('.kegiatan-content.active').forEach(content => {
-                content.classList.remove('active');
-            });
-        }
     });
 </script>
 @endsection

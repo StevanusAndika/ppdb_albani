@@ -4,18 +4,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
-    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-lg md:text-xl font-bold text-primary">Ponpes Al Bani</div>
-            <div class="hidden md:flex space-x-6 items-center">
-                <a href="{{ route('santri.dashboard') }}" class="text-primary hover:text-secondary font-medium">Dashboard</a>
-                <form action="{{ route('logout') }}" method="POST" class="ml-4">
-                    @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+  @include('layouts.components.calon_santri.footer')
 
     <main class="max-w-2xl mx-auto py-12 px-4 text-center">
         <div class="bg-white rounded-xl shadow-md p-8">
@@ -58,5 +47,6 @@
             </div>
         </div>
     </main>
+     @include('layouts.components.calon_santri.footer')
 </div>
 @endsection

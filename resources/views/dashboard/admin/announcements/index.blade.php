@@ -5,44 +5,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
-    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
-
-            <div class="hidden md:flex space-x-6 items-center desktop-menu">
-                <a href="{{ url('/') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="{{ route('admin.dashboard') }}" class="text-primary hover:text-secondary font-medium">Dashboard</a>
-                <a href="{{ route('admin.announcements.index') }}" class="text-primary hover:text-secondary font-medium font-bold">Pengumuman</a>
-                <a href="{{ route('admin.seleksi-announcements.index') }}" class="text-primary hover:text-secondary font-medium">Undangan Seleksi</a>
-
-                <form action="{{ route('logout') }}" method="POST" class="ml-4">
-                    @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300">Logout</button>
-                </form>
-            </div>
-
-            <div class="md:hidden flex items-center">
-                <button id="mobile-menu-button" class="text-primary focus:outline-none mobile-menu-button">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white p-4 rounded-xl shadow-lg">
-            <div class="flex flex-col space-y-2">
-                <a href="{{ url('/') }}" class="text-primary">Beranda</a>
-                <a href="{{ route('admin.dashboard') }}" class="text-primary">Dashboard</a>
-                <a href="{{ route('admin.announcements.index') }}" class="text-primary font-bold">Pengumuman</a>
-                <a href="{{ route('admin.seleksi-announcements.index') }}" class="text-primary">Undangan Seleksi</a>
-
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-full mt-2">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+   @include('layouts.components.admin.navbar')
 
     <!-- Header -->
     <header class="py-8 px-4 text-center">
@@ -110,7 +73,7 @@
                                             >
                                                 <i class="fas fa-paper-plane mr-1"></i> Chat
                                             </button>
-                                            
+
                                         </div>
                                     </td>
                                 </tr>
@@ -198,7 +161,7 @@
 
                     <div class="space-y-4">
                         <!-- Kirim ke yang memenuhi syarat -->
-                        <div class="border border-gray-200 rounded-lg p-4">
+                        {{-- <div class="border border-gray-200 rounded-lg p-4">
                             <h4 class="font-medium text-gray-800 mb-2">Kirim ke Calon Santri Lolos</h4>
                             <p class="text-sm text-gray-600 mb-3">Kirim pesan ke semua calon santri yang memenuhi syarat</p>
                             <button
@@ -209,7 +172,7 @@
                                 <i class="fas fa-paper-plane mr-2"></i>
                                 Kirim ({{ $eligibleRegistrations->count() }})
                             </button>
-                        </div>
+                        </div> --}}
 
                         <!-- Kirim ke semua santri -->
                         <div class="border border-gray-200 rounded-lg p-4">
@@ -270,6 +233,7 @@
             </div>
         </div>
     </main>
+     @include('layouts.components.admin.footer')
 </div>
 
 <!-- Modal Status Seleksi -->

@@ -172,3 +172,36 @@ body {
 /* Ensure step-number sizing remains consistent */
 .full-width-page .step-number { width: 48px; height: 48px; }
 
+/* Tambahkan di file CSS Anda atau dalam style tag */
+.active-nav-link {
+    position: relative;
+}
+
+.active-nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #057572;
+    border-radius: 2px;
+}
+
+/* Untuk mobile menu */
+.mobile-active-nav-link {
+    position: relative;
+    padding-left: 15px;
+}
+
+.mobile-active-nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 80%;
+    background-color: #057572;
+    border-radius: 2px;
+}

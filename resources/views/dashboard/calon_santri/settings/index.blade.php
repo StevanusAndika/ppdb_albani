@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Pengaturan Admin - Pondok Pesantren Bani Syahid')
+@section('title', 'Pengaturan Santri - Pondok Pesantren Bani Syahid')
 
 @section('styles')
 <style>
@@ -70,51 +70,12 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
-    <!-- Navbar -->
-    <nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
-
-            <div class="hidden md:flex space-x-6 items-center desktop-menu">
-             <a href="{{ route('santri.dashboard') }}" class="text-primary hover:text-secondary font-medium">Beranda</a>
-                <a href="{{ route('santri.biodata.index') }}" class="text-primary hover:text-secondary font-medium">Pendaftaran</a>
-                <a href="{{ route('santri.documents.index') }}" class="text-primary hover:text-secondary font-medium">Dokumen</a>
-                <a href="{{ route('santri.payments.index') }}" class="text-primary hover:text-secondary font-medium">Pembayaran</a>
-                <a href="{{ route('santri.faq.index') }}" class="text-primary hover:text-secondary font-medium">FAQ</a>
-                <a href="{{ route('santri.kegiatan.index') }}" class="text-primary hover:text-secondary font-medium">Kegiatan</a>
-                <form action="{{ route('logout') }}" method="POST" class="ml-4">
-                    @csrf
-                    <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition duration-300">
-                        Logout
-                    </button>
-                </form>
-            </div>
-
-            <div class="md:hidden flex items-center">
-                <button id="mobile-menu-button" class="text-primary focus:outline-none mobile-menu-button">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white p-4 rounded-xl shadow-lg">
-            <div class="flex flex-col space-y-2">
-                <a href="{{ url('/') }}" class="text-primary">Beranda</a>
-                <a href="{{ route('admin.settings.index') }}?tab=profile" class="text-primary">Profil</a>
-                <a href="{{ route('admin.registrations.index') }}" class="text-primary">Pendaftaran</a>
-                <a href="#dokumen" class="text-primary">Dokumen</a>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-full mt-2">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    <!-- Navbar Calon Santri -->
+    @include('layouts.components.calon_santri.navbar')
 
     <!-- Header -->
     <header class="py-8 px-4 text-center">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Pengaturan Admin</h1>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Pengaturan Santri</h1>
         <p class="text-secondary">Kelola informasi akun dan profil Anda</p>
     </header>
 
@@ -214,7 +175,7 @@
 
                             <div class="flex justify-center sm:justify-end">
                                 @if($user->isSocialiteUser())
-                                    <form id="disconnect-google-form" action="{{ route('admin.settings.google.disconnect') }}" method="POST" class="inline">
+                                    <form id="disconnect-google-form" action="{{ route('santri.settings.google.disconnect') }}" method="POST" class="inline">
                                         @csrf
                                         <button type="submit"
                                                 class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full transition duration-300 w-full sm:w-auto">
@@ -295,25 +256,15 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-primary text-white py-8 px-4 mt-6">
-        <div class="max-w-7xl mx-auto text-center">
-            <p>&copy; 2025 PPDB Pesantren AI-Our'an Bani Syahid</p>
-        </div>
-    </footer>
-
-    <script>
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu) mobileMenu.classList.toggle('hidden');
-        });
-    </script>
+    <!-- Footer Calon Santri -->
+    @include('layouts.components.calon_santri.footer')
 </div>
 @endsection
 
 @section('scripts')
 <script>
+    // Mobile menu toggle functionality is already in navbar component
+
     // Tab functionality
     document.addEventListener('DOMContentLoaded', function() {
         const tabButtons = document.querySelectorAll('.tab-button');

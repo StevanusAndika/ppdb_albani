@@ -223,15 +223,6 @@
             margin-left: -1em;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-            color: #666;
-            font-size: 12px;
-        }
-
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -259,6 +250,16 @@
         .qr-code img {
             max-width: 150px;
             height: auto;
+        }
+
+        /* Footer Styles */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #666;
+            font-size: 12px;
         }
 
         @media print {
@@ -351,16 +352,7 @@
                         @endif
                     </span>
                 </div>
-                <div class="info-row">
-                    {{-- <span class="info-label">Program Unggulan:</span>
-                    <span class="info-value">
-                        @if($payment->registration->programUnggulan && $payment->registration->programUnggulan->judul)
-                            {{ $payment->registration->programUnggulan->judul }}
-                        @else
-                            Tidak ada program unggulan
-                        @endif --}}
-                    </span>
-                </div>
+
                 <div class="info-row">
                     <span class="info-label">Paket:</span>
                     <span class="info-value">{{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</span>
@@ -383,13 +375,7 @@
                     <td>
                         <strong>Biaya Pendaftaran Santri</strong><br>
                         <small>Paket: {{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</small><br>
-                        <small>Program:
-                            @if($payment->registration->programUnggulan && $payment->registration->programUnggulan->judul)
-                                {{ $payment->registration->programUnggulan->judul }}
-                            @else
-                                Tidak ada program unggulan
-                            @endif
-                        </small>
+                        
                     </td>
                     <td style="text-align: center;">1</td>
                     <td style="text-align: right;">{{ $payment->formatted_amount }}</td>
@@ -459,15 +445,6 @@
             </div>
         </div>
 
-        <!-- QR Code -->
-        @if($payment->registration->qr_code_url)
-        <div class="qr-code">
-            <img src="{{ $payment->registration->qr_code_url }}" alt="QR Code">
-            <p style="margin-top: 10px; font-size: 12px; color: #666;">
-                Scan QR Code untuk verifikasi
-            </p>
-        </div>
-        @endif
 
         <!-- Catatan -->
         <div class="notes">
@@ -480,17 +457,8 @@
             </ul>
         </div>
 
-        <!-- Footer -->
-        <div class="footer">
-            <p>
-                <strong>Pondok Pesantren Al-Qur'an Bani Syahid</strong><br>
-                 Jl. Kp. Tipar Tengah, RT.5/RW.10, Mekarsari, Kec. Cimanggis, Kota Depok, Jawa Barat 16452 | Telp: (021) 1234-5678<br>
-                Email: admin@banisyahid.sch.id | Website: www.banisyahid.sch.id
-            </p>
-            <p style="margin-top: 10px;">
-                Invoice ini dibuat otomatis pada {{ now()->translatedFormat('d F Y H:i:s') }}
-            </p>
-        </div>
+        <!-- Footer dari Komponen -->
+        @include('layouts.components.invoice.footer')
 
         <!-- Print Button (Hanya tampil di browser) -->
         <div class="no-print" style="text-align: center; margin-top: 30px;">
@@ -508,7 +476,6 @@
                 <i class="fas fa-print"></i> Print Invoice
             </button>
 
-
         </div>
     </div>
 
@@ -518,7 +485,7 @@
             window.location.href = "{{ route('santri.payments.download-invoice-pdf', $payment->payment_code) }}";
         }
 
-        // Auto print ketika halaman dimuat (opsional)
+        // Optional: Auto print ketika halaman dimuat
         // window.onload = function() {
         //     window.print();
         // }
