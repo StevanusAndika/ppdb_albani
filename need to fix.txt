@@ -32,7 +32,7 @@ buat untuk di admin/billing/packages/index.blade.php untuk nama paket ambil valu
 tambahin alert ketika mau hapus data di  halaman admin/billing/index.blade.php dan admin/billing/packages/index.blade.php dengan sweetalert
 
 untuk kelola konten buat 1 layout aja
-pecah file js dan modal disetiap file (yang ada )
+pecah file js dan modal  disetiap file jadi file yang beda (yang ada )
 
 backend:
 
