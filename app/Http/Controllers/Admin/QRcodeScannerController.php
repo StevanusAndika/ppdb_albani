@@ -10,7 +10,7 @@ class QRcodeScannerController extends Controller
     public function index()
     {
         // tampilan kamera
-        return view('admin.qrcode-scanner'); // sesuaikan path view
+        return view('dashboard.admin.qrcode-scanner.index'); // sesuaikan path view
     }
 
     public function store(Request $request)

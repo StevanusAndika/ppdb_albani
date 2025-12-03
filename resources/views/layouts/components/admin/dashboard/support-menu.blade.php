@@ -5,7 +5,7 @@
             <i class="fas fa-bell text-2xl mb-2"></i>
             <p>Kirim Notif Tes Tertulis</p>
         </a>
-        <a href="#" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
+        <a href="{{ route('admin.qrcode-scanner.index') }}" class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition duration-200 text-center">
             <i class="fas fa-qrcode text-2xl mb-2"></i>
             <p>Scan QR Calon Santri</p>
         </a>

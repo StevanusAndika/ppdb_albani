@@ -2,38 +2,50 @@
 @section('title', 'Camera QR Scan')
 
 @section('content')
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div style="width: 500px; max-width: 100%; text-align: center;">
-
-        {{-- Kotak kamera / QR view --}}
-        <div id="camera-wrapper"
-             style="background:#9e9e9e; border-radius:8px; padding:8px; margin-bottom:20px;">
-            <div id="qr-reader"
-                 style="width:100%; height:260px; border-radius:6px; overflow:hidden;"></div>
-        </div>
-
-        {{-- Form --}}
-        <form method="POST" action="{{ route('camera-test.store') }}" id="camera-form">
-            @csrf
-
-            <div style="margin-bottom:16px;">
-                <input type="text"
-                       name="field_input"
-                       id="field_input"
-                       placeholder="Field Input"
-                       class="form-control"
-                       style="height:44px; text-align:center;">
+<div class="min-h-screen bg-gray-50 font-sans full-width-page">
+    <!-- Navbar -->
+    @include('layouts.components.admin.navbar')
+    <main class="max-w-7xl mx-auto py-6 px-4">
+        <div class="grid grid-cols-1">
+            <header class="py-4 px-2 text-center">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">QR Code Scanner</h1>
+                <p class="text-secondary">Gunakan scanner QR code untuk memudahkan proses verifikasi data calon santri.</p>
+            </header>
+            <!-- Main Content -->
+            <div class="d-flex justify-content-center align-items-center mx-auto" style="min-height: 80vh;">
+                <div style="width: 500px; max-width: 100%; text-align: center;">
+    
+                    {{-- Kotak kamera / QR view --}}
+                    <div id="camera-wrapper"
+                        style="background:#9e9e9e; border-radius:8px; padding:8px; margin-bottom:20px;">
+                        <div id="qr-reader"
+                            style="width:100%; height:260px; border-radius:6px; overflow:hidden;"></div>
+                    </div>
+    
+                    {{-- Form --}}
+                    <form method="POST" action="{{ route('camera-test.store') }}" id="camera-form">
+                        @csrf
+    
+                        <div style="margin-bottom:16px;">
+                            <input type="text"
+                                name="field_input"
+                                id="field_input"
+                                placeholder="Field Input"
+                                class="form-control"
+                                style="height:44px; text-align:center;">
+                        </div>
+    
+                        <button type="submit"
+                                style="width:100%; height:48px; border:none; border-radius:8px;
+                                    background:#007b3a; color:white; font-weight:600;">
+                            Submit
+                        </button>
+                    </form>
+                </div>
             </div>
-
-            <button type="submit"
-                    style="width:100%; height:48px; border:none; border-radius:8px;
-                           background:#007b3a; color:white; font-weight:600;">
-                Submit
-            </button>
-        </form>
-    </div>
+        </div>
+    </main>
 </div>
-
 {{-- LIBRARY QR CODE VIA CDN --}}
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
