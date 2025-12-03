@@ -35,12 +35,6 @@ return [
         ],
     ],
 
-    // 'github' => [
-    //     'client_id' => env('GITHUB_CLIENT_ID'),
-    //     'client_secret' => env('GITHUB_CLIENT_SECRET'),
-    //     'redirect' => env('GITHUB_CLIENT_REDIRECT'),
-    // ],
-
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
@@ -51,6 +45,12 @@ return [
     'fonnte' => [
         'token' => env('FONNTE_TOKEN'),
         'url' => env('FONNTE_URL', 'https://api.fonnte.com'),
+    ],
+
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+        'score_threshold' => 0.7,
     ],
 
 ];

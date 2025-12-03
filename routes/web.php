@@ -44,13 +44,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::get('/forgot-password', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
     Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])->name('password.verify.otp');
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
     Route::post('/resend-otp', [PasswordResetController::class, 'resendOtp'])->name('password.resend.otp');
     Route::post('/check-password-cooldown', [PasswordResetController::class, 'checkCooldown'])->name('password.check.cooldown');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
     Route::get('/auth/{provider}/redirect', [AuthController::class, 'redirectToProvider'])->name('socialite.redirect');
     Route::get('/auth/{provider}/callback', [AuthController::class, 'handleProvideCallback'])->name('socialite.callback');
 });

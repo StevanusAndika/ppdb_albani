@@ -12,9 +12,16 @@ use Laravel\Socialite\Facades\Socialite;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Client;
 
 class AuthController extends Controller
 {
+    // Konstanta untuk login attempts
+    const MAX_LOGIN_ATTEMPTS = 3;
+    const LOCK_TIME_MINUTES = 5; // 5 menit
+
     /**
      * Check if user is already authenticated
      */
@@ -32,6 +39,103 @@ class AuthController extends Controller
     }
 
     /**
+     * Validate reCAPTCHA v3 - Skip di local jika tidak ada keys
+     */
+    private function validateRecaptcha(Request $request): bool
+    {
+        $recaptchaSecret = config('services.recaptcha.secret_key');
+        $recaptchaResponse = $request->input('g-recaptcha-response');
+
+        // Jika di local environment dan tidak ada secret key, skip validation
+        if (app()->environment('local', 'testing') && empty($recaptchaSecret)) {
+            Log::info('reCAPTCHA validation skipped in local environment (no secret key)');
+            return true;
+        }
+
+        // Jika tidak ada response token, return false
+        if (!$recaptchaResponse) {
+            Log::warning('reCAPTCHA token missing');
+            return false;
+        }
+
+        if (!$recaptchaSecret) {
+            Log::warning('reCAPTCHA secret key missing');
+            return false;
+        }
+
+        try {
+            $client = new Client(['timeout' => 10]);
+            $response = $client->post('https://www.google.com/recaptcha/api/siteverify', [
+                'form_params' => [
+                    'secret' => $recaptchaSecret,
+                    'response' => $recaptchaResponse,
+                    'remoteip' => $request->ip(),
+                ]
+            ]);
+
+            $body = json_decode($response->getBody());
+
+            Log::info('reCAPTCHA Response', [
+                'success' => $body->success,
+                'score' => $body->score ?? 0,
+                'action' => $body->action ?? null,
+                'hostname' => $body->hostname ?? null,
+                'errors' => $body->{'error-codes'} ?? [],
+                'environment' => app()->environment()
+            ]);
+
+            // Validasi success
+            if (!$body->success) {
+                return false;
+            }
+
+            // Validasi score minimal
+            $scoreThreshold = config('services.recaptcha.score_threshold', 0.5);
+            if (!isset($body->score) || $body->score < $scoreThreshold) {
+                Log::warning('reCAPTCHA score too low', [
+                    'score' => $body->score,
+                    'threshold' => $scoreThreshold
+                ]);
+                return false;
+            }
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('reCAPTCHA validation error: ' . $e->getMessage());
+            // Di local, jika error connection dan tidak ada secret key, skip validation
+            if (app()->environment('local', 'testing') && empty($recaptchaSecret)) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Get reCAPTCHA site key untuk view
+     */
+    private function getRecaptchaSiteKey(): string
+    {
+        return config('services.recaptcha.site_key', '');
+    }
+
+    /**
+     * Check if reCAPTCHA is enabled
+     */
+    private function isRecaptchaEnabled(): bool
+    {
+        $siteKey = config('services.recaptcha.site_key');
+        $secretKey = config('services.recaptcha.secret_key');
+
+        // Di local, jika tidak ada keys, anggap tidak enabled
+        if (app()->environment('local', 'testing') && (empty($siteKey) || empty($secretKey))) {
+            return false;
+        }
+
+        return !empty($siteKey) && !empty($secretKey);
+    }
+
+    /**
      * Show login form
      */
     public function showLoginForm()
@@ -42,7 +146,10 @@ class AuthController extends Controller
             return $redirect;
         }
 
-        return view('auth.login');
+        return view('auth.login', [
+            'recaptcha_site_key' => $this->getRecaptchaSiteKey(),
+            'recaptcha_enabled' => $this->isRecaptchaEnabled()
+        ]);
     }
 
     /**
@@ -56,11 +163,14 @@ class AuthController extends Controller
             return $redirect;
         }
 
-        return view('auth.register');
+        return view('auth.register', [
+            'recaptcha_site_key' => $this->getRecaptchaSiteKey(),
+            'recaptcha_enabled' => $this->isRecaptchaEnabled()
+        ]);
     }
 
     /**
-     * Handle manual login - UPDATED: Menampilkan nama user di success message
+     * Handle manual login with reCAPTCHA and login attempts tracking
      */
     public function login(Request $request)
     {
@@ -68,6 +178,13 @@ class AuthController extends Controller
         $redirect = $this->redirectIfAuthenticated();
         if ($redirect) {
             return $redirect;
+        }
+
+        // Validasi reCAPTCHA jika enabled
+        if ($this->isRecaptchaEnabled() && !$this->validateRecaptcha($request)) {
+            return back()
+                ->withErrors(['recaptcha' => 'Verifikasi keamanan gagal. Silakan coba lagi.'])
+                ->withInput();
         }
 
         // Validasi input
@@ -93,7 +210,21 @@ class AuthController extends Controller
             ])->withInput()->with('redirect_to_register', true);
         }
 
-        // Cek apakah user aktif
+        // Cek apakah account terkunci
+        if ($user->isLocked()) {
+            $remainingMinutes = $user->getLockRemainingMinutes();
+
+            if ($remainingMinutes > 0) {
+                return redirect()->route('password.request')
+                    ->with('error', 'Akun Anda terkunci selama ' . $remainingMinutes . ' menit karena 3 kali percobaan login gagal. Silakan reset password untuk membuka akun.')
+                    ->with('locked_user_email', $user->email);
+            } else {
+                // Auto unlock jika waktu lock sudah habis
+                $user->unlockAccount();
+            }
+        }
+
+        // Cek apakah account tidak aktif
         if (!$user->is_active) {
             return back()->withErrors([
                 'email' => 'Akun Anda tidak aktif. Silakan hubungi administrator.',
@@ -109,6 +240,9 @@ class AuthController extends Controller
 
         // Attempt login
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            // Reset login attempts jika berhasil
+            $user->resetLoginAttempts();
+
             $request->session()->regenerate();
 
             // Redirect berdasarkan role dengan notifikasi yang menyertakan nama user
@@ -119,13 +253,32 @@ class AuthController extends Controller
             }
         }
 
+        // Jika login gagal, increment login attempts
+        $user->incrementLoginAttempts();
+
+        // Cek apakah sekarang account terkunci
+        if ($user->isLocked()) {
+            return redirect()->route('password.request')
+                ->with('error', 'Akun Anda terkunci selama 5 menit karena 3 kali percobaan login gagal. Silakan reset password untuk membuka akun.')
+                ->with('locked_user_email', $user->email);
+        }
+
+        // Tampilkan pesan error berdasarkan sisa percobaan
+        $remainingAttempts = $user->getRemainingAttempts();
+
+        if ($remainingAttempts > 0) {
+            return back()->withErrors([
+                'password' => 'Password salah. Sisa percobaan: ' . $remainingAttempts . ' kali.',
+            ])->withInput();
+        }
+
         return back()->withErrors([
             'password' => 'Password yang Anda masukkan salah.',
         ])->withInput();
     }
 
     /**
-     * Handle manual registration - UPDATED: phone_number required & menampilkan nama user
+     * Handle manual registration with reCAPTCHA and unique validation
      */
     public function register(Request $request)
     {
@@ -135,20 +288,52 @@ class AuthController extends Controller
             return $redirect;
         }
 
+        // Validasi reCAPTCHA jika enabled
+        if ($this->isRecaptchaEnabled() && !$this->validateRecaptcha($request)) {
+            return back()
+                ->withErrors(['recaptcha' => 'Verifikasi keamanan gagal. Silakan coba lagi.'])
+                ->withInput();
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'phone_number' => 'required|string|max:15|regex:/^[0-9]+$/',
+            'phone_number' => [
+                'required',
+                'string',
+                'max:15',
+                'regex:/^[0-9]+$/',
+                'unique:users,phone_number'
+            ],
         ], [
             'phone_number.required' => 'Nomor telepon wajib diisi.',
             'phone_number.regex' => 'Nomor telepon hanya boleh mengandung angka.',
             'phone_number.max' => 'Nomor telepon maksimal 15 digit.',
+            'phone_number.unique' => 'Silahkan Gunakan Nomor Lain.',
+            'email.unique' => 'Email sudah digunakan.'
         ]);
 
         if ($validator->fails()) {
+            // Pesan error yang aman (tidak menampilkan kredensial spesifik)
+            $errors = $validator->errors();
+            $errorMessages = [];
+
+            foreach ($errors->keys() as $key) {
+                switch ($key) {
+                    case 'email':
+                        $errorMessages['email'] = 'Email sudah digunakan.';
+                        break;
+                    case 'phone_number':
+                        $errorMessages['phone_number'] = 'Nomor telepon sudah digunakan.';
+                        break;
+                    default:
+                        $errorMessages[$key] = $errors->first($key);
+                }
+            }
+
             return back()
-                ->withErrors($validator)
+                ->withErrors($errorMessages)
                 ->withInput();
         }
 
@@ -165,15 +350,18 @@ class AuthController extends Controller
                 'provider_id' => null,
                 'provider_name' => null,
                 'email_verified_at' => null,
+                'login_attempts' => 0,
+                'locked_until' => null,
+                'last_login_attempt' => null,
             ]);
 
             DB::commit();
 
-            // Redirect ke login dengan pesan sukses yang menyertakan nama user
             return redirect()->route('login')->with('success', 'Registrasi berhasil ' . $user->name . '! Akun Anda telah aktif. Silakan login dengan akun Anda.');
 
         } catch (Exception $e) {
             DB::rollBack();
+            Log::error('Registration error: ' . $e->getMessage());
 
             return back()
                 ->withErrors(['error' => 'Terjadi kesalahan saat registrasi. Silakan coba lagi.'])
@@ -182,7 +370,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle socialite registration - UPDATED: phone_number required & menampilkan nama user
+     * Handle socialite registration with reCAPTCHA
      */
     public function handleSocialiteRegistration(Request $request)
     {
@@ -192,28 +380,59 @@ class AuthController extends Controller
             return $redirect;
         }
 
+        // Validasi reCAPTCHA jika enabled
+        if ($this->isRecaptchaEnabled() && !$this->validateRecaptcha($request)) {
+            return back()
+                ->withErrors(['recaptcha' => 'Verifikasi keamanan gagal. Silakan coba lagi.'])
+                ->withInput();
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone_number' => 'required|string|max:15|regex:/^[0-9]+$/',
+            'phone_number' => [
+                'required',
+                'string',
+                'max:15',
+                'regex:/^[0-9]+$/',
+                'unique:users,phone_number'
+            ],
             'provider' => 'required|string',
             'provider_id' => 'required|string',
         ], [
             'phone_number.required' => 'Nomor telepon wajib diisi.',
-            'phone_number.regex' => 'Nomor telepon hanya boleh mengandung angka.',
+            'phone_number.regex' => 'Nomor telepon hanya boleh angka.',
             'phone_number.max' => 'Nomor telepon maksimal 15 digit.',
+            'phone_number.unique' => 'Nomor telepon sudah digunakan.',
+            'email.unique' => 'Email sudah digunakan.'
         ]);
 
         if ($validator->fails()) {
+            // Pesan error yang aman
+            $errors = $validator->errors();
+            $errorMessages = [];
+
+            foreach ($errors->keys() as $key) {
+                switch ($key) {
+                    case 'email':
+                        $errorMessages['email'] = 'Email sudah digunakan.';
+                        break;
+                    case 'phone_number':
+                        $errorMessages['phone_number'] = 'Nomor telepon sudah digunakan.';
+                        break;
+                    default:
+                        $errorMessages[$key] = $errors->first($key);
+                }
+            }
+
             return back()
-                ->withErrors($validator)
+                ->withErrors($errorMessages)
                 ->withInput();
         }
 
         try {
             DB::beginTransaction();
 
-            // Socialite user dibuat dengan password random agar bisa login manual
             $randomPassword = Str::random(12);
             $user = User::create([
                 'name' => $request->name,
@@ -225,18 +444,20 @@ class AuthController extends Controller
                 'provider_id' => $request->provider_id,
                 'provider_name' => $request->provider,
                 'email_verified_at' => now(),
+                'login_attempts' => 0,
+                'locked_until' => null,
+                'last_login_attempt' => null,
             ]);
 
             DB::commit();
 
-            // Login user setelah registrasi socialite
             Auth::login($user, true);
 
-            // Redirect ke dashboard dengan pesan sukses yang menyertakan nama user
             return redirect()->route('santri.dashboard')->with('success', 'Registrasi dengan ' . ucfirst($request->provider) . ' berhasil! Akun Anda telah aktif. Selamat datang ' . $user->name . '.');
 
         } catch (Exception $e) {
             DB::rollBack();
+            Log::error('Socialite registration error: ' . $e->getMessage());
 
             return back()
                 ->withErrors(['error' => 'Terjadi kesalahan saat registrasi. Silakan coba lagi.'])
@@ -276,7 +497,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle provider callback for socialite login - UPDATED: Menampilkan nama user di success message
+     * Handle provider callback for socialite login
      */
     public function handleProvideCallback($provider)
     {
@@ -302,6 +523,15 @@ class AuthController extends Controller
             ]);
         }
 
+        // Cek apakah account terkunci
+        if ($user->isLocked()) {
+            $remainingMinutes = $user->getLockRemainingMinutes();
+
+            return redirect()->route('login')
+                ->with('error', 'Akun Anda terkunci selama ' . $remainingMinutes . ' menit karena 3 kali percobaan login gagal. Silakan reset password untuk membuka akun.')
+                ->with('locked_user_email', $user->email);
+        }
+
         // Cek apakah user aktif
         if (!$user->is_active) {
             return redirect()->route('login')->with('error', 'Akun Anda tidak aktif. Silakan hubungi administrator.');
@@ -314,6 +544,9 @@ class AuthController extends Controller
                 'provider_name' => $provider
             ]);
         }
+
+        // Reset login attempts untuk socialite login
+        $user->resetLoginAttempts();
 
         // Login user
         Auth::login($user, true);
@@ -347,6 +580,33 @@ class AuthController extends Controller
         return response()->json([
             'exists' => $exists,
             'message' => $exists ? 'Email sudah terdaftar.' : 'Email tersedia.'
+        ]);
+    }
+
+    /**
+     * Check if phone number exists (for AJAX validation)
+     */
+    public function checkPhoneNumber(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'phone_number' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'exists' => false,
+                'message' => 'Format nomor telepon tidak valid.'
+            ], 400);
+        }
+
+        // Format nomor telepon untuk validasi konsisten
+        $phone = preg_replace('/[^0-9]/', '', $request->phone_number);
+
+        $exists = User::where('phone_number', 'like', '%' . $phone . '%')->exists();
+
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? 'Nomor telepon sudah digunakan.' : 'Nomor telepon tersedia.'
         ]);
     }
 }

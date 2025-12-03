@@ -17,7 +17,14 @@ class BarcodeController extends Controller
     {
         try {
             $registration = Registration::where('id_pendaftaran', $id_pendaftaran)
-                ->with(['package', 'user'])
+                ->with([
+                    'package',
+                    'user',
+                    'payments' => function($query) {
+                        // Ambil payment yang terbaru
+                        $query->latest()->limit(1);
+                    }
+                ])
                 ->firstOrFail();
 
             // Generate QR Code jika belum ada

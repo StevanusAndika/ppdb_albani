@@ -17,6 +17,7 @@
     <div class="p-3 md:p-6">
         <form action="{{ route('login.post') }}" method="POST" class="space-y-3 md:space-y-4" id="loginForm">
             @csrf
+            <input type="hidden" name="recaptcha_enabled" value="{{ $recaptcha_enabled ? 'true' : 'false' }}">
 
             <!-- Email Field -->
             <div>
@@ -31,6 +32,9 @@
                     required
                     autofocus
                 >
+                @error('email')
+                    <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Password Field -->
@@ -49,7 +53,20 @@
                         <i class="fas fa-eye text-xs md:text-sm"></i>
                     </button>
                 </div>
+                @error('password')
+                    <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                @enderror
             </div>
+
+            <!-- reCAPTCHA Error -->
+            @error('recaptcha')
+                <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                    <p class="text-xs text-red-400">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        {{ $message }}
+                    </p>
+                </div>
+            @enderror
 
             <!-- Remember Me & Forgot Password -->
             <div class="flex items-center justify-between">
@@ -126,21 +143,37 @@
                 </a>
             </div>
         @endif
+
+        <!-- Locked Account Message -->
+        @if(session('locked_user_email'))
+            <div class="mt-3 md:mt-4 p-2 md:p-3 bg-red-500/20 rounded-lg border border-red-300/30 text-center">
+                <p class="text-xs md:text-sm text-white mb-1">
+                    <i class="fas fa-lock mr-1"></i>
+                    Akun terkunci. Silakan reset password.
+                </p>
+                <a href="{{ route('password.request') }}" class="text-white font-medium hover:underline text-xs md:text-sm">
+                    Reset Password
+                </a>
+            </div>
+        @endif
     </div>
 </div>
 
+@include('auth.scripts.password-toggle')
 <script>
 // Auto focus on email field if there's redirect_to_register session
-document.addEventListener('DOMContentLoaded', function() {
-    @if(session('redirect_to_register'))
+@if(session('redirect_to_register'))
+    document.addEventListener('DOMContentLoaded', function() {
         const emailInput = document.getElementById('email');
         if (emailInput) {
             emailInput.focus();
             emailInput.select();
         }
-    @endif
+    });
+@endif
 
-    // Form validation
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const loginSubmitBtn = document.getElementById('loginSubmitBtn');
 
@@ -151,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!email || !password) {
                 e.preventDefault();
-                // Validation will be handled by browser required attribute
                 return;
             }
 
@@ -162,4 +194,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+@endsection
+
+@section('styles')
+@include('auth.styles.auth-styles')
+@endsection
+
+@section('scripts')
+@if($recaptcha_enabled)
+<script src="https://www.google.com/recaptcha/api.js?render={{ $recaptcha_site_key }}"></script>
+@include('auth.scripts.recaptcha')
+@endif
 @endsection

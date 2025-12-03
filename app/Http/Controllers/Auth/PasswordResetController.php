@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Client;
 
 class PasswordResetController extends Controller
 {
@@ -22,11 +23,186 @@ class PasswordResetController extends Controller
     }
 
     /**
+     * Generate OTP 6 digit random
+     */
+    private function generateOtp(): string
+    {
+        // Generate OTP 6 digit random
+        return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Format sisa waktu dengan pembulatan ke atas
+     */
+    private function formatRemainingTime(Carbon $expiryTime): string
+    {
+        $now = Carbon::now();
+
+        if ($now >= $expiryTime) {
+            return "0 menit"; // Sudah expired
+        }
+
+        // Hitung sisa waktu dalam detik
+        $remainingSeconds = $now->diffInSeconds($expiryTime, false);
+
+        // Bulatkan ke atas ke menit terdekat
+        $remainingMinutes = ceil($remainingSeconds / 60);
+
+        return "{$remainingMinutes} menit";
+    }
+
+    /**
+     * Format pesan WhatsApp untuk OTP
+     */
+    private function formatOtpMessage(string $otp): string
+    {
+        return "Kode OTP Reset Password PPDB Pondok Pesantren Al-Qur'an Bani Syahid: *{$otp}*\n\nJangan berikan kode ini kepada siapapun.\n\nJika Anda tidak meminta reset password, silahkan hubungi admin atau ubah password anda dilain waktu.";
+    }
+
+    /**
+     * Check OTP cooldown untuk AJAX request
+     */
+    public function checkCooldown(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email tidak valid.'
+            ], 400);
+        }
+
+        $cooldownKey = 'otp_cooldown_' . $request->email;
+
+        if (Cache::has($cooldownKey)) {
+            $remainingTime = Cache::get($cooldownKey) - time();
+            $minutes = ceil($remainingTime / 60);
+
+            return response()->json([
+                'success' => false,
+                'on_cooldown' => true,
+                'remaining_time' => $remainingTime,
+                'minutes' => $minutes,
+                'message' => "Silakan tunggu {$minutes} menit sebelum meminta OTP lagi."
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'on_cooldown' => false,
+            'message' => 'Bisa meminta OTP baru.'
+        ]);
+    }
+
+    /**
+     * Validate reCAPTCHA v3 - Skip di local jika tidak ada keys
+     */
+    private function validateRecaptcha(Request $request): bool
+    {
+        $recaptchaSecret = config('services.recaptcha.secret_key');
+        $recaptchaResponse = $request->input('g-recaptcha-response');
+
+        // Jika di local environment dan tidak ada secret key, skip validation
+        if (app()->environment('local', 'testing') && empty($recaptchaSecret)) {
+            Log::info('reCAPTCHA validation skipped in local environment (no secret key)');
+            return true;
+        }
+
+        // Jika tidak ada response token, return false
+        if (!$recaptchaResponse) {
+            Log::warning('reCAPTCHA token missing');
+            return false;
+        }
+
+        if (!$recaptchaSecret) {
+            Log::warning('reCAPTCHA secret key missing');
+            return false;
+        }
+
+        try {
+            $client = new Client(['timeout' => 10]);
+            $response = $client->post('https://www.google.com/recaptcha/api/siteverify', [
+                'form_params' => [
+                    'secret' => $recaptchaSecret,
+                    'response' => $recaptchaResponse,
+                    'remoteip' => $request->ip(),
+                ]
+            ]);
+
+            $body = json_decode($response->getBody());
+
+            Log::info('reCAPTCHA Response', [
+                'success' => $body->success,
+                'score' => $body->score ?? 0,
+                'action' => $body->action ?? null,
+                'hostname' => $body->hostname ?? null,
+                'errors' => $body->{'error-codes'} ?? [],
+                'environment' => app()->environment()
+            ]);
+
+            // Validasi success
+            if (!$body->success) {
+                return false;
+            }
+
+            // Validasi score minimal
+            $scoreThreshold = config('services.recaptcha.score_threshold', 0.7);
+            if (!isset($body->score) || $body->score < $scoreThreshold) {
+                Log::warning('reCAPTCHA score too low', [
+                    'score' => $body->score,
+                    'threshold' => $scoreThreshold
+                ]);
+                return false;
+            }
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('reCAPTCHA validation error: ' . $e->getMessage());
+            // Di local, jika error connection dan tidak ada secret key, skip validation
+            if (app()->environment('local', 'testing') && empty($recaptchaSecret)) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Get reCAPTCHA site key untuk view
+     */
+    private function getRecaptchaSiteKey(): string
+    {
+        return config('services.recaptcha.site_key', '');
+    }
+
+    /**
+     * Check if reCAPTCHA is enabled
+     */
+    private function isRecaptchaEnabled(): bool
+    {
+        $siteKey = config('services.recaptcha.site_key');
+        $secretKey = config('services.recaptcha.secret_key');
+
+        // Di local, jika tidak ada keys, anggap tidak enabled
+        if (app()->environment('local', 'testing') && (empty($siteKey) || empty($secretKey))) {
+            return false;
+        }
+
+        return !empty($siteKey) && !empty($secretKey);
+    }
+
+    /**
      * Show the forgot password form
      */
     public function showLinkRequestForm()
     {
-        return view('auth.forgot-password');
+        return view('auth.forgot-password', [
+            'recaptcha_site_key' => $this->getRecaptchaSiteKey(),
+            'recaptcha_enabled' => $this->isRecaptchaEnabled()
+        ]);
     }
 
     /**
@@ -34,6 +210,14 @@ class PasswordResetController extends Controller
      */
     public function sendResetLinkEmail(Request $request)
     {
+        // Validasi reCAPTCHA jika enabled
+        if ($this->isRecaptchaEnabled() && !$this->validateRecaptcha($request)) {
+            return back()
+                ->withErrors(['recaptcha' => 'Verifikasi keamanan gagal. Silakan coba lagi.'])
+                ->withInput()
+                ->with('error', 'Verifikasi keamanan gagal.');
+        }
+
         // Validasi input
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
@@ -62,29 +246,69 @@ class PasswordResetController extends Controller
                 ->with('error', 'Akun tidak memiliki nomor telepon yang terdaftar. Silakan hubungi administrator.');
         }
 
-        // Cek cooldown pengiriman OTP (1 menit untuk testing, bisa diubah ke 10 menit)
-        $cooldownKey = 'otp_cooldown_' . $user->email;
-        if (Cache::has($cooldownKey)) {
-            $remainingTime = Cache::get($cooldownKey) - time();
-            $minutes = ceil($remainingTime / 60);
+        // Cek apakah sudah ada OTP yang masih aktif (belum expired)
+        $activeOtp = PasswordResetOtp::where('email', $user->email)
+            ->where('expires_at', '>', Carbon::now())
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($activeOtp) {
+            // Tampilkan sisa waktu OTP yang masih aktif - DIBULATKAN KE ATAS
+            $remainingTime = $this->formatRemainingTime($activeOtp->expires_at);
+
+            Log::info('Active OTP found', [
+                'email' => $user->email,
+                'otp' => $activeOtp->otp,
+                'remaining_time' => $remainingTime
+            ]);
+
+            $message = 'Anda sudah memiliki OTP aktif. ';
+
+            if ($activeOtp->is_used) {
+                $message .= 'OTP sudah diverifikasi. ';
+            } else {
+                $message .= 'OTP belum digunakan. ';
+            }
+
+            $message .= 'Sisa waktu: ' . $remainingTime;
 
             return back()
                 ->withInput()
-                ->with('error', "Anda sudah meminta OTP. Silakan tunggu {$minutes} menit sebelum meminta OTP lagi.");
+                ->with('show_otp_verification', true)
+                ->with('user_email', $user->email)
+                ->with('info', $message);
+        }
+
+        // Cek cooldown pengiriman OTP (hanya untuk mencegah spam)
+        $cooldownKey = 'otp_cooldown_' . $user->email;
+        if (Cache::has($cooldownKey)) {
+            $remainingTime = Cache::get($cooldownKey) - time();
+            $minutes = ceil($remainingTime / 60); // Dibulatkan ke atas
+
+            return back()
+                ->withInput()
+                ->with('error', "Anda sudah meminta OTP baru. Silakan tunggu {$minutes} menit sebelum meminta OTP lagi.");
         }
 
         try {
-            // Generate OTP 6 digit
-            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            // Generate OTP 6 digit random
+            $otp = $this->generateOtp();
 
-            Log::info('Generated OTP', [
+            // Waktu berlaku: 5 MENIT
+            $expiresAt = Carbon::now()->addMinutes(5);
+
+            Log::info('Generated 6-digit OTP', [
                 'email' => $user->email,
                 'otp' => $otp,
+                'expires_at' => $expiresAt->toDateTimeString(),
+                'valid_for' => '5 menit',
                 'time' => now()->toDateTimeString()
             ]);
 
-            // Hapus OTP sebelumnya untuk email ini
-            PasswordResetOtp::where('email', $user->email)->delete();
+            // Hapus OTP yang sudah expired
+            PasswordResetOtp::where('email', $user->email)
+                ->where('expires_at', '<=', Carbon::now())
+                ->delete();
 
             // Format nomor telepon
             $formattedPhone = $this->formatPhoneNumber($user->phone_number);
@@ -99,13 +323,14 @@ class PasswordResetController extends Controller
                 'email' => $user->email,
                 'otp' => $otp,
                 'phone_number' => $formattedPhone,
-                'expires_at' => Carbon::now()->addMinutes(10),
+                'expires_at' => $expiresAt,
                 'is_used' => false,
             ]);
 
             Log::info('OTP saved to database', [
                 'email' => $user->email,
                 'otp_id' => $passwordResetOtp->id,
+                'otp' => $otp,
                 'expires_at' => $passwordResetOtp->expires_at
             ]);
 
@@ -115,7 +340,11 @@ class PasswordResetController extends Controller
                 'otp' => $otp
             ]);
 
-            $sendResult = $this->fonnteService->sendOtp($formattedPhone, $otp);
+            // Format pesan WhatsApp sesuai permintaan
+            $whatsappMessage = $this->formatOtpMessage($otp);
+
+            // Kirim pesan dengan format khusus
+            $sendResult = $this->fonnteService->sendMessage($formattedPhone, $whatsappMessage);
 
             Log::info('Fonnte response', [
                 'success' => $sendResult['success'],
@@ -131,15 +360,14 @@ class PasswordResetController extends Controller
                     ->with('error', 'Gagal mengirim OTP: ' . $sendResult['message']);
             }
 
-            // Set cooldown 1 menit untuk testing (ubah ke 10 menit di production)
-            Cache::put($cooldownKey, time() + 60, 60); // 1 menit untuk testing
+            // Set cooldown 1 menit untuk mencegah spam
+            Cache::put($cooldownKey, time() + 60, 60); // 1 menit cooldown
 
             return back()
                 ->withInput()
                 ->with('show_otp_verification', true)
                 ->with('user_email', $user->email)
-                ->with('otp_code', $otp) // Hanya untuk debugging, hapus di production
-                ->with('success', 'Kode OTP telah dikirim via WhatsApp ke nomor terdaftar. OTP berlaku 10 menit.');
+                ->with('success', "Kode OTP telah dikirim via WhatsApp ke nomor terdaftar. OTP berlaku 5 menit.");
 
         } catch (\Exception $e) {
             Log::error('Error sending OTP: ' . $e->getMessage(), [
@@ -147,18 +375,18 @@ class PasswordResetController extends Controller
             ]);
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan sistem. Silakan coba lagi beberapa saat.');
         }
     }
 
     /**
-     * Verifikasi OTP dengan debugging
+     * Verifikasi OTP - OTP bisa digunakan meskipun sudah digunakan sebelumnya
      */
     public function verifyOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'otp' => 'required|digits:6',
+            'otp' => 'required|digits:6', // Tetap 6 digit
         ]);
 
         if ($validator->fails()) {
@@ -175,78 +403,43 @@ class PasswordResetController extends Controller
             'time' => now()->toDateTimeString()
         ]);
 
-        // Debug: Tampilkan semua OTP yang ada di database untuk email ini
-        $allOtps = PasswordResetOtp::where('email', $request->email)->get();
-        Log::info('All OTPs in database for this email', [
-            'count' => $allOtps->count(),
-            'otps' => $allOtps->map(function($otp) {
-                return [
-                    'id' => $otp->id,
-                    'otp' => $otp->otp,
-                    'is_used' => $otp->is_used,
-                    'expires_at' => $otp->expires_at,
-                    'created_at' => $otp->created_at
-                ];
-            })
-        ]);
-
-        // Cek OTP dengan kondisi yang lebih longkar untuk debugging
+        // Cek OTP yang belum expired (boleh sudah digunakan atau belum)
         $otpRecord = PasswordResetOtp::where('email', $request->email)
             ->where('otp', $request->otp)
+            ->where('expires_at', '>', Carbon::now())
             ->first();
 
-        Log::info('OTP record found', [
-            'exists' => !is_null($otpRecord),
-            'is_used' => $otpRecord ? $otpRecord->is_used : 'N/A',
-            'expired' => $otpRecord ? $otpRecord->expires_at->isPast() : 'N/A',
-            'current_time' => now()->toDateTimeString(),
-            'expires_at' => $otpRecord ? $otpRecord->expires_at->toDateTimeString() : 'N/A'
-        ]);
-
         if (!$otpRecord) {
-            Log::warning('OTP not found in database', [
-                'email' => $request->email,
-                'otp' => $request->otp
-            ]);
-            return back()
-                ->withInput()
-                ->with('show_otp_verification', true)
-                ->with('user_email', $request->email)
-                ->with('error', 'Kode OTP tidak ditemukan.');
-        }
-
-        if ($otpRecord->is_used) {
-            Log::warning('OTP already used', [
-                'email' => $request->email,
-                'otp' => $request->otp
-            ]);
-            return back()
-                ->withInput()
-                ->with('show_otp_verification', true)
-                ->with('user_email', $request->email)
-                ->with('error', 'Kode OTP sudah digunakan sebelumnya.');
-        }
-
-        if ($otpRecord->expires_at->isPast()) {
-            Log::warning('OTP expired', [
+            Log::warning('OTP not found or expired', [
                 'email' => $request->email,
                 'otp' => $request->otp,
-                'expires_at' => $otpRecord->expires_at,
-                'current_time' => now()
+                'available_otps' => PasswordResetOtp::where('email', $request->email)->get()->map(function($otp) {
+                    return [
+                        'otp' => $otp->otp,
+                        'is_used' => $otp->is_used,
+                        'expires_at' => $otp->expires_at,
+                        'is_expired' => $otp->expires_at <= Carbon::now(),
+                    ];
+                })
             ]);
+
             return back()
                 ->withInput()
                 ->with('show_otp_verification', true)
                 ->with('user_email', $request->email)
-                ->with('error', 'Kode OTP sudah kadaluarsa.');
+                ->with('error', 'Kode OTP tidak valid atau sudah kadaluarsa. Silakan minta OTP baru.');
         }
 
-        // Tandai OTP sebagai digunakan
-        $otpRecord->update(['is_used' => true]);
+        // Tandai OTP sebagai digunakan (atau update timestamp jika sudah digunakan)
+        $otpRecord->update([
+            'is_used' => true,
+            'used_at' => Carbon::now()
+        ]);
 
         Log::info('OTP verified successfully', [
             'email' => $request->email,
-            'otp' => $request->otp
+            'otp' => $request->otp,
+            'was_previously_used' => $otpRecord->wasRecentlyCreated ? 'no' : 'yes'
         ]);
 
         return back()
@@ -254,6 +447,7 @@ class PasswordResetController extends Controller
             ->with('show_password_reset', true)
             ->with('user_email', $request->email)
             ->with('otp_verified', true)
+            ->with('otp_code', $request->otp) // Simpan OTP untuk verifikasi di reset
             ->with('success', 'OTP berhasil diverifikasi. Silakan buat password baru.');
     }
 
@@ -265,7 +459,7 @@ class PasswordResetController extends Controller
         // Validasi input dengan password strength
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'otp' => 'required|digits:6',
+            'otp' => 'required|digits:6', // Tetap 6 digit
             'new_password' => [
                 'required',
                 'min:8',
@@ -287,15 +481,21 @@ class PasswordResetController extends Controller
                 ->with('user_email', $request->email);
         }
 
-        // Verifikasi ulang OTP untuk keamanan
+        // Verifikasi ulang OTP untuk keamanan - OTP harus belum expired
         $otpRecord = PasswordResetOtp::where('email', $request->email)
             ->where('otp', $request->otp)
-            ->where('is_used', true)
+            ->where('expires_at', '>', Carbon::now())
             ->first();
 
         if (!$otpRecord) {
+            Log::warning('Invalid OTP for password reset', [
+                'email' => $request->email,
+                'otp' => $request->otp,
+                'time' => now()->toDateTimeString()
+            ]);
+
             return redirect()->route('password.request')
-                ->with('error', 'Sesi reset password tidak valid. Silakan ulangi proses dari awal.');
+                ->with('error', 'Sesi reset password tidak valid atau sudah kadaluarsa. Silakan ulangi proses dari awal.');
         }
 
         // Cek user
@@ -307,23 +507,29 @@ class PasswordResetController extends Controller
         }
 
         try {
-            // Update password
+            // Update password dan unlock account (reset lock 5 menit)
             $user->password = Hash::make($request->new_password);
+            $user->login_attempts = 0;
+            $user->locked_until = null;
+            $user->last_login_attempt = null;
+            $user->is_active = true;
             $user->save();
 
-            // Hapus OTP record setelah berhasil reset
+            // Hapus SEMUA OTP record untuk email ini setelah berhasil reset
             PasswordResetOtp::where('email', $request->email)->delete();
 
             // Hapus cooldown cache
             Cache::forget('otp_cooldown_' . $request->email);
 
-            Log::info('Password reset successful', [
+            Log::info('Password reset successful with account unlock', [
                 'email' => $request->email,
-                'user_id' => $user->id
+                'user_id' => $user->id,
+                'was_locked' => $user->locked_until ? 'yes' : 'no',
+                'otp_used_count' => $otpRecord->is_used ? 'previously used' : 'first time use'
             ]);
 
             return redirect()->route('login')
-                ->with('success', 'Password berhasil direset! Silakan login dengan password baru.');
+                ->with('success', 'Password berhasil direset dan akun telah diaktifkan kembali! Silakan login dengan password baru.');
 
         } catch (\Exception $e) {
             Log::error('Error resetting password: ' . $e->getMessage());
@@ -357,24 +563,52 @@ class PasswordResetController extends Controller
             ], 404);
         }
 
+        // Cek apakah sudah ada OTP yang masih aktif (belum expired)
+        $activeOtp = PasswordResetOtp::where('email', $user->email)
+            ->where('expires_at', '>', Carbon::now())
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($activeOtp) {
+            $remainingTime = $this->formatRemainingTime($activeOtp->expires_at);
+
+            $message = 'Anda masih memiliki OTP aktif. ';
+
+            if ($activeOtp->is_used) {
+                $message .= 'OTP sudah diverifikasi. ';
+            } else {
+                $message .= 'OTP belum digunakan. ';
+            }
+
+            $message .= 'Sisa waktu: ' . $remainingTime;
+
+            return response()->json([
+                'success' => false,
+                'message' => $message
+            ], 400);
+        }
+
         // Cek cooldown pengiriman OTP
         $cooldownKey = 'otp_cooldown_' . $user->email;
         if (Cache::has($cooldownKey)) {
             $remainingTime = Cache::get($cooldownKey) - time();
-            $minutes = ceil($remainingTime / 60);
+            $minutes = ceil($remainingTime / 60); // Dibulatkan ke atas
 
             return response()->json([
                 'success' => false,
-                'message' => "Anda sudah meminta OTP. Silakan tunggu {$minutes} menit sebelum meminta OTP lagi."
+                'message' => "Silakan tunggu {$minutes} menit sebelum meminta OTP lagi."
             ], 429);
         }
 
         try {
-            // Generate OTP baru
-            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            // Generate OTP baru 6 digit
+            $otp = $this->generateOtp();
+            $expiresAt = Carbon::now()->addMinutes(5); // 5 menit
 
-            // Hapus OTP sebelumnya
-            PasswordResetOtp::where('email', $user->email)->delete();
+            // Hapus OTP yang sudah expired
+            PasswordResetOtp::where('email', $user->email)
+                ->where('expires_at', '<=', Carbon::now())
+                ->delete();
 
             // Format nomor telepon
             $formattedPhone = $this->formatPhoneNumber($user->phone_number);
@@ -384,12 +618,15 @@ class PasswordResetController extends Controller
                 'email' => $user->email,
                 'otp' => $otp,
                 'phone_number' => $formattedPhone,
-                'expires_at' => Carbon::now()->addMinutes(10),
+                'expires_at' => $expiresAt,
                 'is_used' => false,
             ]);
 
-            // Kirim OTP
-            $sendResult = $this->fonnteService->sendOtp($formattedPhone, $otp);
+            // Format pesan WhatsApp sesuai permintaan
+            $whatsappMessage = $this->formatOtpMessage($otp);
+
+            // Kirim OTP dengan pesan yang jelas
+            $sendResult = $this->fonnteService->sendMessage($formattedPhone, $whatsappMessage);
 
             if (!$sendResult['success']) {
                 $passwordResetOtp->delete();
@@ -400,12 +637,12 @@ class PasswordResetController extends Controller
                 ], 500);
             }
 
-            // Set cooldown 1 menit untuk testing (ubah ke 10 menit di production)
-            Cache::put($cooldownKey, time() + 60, 60); // 1 menit untuk testing
+            // Set cooldown 1 menit untuk mencegah spam
+            Cache::put($cooldownKey, time() + 60, 60);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Kode OTP baru telah dikirim.'
+                'message' => 'Kode OTP baru telah dikirim. Berlaku 5 menit.'
             ]);
 
         } catch (\Exception $e) {
@@ -443,30 +680,10 @@ class PasswordResetController extends Controller
      */
     public function showResetForm($token)
     {
-        return view('auth.reset-password', ['token' => $token]);
-    }
-
-    /**
-     * Debug function untuk melihat OTP di database
-     */
-    public function debugOtp(Request $request)
-    {
-        $email = $request->email;
-        $otps = PasswordResetOtp::where('email', $email)->get();
-
-        return response()->json([
-            'email' => $email,
-            'otp_count' => $otps->count(),
-            'otps' => $otps->map(function($otp) {
-                return [
-                    'id' => $otp->id,
-                    'otp' => $otp->otp,
-                    'is_used' => $otp->is_used,
-                    'expires_at' => $otp->expires_at->toDateTimeString(),
-                    'created_at' => $otp->created_at->toDateTimeString(),
-                    'is_expired' => $otp->expires_at->isPast()
-                ];
-            })
+        return view('auth.reset-password', [
+            'token' => $token,
+            'recaptcha_site_key' => $this->getRecaptchaSiteKey(),
+            'recaptcha_enabled' => $this->isRecaptchaEnabled()
         ]);
     }
 }

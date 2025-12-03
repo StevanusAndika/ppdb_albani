@@ -10,7 +10,7 @@
     <!-- Header -->
     <header class="py-6 px-4 text-center">
         <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-2">Formulir Biodata Pendaftaran</h1>
-        <p class="text-secondary max-w-2xl mx-auto">Lengkapi data diri Anda dengan benar untuk proses pendaftaran santri baru Pondok Pesantren Bani Syahid</p>
+        <p class="text-secondary max-w-2xl mx-auto">Lengkapi data diri Anda dengan benar untuk proses pendaftaran santri baru Pondok Pesantren Al-Qur'an Bani Syahid</p>
     </header>
 
     <main class="max-w-6xl mx-auto py-6 px-4">
@@ -159,8 +159,10 @@
                         </label>
                         <input type="text" name="nik" id="nik" required maxlength="16"
                             value="{{ old('nik', $registration->nik ?? '') }}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                            placeholder="16 digit NIK">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                            placeholder="16 digit NIK"
+                            pattern="[0-9]{16}"
+                            title="NIK harus 16 digit angka">
                     </div>
 
                     <!-- Tempat Lahir -->
@@ -224,8 +226,10 @@
                             </label>
                             <input type="text" name="rt" id="rt" maxlength="3"
                                 value="{{ old('rt', $registration->rt ?? '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                placeholder="000">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                                placeholder="000"
+                                pattern="[0-9]*"
+                                title="RT harus berupa angka">
                         </div>
                         <div>
                             <label for="rw" class="block text-sm font-medium text-gray-700 mb-2">
@@ -233,8 +237,10 @@
                             </label>
                             <input type="text" name="rw" id="rw" maxlength="3"
                                 value="{{ old('rw', $registration->rw ?? '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                placeholder="000">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                                placeholder="000"
+                                pattern="[0-9]*"
+                                title="RW harus berupa angka">
                         </div>
                     </div>
 
@@ -275,8 +281,10 @@
                         </label>
                         <input type="text" name="kode_pos" id="kode_pos" required maxlength="5"
                             value="{{ old('kode_pos', $registration->kode_pos ?? '') }}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                            placeholder="12345">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                            placeholder="12345"
+                            pattern="[0-9]{5}"
+                            title="Kode Pos harus 5 digit angka">
                     </div>
                 </div>
             </div>
@@ -316,10 +324,11 @@
                             <label for="penghasilan_ibu" class="block text-sm font-medium text-gray-700 mb-2">
                                 Penghasilan Ibu
                             </label>
-                            <input type="number" name="penghasilan_ibu" id="penghasilan_ibu"
+                            <input type="text" name="penghasilan_ibu" id="penghasilan_ibu"
                                 value="{{ old('penghasilan_ibu', $registration->penghasilan_ibu ?? '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                placeholder="Isi 0 jika tidak memiliki penghasilan">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 penghasilan-input"
+                                placeholder="Contoh: 1.000.000"
+                                title="Penghasilan dalam rupiah (boleh menggunakan titik pemisah ribuan)">
                         </div>
                     </div>
 
@@ -351,10 +360,11 @@
                             <label for="penghasilan_ayah" class="block text-sm font-medium text-gray-700 mb-2">
                                 Penghasilan Ayah
                             </label>
-                            <input type="number" name="penghasilan_ayah" id="penghasilan_ayah"
+                            <input type="text" name="penghasilan_ayah" id="penghasilan_ayah"
                                 value="{{ old('penghasilan_ayah', $registration->penghasilan_ayah ?? '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                placeholder="Isi 0 jika tidak memiliki penghasilan">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 penghasilan-input"
+                                placeholder="Contoh: 5.000.000"
+                                title="Penghasilan dalam rupiah (boleh menggunakan titik pemisah ribuan)">
                         </div>
                     </div>
                 </div>
@@ -367,8 +377,10 @@
                         </label>
                         <input type="text" name="nomor_telpon_orang_tua" id="nomor_telpon_orang_tua" required
                             value="{{ old('nomor_telpon_orang_tua', $registration->nomor_telpon_orang_tua ?? '') }}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                            placeholder="08xxxxxxxxxx">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                            placeholder="08xxxxxxxxxx"
+                            pattern="[0-9]{10,15}"
+                            title="Nomor telepon harus 10-15 digit angka">
                     </div>
 
                     <div>
@@ -428,8 +440,10 @@
                         </label>
                         <input type="text" name="nis_nisn_nsp" id="nis_nisn_nsp"
                             value="{{ old('nis_nisn_nsp', $registration->nis_nisn_nsp ?? '') }}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                            placeholder="Nomor induk siswa">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                            placeholder="Nomor induk siswa"
+                            pattern="[0-9]*"
+                            title="NIS/NISN/NSP harus berupa angka">
                     </div>
 
                     <!-- Status Pernikahan -->
@@ -551,8 +565,10 @@
                             </label>
                             <input type="text" name="nomor_telpon_wali" id="nomor_telpon_wali" required
                                 value="{{ old('nomor_telpon_wali', $registration->nomor_telpon_wali ?? '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                placeholder="08xxxxxxxxxx">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                                placeholder="08xxxxxxxxxx"
+                                pattern="[0-9]{10,15}"
+                                title="Nomor telepon harus 10-15 digit angka">
                         </div>
                     </div>
 
@@ -578,8 +594,10 @@
                             </label>
                             <input type="text" name="rt_wali" id="rt_wali" maxlength="3"
                                 value="{{ old('rt_wali', $registration->rt_wali ?? '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                placeholder="000">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                                placeholder="000"
+                                pattern="[0-9]*"
+                                title="RT harus berupa angka">
                         </div>
                         <div>
                             <label for="rw_wali" class="block text-sm font-medium text-gray-700 mb-2">
@@ -587,8 +605,10 @@
                             </label>
                             <input type="text" name="rw_wali" id="rw_wali" maxlength="3"
                                 value="{{ old('rw_wali', $registration->rw_wali ?? '') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                placeholder="000">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                                placeholder="000"
+                                pattern="[0-9]*"
+                                title="RW harus berupa angka">
                         </div>
                     </div>
 
@@ -628,8 +648,10 @@
                         </label>
                         <input type="text" name="kode_pos_wali" id="kode_pos_wali" required maxlength="5"
                             value="{{ old('kode_pos_wali', $registration->kode_pos_wali ?? '') }}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                            placeholder="12345">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 numeric-input"
+                            placeholder="12345"
+                            pattern="[0-9]{5}"
+                            title="Kode Pos harus 5 digit angka">
                     </div>
                 </div>
             </div>
@@ -639,7 +661,15 @@
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="text-sm text-gray-600">
                         <p><span class="text-red-500">*</span> Menandakan field wajib diisi</p>
-                        <p>Pastikan semua data yang Anda masukkan sudah benar sebelum menyimpan</p>
+                        <p class="mt-1"><span class="text-blue-500"><b>PETUNJUK PENGISIAN:</b></span> </p>
+                        <ul class="mt-2 text-xs text-gray-500 list-disc list-inside">
+                            <li>NIK: 16 digit angka</li>
+                            <li>RT/RW: maksimal 3 digit angka</li>
+                            <li>Kode Pos: 5 digit angka</li>
+                            <li>Nomor Telepon: 10-15 digit angka</li>
+
+                            <li>NIS/NISN/NSP: angka tanpa karakter khusus</li>
+                        </ul>
                     </div>
                     <div class="flex gap-3">
                         <a href="{{ route('santri.dashboard') }}"
@@ -812,73 +842,372 @@
         }
     });
 
-    // Format number inputs
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.value) {
-                this.value = parseFloat(this.value).toLocaleString('id-ID');
+    // FUNGSI UTAMA: Validasi input untuk field tertentu
+    function setupNumericInput(inputId, maxLength = null, allowDecimal = false) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            // Event listener untuk input
+            input.addEventListener('input', function(e) {
+                // Simpan posisi cursor
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+
+                // Hapus semua karakter non-digit (dan titik jika allowDecimal)
+                let newValue;
+                if (allowDecimal) {
+                    // Untuk penghasilan: hapus semua kecuali digit dan titik
+                    newValue = this.value.replace(/[^\d.]/g, '');
+                    // Hanya biarkan satu titik desimal
+                    const parts = newValue.split('.');
+                    if (parts.length > 2) {
+                        newValue = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                } else {
+                    // Untuk field lainnya: hapus semua non-digit
+                    newValue = this.value.replace(/\D/g, '');
+                }
+
+                // Batasi panjang jika ada maxLength
+                if (maxLength && newValue.length > maxLength) {
+                    newValue = newValue.substring(0, maxLength);
+                }
+
+                // Update nilai
+                if (this.value !== newValue) {
+                    this.value = newValue;
+                    // Kembalikan posisi cursor
+                    this.setSelectionRange(start, end);
+                }
+
+                // Validasi real-time
+                const pattern = this.getAttribute('pattern');
+                if (pattern && newValue) {
+                    const regex = new RegExp(pattern);
+                    if (!regex.test(newValue)) {
+                        this.setCustomValidity('Harap masukkan angka yang valid');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                }
+            });
+
+            // Format penghasilan dengan titik pemisah ribuan
+            if (input.classList.contains('penghasilan-input')) {
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        // Hapus semua titik untuk perhitungan
+                        const numericValue = this.value.replace(/\./g, '');
+                        if (!isNaN(numericValue) && numericValue !== '') {
+                            // Format dengan titik pemisah ribuan
+                            const formattedValue = parseInt(numericValue).toLocaleString('id-ID');
+                            this.value = formattedValue;
+                        }
+                    }
+                });
+
+                input.addEventListener('focus', function() {
+                    if (this.value) {
+                        // Hapus format untuk editing
+                        this.value = this.value.replace(/\./g, '');
+                    }
+                });
+
+                // Format nilai awal jika ada
+                if (input.value) {
+                    const numericValue = input.value.replace(/\./g, '');
+                    if (!isNaN(numericValue) && numericValue !== '') {
+                        input.value = parseInt(numericValue).toLocaleString('id-ID');
+                    }
+                }
             }
-        });
 
-        input.addEventListener('focus', function() {
-            if (this.value) {
-                this.value = this.value.replace(/\./g, '');
-            }
-        });
-    });
+            // Prevent paste karakter non-numeric
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                let filteredText;
 
-    // NIK validation
-    document.getElementById('nik')?.addEventListener('input', function() {
-        this.value = this.value.replace(/\D/g, '').substring(0, 16);
-    });
+                if (allowDecimal) {
+                    // Untuk penghasilan: filter hanya digit dan titik
+                    filteredText = pastedText.replace(/[^\d.]/g, '');
+                    // Hanya biarkan satu titik
+                    const parts = filteredText.split('.');
+                    if (parts.length > 2) {
+                        filteredText = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                } else {
+                    // Untuk field lainnya: filter hanya digit
+                    filteredText = pastedText.replace(/\D/g, '');
+                }
 
-    // Kode Pos validation
-    document.getElementById('kode_pos')?.addEventListener('input', function() {
-        this.value = this.value.replace(/\D/g, '').substring(0, 5);
-    });
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
 
-    document.getElementById('kode_pos_wali')?.addEventListener('input', function() {
-        this.value = this.value.replace(/\D/g, '').substring(0, 5);
-    });
+                // Sisipkan teks yang sudah difilter
+                const currentValue = this.value;
+                const newValue = currentValue.substring(0, start) + filteredText + currentValue.substring(end);
 
-    // RT/RW validation
-    document.querySelectorAll('input[name="rt"], input[name="rw"], input[name="rt_wali"], input[name="rw_wali"]').forEach(input => {
-        input.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '').substring(0, 3);
-        });
-    });
+                // Batasi panjang jika ada maxLength
+                if (maxLength && newValue.length > maxLength) {
+                    this.value = newValue.substring(0, maxLength);
+                } else {
+                    this.value = newValue;
+                }
 
-    // Phone number validation
-    document.querySelectorAll('input[name="nomor_telpon_orang_tua"], input[name="nomor_telpon_wali"]').forEach(input => {
-        input.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '').substring(0, 15);
-        });
-    });
-
-    // Form submission handler
-    document.getElementById('biodataForm')?.addEventListener('submit', function(e) {
-        const requiredFields = this.querySelectorAll('[required]');
-        let isValid = true;
-
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                isValid = false;
-                field.classList.add('border-red-500');
-            } else {
-                field.classList.remove('border-red-500');
-            }
-        });
-
-        if (!isValid) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Form Tidak Lengkap',
-                text: 'Harap lengkapi semua field yang wajib diisi!',
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'OK'
+                // Posisikan cursor setelah teks yang disisipkan
+                const newCursorPos = start + filteredText.length;
+                this.setSelectionRange(newCursorPos, newCursorPos);
             });
         }
+    }
+
+    // FUNGSI KHUSUS UNTUK PENGHASILAN
+    function setupPenghasilanInput(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            // Format otomatis saat input
+            input.addEventListener('input', function(e) {
+                // Simpan posisi cursor
+                const start = this.selectionStart;
+
+                // Hapus semua karakter kecuali angka
+                let value = this.value.replace(/[^\d]/g, '');
+
+                // Format dengan titik pemisah ribuan
+                if (value.length > 0) {
+                    const formattedValue = parseInt(value).toLocaleString('id-ID');
+                    this.value = formattedValue;
+
+                    // Hitung posisi cursor baru
+                    let newCursorPos = start;
+                    const originalLength = value.length;
+                    const formattedLength = formattedValue.length;
+
+                    // Adjust cursor position based on formatting
+                    if (originalLength > 0 && formattedLength > 0) {
+                        // Hitung jumlah titik yang ditambahkan
+                        const dotCount = formattedValue.split('.').length - 1;
+                        newCursorPos = start + dotCount;
+                    }
+
+                    // Set posisi cursor
+                    this.setSelectionRange(newCursorPos, newCursorPos);
+                }
+            });
+
+            // Saat blur, pastikan format konsisten
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    const value = this.value.replace(/[^\d]/g, '');
+                    if (value.length > 0 && !isNaN(value)) {
+                        this.value = parseInt(value).toLocaleString('id-ID');
+                    }
+                }
+            });
+
+            // Saat focus, hapus format untuk editing mudah
+            input.addEventListener('focus', function() {
+                if (this.value) {
+                    this.value = this.value.replace(/\./g, '');
+                }
+            });
+
+            // Format nilai awal jika ada
+            if (input.value) {
+                const value = input.value.replace(/[^\d]/g, '');
+                if (value.length > 0 && !isNaN(value)) {
+                    input.value = parseInt(value).toLocaleString('id-ID');
+                }
+            }
+
+            // Handle paste event
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const numericText = pastedText.replace(/[^\d]/g, '');
+
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const currentValue = this.value.replace(/\./g, '');
+
+                // Sisipkan teks
+                const newValue = currentValue.substring(0, start) + numericText + currentValue.substring(end);
+
+                // Format dengan titik
+                if (newValue.length > 0 && !isNaN(newValue)) {
+                    this.value = parseInt(newValue).toLocaleString('id-ID');
+
+                    // Hitung posisi cursor baru
+                    const formattedValue = this.value;
+                    const dotCount = formattedValue.split('.').length - 1;
+                    const newCursorPos = start + numericText.length + dotCount;
+
+                    this.setSelectionRange(newCursorPos, newCursorPos);
+                }
+            });
+        }
+    }
+
+    // Setup semua input saat DOM siap
+    document.addEventListener('DOMContentLoaded', function() {
+        // Field yang hanya menerima angka (tanpa titik)
+        const strictNumericFields = [
+            { id: 'nik', maxLength: 16 },
+            { id: 'rt', maxLength: 3 },
+            { id: 'rw', maxLength: 3 },
+            { id: 'kode_pos', maxLength: 5 },
+            { id: 'nomor_telpon_orang_tua', maxLength: 15 },
+            { id: 'nis_nisn_nsp' },
+            { id: 'nomor_telpon_wali', maxLength: 15 },
+            { id: 'rt_wali', maxLength: 3 },
+            { id: 'rw_wali', maxLength: 3 },
+            { id: 'kode_pos_wali', maxLength: 5 }
+        ];
+
+        // Setup field numeric ketat
+        strictNumericFields.forEach(field => {
+            setupNumericInput(field.id, field.maxLength, false);
+        });
+
+        // Setup field penghasilan (boleh pakai titik)
+        setupPenghasilanInput('penghasilan_ayah');
+        setupPenghasilanInput('penghasilan_ibu');
+
+        // Validasi form submission
+        document.getElementById('biodataForm')?.addEventListener('submit', function(e) {
+            let isValid = true;
+            const errorMessages = [];
+            const errorFields = [];
+
+            // Validasi NIK (16 digit)
+            const nik = document.getElementById('nik');
+            if (nik && nik.value.length !== 16 && nik.value.length > 0) {
+                isValid = false;
+                nik.classList.add('border-red-500');
+                errorMessages.push('NIK harus 16 digit angka');
+                errorFields.push(nik);
+            }
+
+            // Validasi Kode Pos (5 digit)
+            const kodePos = document.getElementById('kode_pos');
+            if (kodePos && kodePos.value.length !== 5 && kodePos.value.length > 0) {
+                isValid = false;
+                kodePos.classList.add('border-red-500');
+                errorMessages.push('Kode Pos harus 5 digit angka');
+                errorFields.push(kodePos);
+            }
+
+            // Validasi Kode Pos Wali (5 digit)
+            const kodePosWali = document.getElementById('kode_pos_wali');
+            if (kodePosWali && kodePosWali.value.length !== 5 && kodePosWali.value.length > 0) {
+                isValid = false;
+                kodePosWali.classList.add('border-red-500');
+                errorMessages.push('Kode Pos Wali harus 5 digit angka');
+                errorFields.push(kodePosWali);
+            }
+
+            // Validasi Nomor Telepon (minimal 10 digit)
+            const teleponFields = [
+                { id: 'nomor_telpon_orang_tua', name: 'Nomor Telepon Orang Tua' },
+                { id: 'nomor_telpon_wali', name: 'Nomor Telepon Wali' }
+            ];
+
+            teleponFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (input && input.value && input.value.length < 10) {
+                    isValid = false;
+                    input.classList.add('border-red-500');
+                    errorMessages.push(`${field.name} minimal 10 digit`);
+                    errorFields.push(input);
+                }
+            });
+
+            // Validasi RT/RW (jika diisi, harus angka dan maksimal 3 digit)
+            const rtRwFields = [
+                { id: 'rt', name: 'RT' },
+                { id: 'rw', name: 'RW' },
+                { id: 'rt_wali', name: 'RT Wali' },
+                { id: 'rw_wali', name: 'RW Wali' }
+            ];
+
+            rtRwFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (input && input.value) {
+                    const numericValue = input.value.replace(/\D/g, '');
+                    if (numericValue !== input.value || numericValue.length > 3) {
+                        isValid = false;
+                        input.classList.add('border-red-500');
+                        errorMessages.push(`${field.name} maksimal 3 digit angka`);
+                        errorFields.push(input);
+                    }
+                }
+            });
+
+            // Validasi Penghasilan (jika diisi, harus angka)
+            const penghasilanFields = [
+                { id: 'penghasilan_ayah', name: 'Penghasilan Ayah' },
+                { id: 'penghasilan_ibu', name: 'Penghasilan Ibu' }
+            ];
+
+            penghasilanFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (input && input.value) {
+                    const numericValue = input.value.replace(/\./g, '');
+                    if (isNaN(numericValue) || numericValue === '') {
+                        isValid = false;
+                        input.classList.add('border-red-500');
+                        errorMessages.push(`${field.name} harus berupa angka`);
+                        errorFields.push(input);
+                    }
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                let errorMessage = 'Terdapat kesalahan dalam pengisian form:<br><br>';
+                errorMessages.forEach((msg, index) => {
+                    errorMessage += `${index + 1}. ${msg}<br>`;
+                });
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal',
+                    html: errorMessage,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Perbaiki'
+                }).then(() => {
+                    // Fokus ke field pertama yang error
+                    if (errorFields.length > 0) {
+                        errorFields[0].focus();
+                    }
+                });
+            } else {
+                // Sebelum submit, format ulang penghasilan tanpa titik untuk backend
+                penghasilanFields.forEach(field => {
+                    const input = document.getElementById(field.id);
+                    if (input && input.value) {
+                        input.value = input.value.replace(/\./g, '');
+                    }
+                });
+            }
+        });
+
+        // Hapus error styling saat user mulai mengetik
+        document.querySelectorAll('.numeric-input, .penghasilan-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('border-red-500');
+            });
+        });
+
+        // Format nilai penghasilan yang sudah ada saat load
+        document.querySelectorAll('.penghasilan-input').forEach(input => {
+            if (input.value) {
+                const value = input.value.replace(/[^\d]/g, '');
+                if (value.length > 0 && !isNaN(value)) {
+                    input.value = parseInt(value).toLocaleString('id-ID');
+                }
+            }
+        });
     });
 
     // Initialize package details if already selected
@@ -915,7 +1244,63 @@
     }
 
     .border-red-500 {
-        border-color: #ef4444;
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 1px #ef4444;
+    }
+
+    .numeric-input:invalid {
+        border-color: #f87171;
+    }
+
+    .numeric-input:valid {
+        border-color: #34d399;
+    }
+
+    /* Style khusus untuk input angka */
+    .numeric-input {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+
+    .penghasilan-input {
+        text-align: right;
+        font-weight: 600;
+        color: #059669;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .penghasilan-input::placeholder {
+        color: #9ca3af;
+        font-weight: normal;
+        font-style: italic;
+    }
+
+    /* Animasi untuk error */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    .border-red-500 {
+        animation: shake 0.5s ease-in-out;
+    }
+
+    /* Tooltip untuk error messages */
+    .numeric-input:invalid:focus,
+    .penghasilan-input:invalid:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    }
+
+    /* Style khusus untuk input penghasilan */
+    .penghasilan-input {
+        background-color: #f0fdf4;
+        border-color: #86efac;
+    }
+
+    .penghasilan-input:focus {
+        background-color: #dcfce7;
+        border-color: #4ade80;
     }
 </style>
 @endsection

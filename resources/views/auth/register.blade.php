@@ -11,16 +11,6 @@
         </div>
         <h1 class="text-lg md:text-2xl font-bold mt-1 md:mt-2">Daftar PPDB</h1>
         <p class="text-white-90 text-xs md:text-sm mt-1">Pondok Pesantren Bani Syahid</p>
-
-        <!-- Info Socialite -->
-        {{-- @if(session('socialite_data'))
-            <div class="mt-2 md:mt-3 p-2 md:p-3 bg-blue-500/20 rounded-lg border border-blue-300/30">
-                <p class="text-xs md:text-sm text-white">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    {{ session('info', 'Silakan lengkapi pendaftaran dengan Google.') }}
-                </p>
-            </div>
-        @endif --}}
     </div>
 
     <!-- Form Register -->
@@ -31,6 +21,7 @@
                 @csrf
                 <input type="hidden" name="provider" value="{{ session('socialite_data.provider') }}">
                 <input type="hidden" name="provider_id" value="{{ session('socialite_data.provider_id') }}">
+                <input type="hidden" name="recaptcha_enabled" value="{{ $recaptcha_enabled ? 'true' : 'false' }}">
 
                 <!-- Name Field -->
                 <div>
@@ -45,6 +36,9 @@
                         required
                         autofocus
                     >
+                    @error('name')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Email Field -->
@@ -60,6 +54,9 @@
                         required
                         readonly
                     >
+                    @error('email')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Phone Number Field -->
@@ -78,7 +75,20 @@
                     >
                     <p class="text-xs text-white-90 mt-1">Hanya angka, maksimal 15 digit</p>
                     <div id="phone_error" class="text-xs text-red-400 mt-1 hidden"></div>
+                    @error('phone_number')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
+
+                <!-- reCAPTCHA Error -->
+                @error('recaptcha')
+                    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <p class="text-xs text-red-400">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    </div>
+                @enderror
 
                 <!-- Register Button -->
                 <button
@@ -94,6 +104,7 @@
             <!-- Form untuk Manual Registration -->
             <form action="{{ route('register.post') }}" method="POST" class="space-y-3 md:space-y-4" id="manualRegisterForm">
                 @csrf
+                <input type="hidden" name="recaptcha_enabled" value="{{ $recaptcha_enabled ? 'true' : 'false' }}">
 
                 <!-- Name Field -->
                 <div>
@@ -108,6 +119,9 @@
                         required
                         autofocus
                     >
+                    @error('name')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Email Field -->
@@ -122,6 +136,9 @@
                         placeholder="Masukkan email Anda"
                         required
                     >
+                    @error('email')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Phone Number Field -->
@@ -140,6 +157,9 @@
                     >
                     <p class="text-xs text-white-90 mt-1">Hanya angka, maksimal 15 digit</p>
                     <div id="phone_error" class="text-xs text-red-400 mt-1 hidden"></div>
+                    @error('phone_number')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Password Field -->
@@ -158,6 +178,9 @@
                             <i class="fas fa-eye text-xs md:text-sm"></i>
                         </button>
                     </div>
+                    @error('password')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Password Confirmation Field -->
@@ -177,6 +200,16 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- reCAPTCHA Error -->
+                @error('recaptcha')
+                    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <p class="text-xs text-red-400">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    </div>
+                @enderror
 
                 <!-- Register Button -->
                 <button
@@ -287,6 +320,75 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Password toggle functionality
+    const passwordToggles = document.querySelectorAll('.password-toggle-btn');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            const input = document.getElementById(target);
+            const icon = this.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
 });
 </script>
+@endsection
+
+@section('scripts')
+@if($recaptcha_enabled)
+<script src="https://www.google.com/recaptcha/api.js?render={{ $recaptcha_site_key }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manual Register Form
+    const manualForm = document.getElementById('manualRegisterForm');
+    if (manualForm) {
+        manualForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ $recaptcha_site_key }}', {action: 'register'}).then(function(token) {
+                    const recaptchaInput = document.createElement('input');
+                    recaptchaInput.type = 'hidden';
+                    recaptchaInput.name = 'g-recaptcha-response';
+                    recaptchaInput.value = token;
+                    manualForm.appendChild(recaptchaInput);
+
+                    manualForm.submit();
+                });
+            });
+        });
+    }
+
+    // Socialite Register Form
+    const socialiteForm = document.getElementById('socialiteRegisterForm');
+    if (socialiteForm) {
+        socialiteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ $recaptcha_site_key }}', {action: 'register'}).then(function(token) {
+                    const recaptchaInput = document.createElement('input');
+                    recaptchaInput.type = 'hidden';
+                    recaptchaInput.name = 'g-recaptcha-response';
+                    recaptchaInput.value = token;
+                    socialiteForm.appendChild(recaptchaInput);
+
+                    socialiteForm.submit();
+                });
+            });
+        });
+    }
+});
+</script>
+@endif
 @endsection

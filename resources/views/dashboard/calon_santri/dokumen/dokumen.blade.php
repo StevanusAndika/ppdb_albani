@@ -388,74 +388,8 @@
         const saved = localStorage.getItem('uploadedDocuments');
         if (saved) {
             const parsed = JSON.parse(saved);
-            // Merge with server state (server state takes priority)
             uploadedDocuments = { ...parsed, ...uploadedDocuments };
         }
-    }
-
-    // Sync with server state
-    async function syncWithServer() {
-        try {
-            const response = await fetch('/santri/documents/progress', {
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    // Update progress
-                    updateProgressFromServer(data.progress);
-
-                    // Cek jika semua dokumen sudah lengkap
-                    if (data.progress.all_complete) {
-                        showCompleteNotification();
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Failed to sync with server:', error);
-        }
-    }
-
-    // Update progress dari server
-    function updateProgressFromServer(progress) {
-        const progressText = document.getElementById('progressText');
-        const progressBar = document.getElementById('overallProgressBar');
-        const statusMessage = document.getElementById('statusMessage');
-
-        if (progressText) {
-            progressText.textContent = `${progress.uploaded_count}/4 Dokumen`;
-        }
-
-        if (progressBar) {
-            progressBar.style.width = `${progress.percentage}%`;
-        }
-
-        if (statusMessage) {
-            if (progress.all_complete) {
-                statusMessage.innerHTML = `
-                    <div class="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-full">
-                        <i class="fas fa-check-circle text-xl"></i>
-                        <span class="font-semibold">Semua dokumen telah lengkap! Anda bisa menyelesaikan pendaftaran.</span>
-                    </div>
-                `;
-            } else {
-                const remaining = 4 - progress.uploaded_count;
-                statusMessage.innerHTML = `
-                    <div class="inline-flex items-center space-x-2 bg-orange-100 text-orange-800 px-6 py-3 rounded-full">
-                        <i class="fas fa-info-circle text-xl"></i>
-                        <span class="font-semibold">Lengkapi ${remaining} dokumen lagi untuk menyelesaikan pendaftaran.</span>
-                    </div>
-                `;
-            }
-        }
-
-        // Update action buttons
-        updateActionButtons(progress.uploaded_count);
-        updateHeaderButton(progress.uploaded_count);
     }
 
     // Initialize when DOM is loaded
@@ -469,9 +403,6 @@
         updateActionButtons();
         updateHeaderButton();
         checkQuotaForDeleteAll();
-
-        // Sync with server on load
-        syncWithServer();
     });
 
     // Fungsi untuk memeriksa kuota dan menampilkan tombol hapus semua
@@ -573,7 +504,7 @@
                 });
                 saveDocumentState();
 
-                // Update UI untuk semua dokumen - HAPUS TOMBOL LIHAT, DOWNLOAD, HAPUS
+                // Update UI untuk semua dokumen
                 updateAllDocumentUIAfterDeleteAll();
                 updateProgress();
                 updateActionButtons(0);
@@ -609,7 +540,7 @@
         }
     }
 
-    // Update UI khusus setelah hapus semua - HAPUS TOMBOL LIHAT, DOWNLOAD, HAPUS
+    // Update UI khusus setelah hapus semua
     function updateAllDocumentUIAfterDeleteAll() {
         documentTypes.forEach(type => {
             const statusElement = document.getElementById(`${type}Status`);
@@ -623,8 +554,6 @@
 
             if (fileInfo) {
                 fileInfo.classList.add('hidden');
-
-                // Hapus semua tombol action jika ada
                 const existingActions = fileInfo.querySelector('.file-actions');
                 if (existingActions) {
                     existingActions.remove();
@@ -769,6 +698,7 @@
         return true;
     }
 
+    // FUNGSI UPLOAD YANG DIPERBAIKI - TIDAK ADA REFRESH OTOMATIS
     function uploadFile(file, documentType) {
         if (uploadInProgress) {
             Swal.fire({
@@ -845,19 +775,22 @@
                     // Update state and UI
                     uploadedDocuments[documentType] = true;
                     saveDocumentState();
-                    updateDocumentUI(documentType, true, data.file_name, data.file_path);
 
-                    // Update progress dari response
+                    // Update UI dengan data dari server
+                    updateDocumentUIFromServer(documentType, data);
+
+                    // Update progress
                     updateProgressFromUpload(data);
 
-                    checkQuotaForDeleteAll(); // Cek ulang kuota setelah upload
+                    // Cek kuota untuk tombol hapus semua
+                    checkQuotaForDeleteAll();
 
-                    // Show success notification
+                    // Tampilkan notifikasi sukses
                     showSuccessNotification('Dokumen berhasil diunggah!');
 
-                    // Tampilkan notifikasi lengkap hanya jika SEMUA dokumen sudah lengkap
+                    // Tampilkan notifikasi khusus jika semua dokumen lengkap
                     if (data.all_documents_complete) {
-                        showCompleteNotification();
+                        showAllCompleteNotification();
                     }
 
                 } else {
@@ -889,7 +822,55 @@
         });
     }
 
-    // Update progress dari response upload
+    // Update UI dengan data dari server
+    function updateDocumentUIFromServer(documentType, data) {
+        const statusElement = document.getElementById(`${documentType}Status`);
+        const fileInfo = document.getElementById(`${documentType}FileInfo`);
+        const fileNameElement = document.getElementById(`${documentType}FileName`);
+
+        if (statusElement) {
+            statusElement.className = 'status-badge bg-green-100 text-green-800';
+            statusElement.innerHTML = '<i class="fas fa-check mr-1"></i><span class="status-text">Telah Diunggah</span>';
+        }
+
+        if (fileInfo) {
+            if (fileNameElement) {
+                const displayName = data.file_name.length > 30
+                    ? data.file_name.substring(0, 27) + '...'
+                    : data.file_name;
+                fileNameElement.textContent = displayName;
+            }
+
+            // Update action buttons
+            const actionsHtml = `
+                <div class="file-actions flex gap-2">
+                    <a href="/santri/documents/file/${documentType}" target="_blank" class="btn-view bg-primary text-white px-3 py-2 rounded-lg hover:bg-secondary transition duration-300 text-sm">
+                        <i class="fas fa-eye mr-1"></i> Lihat
+                    </a>
+                    <button onclick="downloadDocument('${documentType}')" class="btn-download bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition duration-300 text-sm">
+                        <i class="fas fa-download mr-1"></i> Download
+                    </button>
+                    <button onclick="deleteDocument('${documentType}')" class="btn-delete bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-300 text-sm">
+                        <i class="fas fa-trash mr-1"></i> Hapus
+                    </button>
+                </div>
+            `;
+
+            const existingActions = fileInfo.querySelector('.file-actions');
+            if (existingActions) {
+                existingActions.remove();
+            }
+
+            const container = fileInfo.querySelector('.flex.items-center.justify-between');
+            if (container) {
+                container.insertAdjacentHTML('beforeend', actionsHtml);
+            }
+
+            fileInfo.classList.remove('hidden');
+        }
+    }
+
+    // Update progress dari response upload (TANPA REFRESH)
     function updateProgressFromUpload(data) {
         const progressText = document.getElementById('progressText');
         const progressBar = document.getElementById('overallProgressBar');
@@ -987,8 +968,6 @@
                 fileInfo.classList.remove('hidden');
             } else {
                 fileInfo.classList.add('hidden');
-
-                // Hapus tombol action jika ada
                 const existingActions = fileInfo.querySelector('.file-actions');
                 if (existingActions) {
                     existingActions.remove();
@@ -1105,32 +1084,31 @@
         }
     }
 
-    // Fungsi untuk menampilkan notifikasi lengkap
-    function showCompleteNotification() {
+    // Fungsi untuk menampilkan notifikasi ketika semua dokumen lengkap (TANPA REFRESH)
+    function showAllCompleteNotification() {
+        // Hanya tampilkan sweet alert tanpa refresh
+        Swal.fire({
+            icon: 'success',
+            title: 'Semua Dokumen Lengkap!',
+            html: `
+                <div class="text-left">
+                    <p class="mb-3">Selamat! Anda telah berhasil mengunggah semua dokumen yang diperlukan.</p>
+                    <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+                        <p class="text-sm text-green-700">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Klik tombol <strong>"Selesaikan Pendaftaran"</strong> untuk melanjutkan proses verifikasi.
+                        </p>
+                    </div>
+                </div>
+            `,
+            confirmButtonText: 'Mengerti',
+            confirmButtonColor: '#10b981'
+        });
+
+        // Sembunyikan auto refresh notice jika ada
         const notice = document.getElementById('autoRefreshNotice');
-        const countdownElement = document.getElementById('countdown');
-
-        if (notice && countdownElement) {
-            notice.classList.remove('hidden');
-            notice.classList.add('auto-refresh-notice');
-
-            let countdown = 3;
-            countdownElement.textContent = countdown;
-
-            // Hentikan timer sebelumnya jika ada
-            if (autoRefreshTimer) {
-                clearInterval(autoRefreshTimer);
-            }
-
-            autoRefreshTimer = setInterval(() => {
-                countdown--;
-                countdownElement.textContent = countdown;
-
-                if (countdown <= 0) {
-                    clearInterval(autoRefreshTimer);
-                    window.location.reload();
-                }
-            }, 1000);
+        if (notice) {
+            notice.classList.add('hidden');
         }
     }
 
@@ -1145,7 +1123,7 @@
                         <li>Semua dokumen telah diupload dengan benar</li>
                         <li>Data biodata sudah sesuai dan lengkap</li>
                         <li>File yang diupload jelas dan terbaca</li>
-                        <li>Anda tidak dapat mengubah data setelah ini</li>
+                        <li>Anda Masih Bisa Mengubah Data Selama Status Data Belum Diterima</li>
                     </ul>
                 </div>
             `,
@@ -1282,7 +1260,7 @@
                         // Update progress dari response
                         updateProgressFromUpload(data);
 
-                        checkQuotaForDeleteAll(); // Cek ulang kuota setelah delete
+                        checkQuotaForDeleteAll();
 
                         Swal.fire({
                             icon: 'success',
@@ -1395,12 +1373,5 @@
             });
         });
     };
-
-    // Clean up timer when leaving page
-    window.addEventListener('beforeunload', function() {
-        if (autoRefreshTimer) {
-            clearInterval(autoRefreshTimer);
-        }
-    });
 </script>
 @endsection

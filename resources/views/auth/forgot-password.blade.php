@@ -19,6 +19,7 @@
             <!-- Form Input Email -->
             <form action="{{ route('password.email') }}" method="POST" class="space-y-3 md:space-y-4" id="forgotPasswordForm">
                 @csrf
+                <input type="hidden" name="recaptcha_enabled" value="{{ $recaptcha_enabled ? 'true' : 'false' }}">
 
                 <div class="text-center mb-2 md:mb-3">
                     <p class="text-white-90 text-xs md:text-sm">
@@ -39,12 +40,26 @@
                         required
                         autofocus
                     >
+                    @error('email')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
+
+                <!-- reCAPTCHA Error -->
+                @error('recaptcha')
+                    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <p class="text-xs text-red-400">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
+                    </div>
+                @enderror
 
                 <!-- Submit Button -->
                 <button
                     type="submit"
                     class="btn-primary w-full py-2 md:py-3 rounded-lg font-medium transition duration-200 shadow-md text-xs md:text-sm"
+                    id="forgotPasswordBtn"
                 >
                     <i class="fas fa-key mr-1 md:mr-2 text-xs md:text-sm"></i>
                     Kirim OTP via WhatsApp
@@ -74,7 +89,7 @@
                     </p>
                     <p class="text-blue-100 text-xs mt-1">
                         <i class="fas fa-clock mr-1"></i>
-                        Berlaku 10 menit
+                        Berlaku 5 menit <!-- DIUBAH: dari 10 menit menjadi 5 menit -->
                     </p>
                 </div>
 
@@ -99,12 +114,16 @@
                             <span id="countdown" class="hidden"></span>
                         </button>
                     </div>
+                    @error('otp')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Submit Button -->
                 <button
                     type="submit"
                     class="btn-primary w-full py-2 md:py-3 rounded-lg font-medium transition duration-200 shadow-md text-xs md:text-sm"
+                    id="verifyOtpBtn"
                 >
                     <i class="fas fa-check mr-1 md:mr-2 text-xs md:text-sm"></i>
                     Verifikasi OTP
@@ -127,7 +146,7 @@
             <form action="{{ route('password.update') }}" method="POST" class="space-y-3 md:space-y-4" id="resetPasswordForm">
                 @csrf
                 <input type="hidden" name="email" value="{{ session('user_email') }}">
-                <input type="hidden" name="otp" value="{{ old('otp') }}">
+                <input type="hidden" name="otp" value="{{ session('otp_code') }}"> <!-- DIUBAH: dari old('otp') ke session('otp_code') -->
 
                 <div class="text-center mb-2 md:mb-3">
                     <div class="w-10 h-10 md:w-12 md:h-12 mx-auto mb-1 md:mb-2 bg-green-500/20 rounded-full flex items-center justify-center">
@@ -157,11 +176,14 @@
                             <i class="fas fa-eye text-xs"></i>
                         </button>
                     </div>
+                    @error('new_password')
+                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    @enderror
                     <!-- Password Strength Indicator -->
                     <div class="password-strength mt-2 md:mt-3">
                         <div class="strength-bars flex gap-1 mb-2">
                             <div class="strength-bar flex-1 h-2 bg-gray-300 rounded transition-all" data-strength="weak"></div>
-                            <div class="strength-bar flex-1 h-2 bg-gray-300 rounded transition-all" data-target="new_password"></div>
+                            <div class="strength-bar flex-1 h-2 bg-gray-300 rounded transition-all" data-strength="medium"></div>
                             <div class="strength-bar flex-1 h-2 bg-gray-300 rounded transition-all" data-strength="strong"></div>
                             <div class="strength-bar flex-1 h-2 bg-gray-300 rounded transition-all" data-strength="very-strong"></div>
                         </div>
@@ -233,440 +255,67 @@
                     Reset Password
                 </button>
 
-                <!-- Back to OTP Form -->
+                <!-- Back Button -->
                 <div class="text-center mt-2 md:mt-3">
                     <button
                         type="button"
-                        onclick="history.back()"
+                        onclick="window.location.href='{{ route('password.request') }}'"
                         class="text-white text-xs md:text-sm hover:underline flex items-center justify-center mx-auto"
                     >
                         <i class="fas fa-arrow-left mr-1"></i>
-                        Kembali ke Verifikasi OTP
+                        Kembali ke Lupa Password
                     </button>
                 </div>
             </form>
         @endif
+
+        <!-- Alert Messages -->
+        @if(session('success'))
+            <div class="mt-3 md:mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <p class="text-xs md:text-sm text-green-400">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    {{ session('success') }}
+                </p>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mt-3 md:mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p class="text-xs md:text-sm text-red-400">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    {{ session('error') }}
+                </p>
+            </div>
+        @endif
+
+        @if(session('info'))
+            <div class="mt-3 md:mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <p class="text-xs md:text-sm text-blue-400">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    {{ session('info') }}
+                </p>
+            </div>
+        @endif
     </div>
 </div>
 
-<style>
-.password-input-wrapper {
-    position: relative;
-}
+@include('auth.scripts.password-toggle')
+@if(session('show_otp_verification'))
+    @include('auth.scripts.otp-resend')
+@endif
 
-.password-toggle-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-}
+@if(session('show_password_reset'))
+    @include('auth.scripts.password-strength')
+@endif
+@endsection
 
-.password-toggle-btn:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.password-toggle-btn:focus {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-}
-
-/* Strength bar colors */
-.strength-bar.weak { background-color: #ef4444 !important; }
-.strength-bar.medium { background-color: #f59e0b !important; }
-.strength-bar.strong { background-color: #10b981 !important; }
-.strength-bar.very-strong { background-color: #047857 !important; }
-
-/* Requirement styles */
-.requirement.met i {
-    color: #10b981 !important;
-}
-
-.requirement.met span {
-    color: #10b981 !important;
-}
-
-.requirement.not-met i {
-    color: #ef4444 !important;
-}
-
-.requirement.not-met span {
-    color: #ef4444 !important;
-}
-
-/* Button styles */
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.input-field {
-    padding-right: 45px !important;
-}
-</style>
+@section('styles')
+@include('auth.styles.auth-styles')
+@endsection
 
 @section('scripts')
-<script>
-// Auto move to next input for OTP
-document.addEventListener('DOMContentLoaded', function() {
-    const otpInput = document.getElementById('otp');
-    if (otpInput) {
-        otpInput.addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '');
-            if (this.value.length === 6) {
-                document.getElementById('otpVerificationForm').submit();
-            }
-        });
-    }
-
-    // Resend OTP functionality
-    const resendBtn = document.getElementById('resend-otp-btn');
-    if (resendBtn) {
-        let countdown = 60;
-        const resendText = document.getElementById('resend-text');
-        const countdownEl = document.getElementById('countdown');
-
-        function startCountdown() {
-            resendBtn.disabled = true;
-            resendText.classList.add('hidden');
-            countdownEl.classList.remove('hidden');
-            countdownEl.textContent = `(${countdown}s)`;
-
-            const timer = setInterval(() => {
-                countdown--;
-                countdownEl.textContent = `(${countdown}s)`;
-
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                    resendBtn.disabled = false;
-                    resendText.classList.remove('hidden');
-                    countdownEl.classList.add('hidden');
-                    countdown = 60;
-                }
-            }, 1000);
-        }
-
-        resendBtn.addEventListener('click', function() {
-            const email = document.querySelector('input[name="email"]').value;
-
-            fetch('{{ route("password.resend.otp") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ email: email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        timer: 3000,
-                        showConfirmButton: false,
-                        background: '#f0fdf4',
-                        color: '#166534'
-                    });
-                    startCountdown();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal!',
-                        text: data.message,
-                        timer: 4000,
-                        showConfirmButton: true,
-                        background: '#fef2f2',
-                        color: '#dc2626'
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan saat mengirim ulang OTP',
-                    timer: 4000,
-                    showConfirmButton: true,
-                    background: '#fef2f2',
-                    color: '#dc2626'
-                });
-            });
-        });
-
-        // Start countdown on page load
-        startCountdown();
-    }
-
-    // Initialize password strength checker for reset password form
-    if (document.getElementById('new_password')) {
-        initPasswordStrengthChecker();
-    }
-});
-
-// Password strength checker dengan validasi sederhana
-function initPasswordStrengthChecker() {
-    const passwordInput = document.getElementById('new_password');
-    const confirmInput = document.getElementById('new_password_confirmation');
-    const resetButton = document.getElementById('reset-button');
-
-    if (!passwordInput || !confirmInput) {
-        return;
-    }
-
-    let validationTimeout;
-
-    function validateForm() {
-        const password = passwordInput.value;
-        const confirmPassword = confirmInput.value;
-
-        // Clear previous timeout
-        if (validationTimeout) {
-            clearTimeout(validationTimeout);
-        }
-
-        // Set new timeout untuk menghindari terlalu banyak validasi
-        validationTimeout = setTimeout(() => {
-            const isPasswordValid = password.length >= 8;
-            const isConfirmValid = password === confirmPassword && confirmPassword !== '';
-
-            // Enable button jika semua kondisi terpenuhi
-            if (isPasswordValid && isConfirmValid) {
-                resetButton.disabled = false;
-                resetButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-                resetButton.classList.add('bg-gradient-to-r', 'from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
-            } else {
-                resetButton.disabled = true;
-                resetButton.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-400');
-                resetButton.classList.remove('bg-gradient-to-r', 'from-green-500', 'to-green-600', 'hover:from-green-600', 'hover:to-green-700');
-            }
-        }, 100);
-    }
-
-    function checkPasswordStrength(password) {
-        const requirements = {
-            length: password.length >= 8,
-            lowercase: /[a-z]/.test(password),
-            uppercase: /[A-Z]/.test(password),
-            number: /\d/.test(password),
-            symbol: /[@$!%*?&]/.test(password)
-        };
-
-        const metRequirements = Object.values(requirements).filter(Boolean).length;
-        let strength = 'weak';
-        let strengthText = 'Lemah';
-
-        if (metRequirements === 5) {
-            strength = 'very-strong';
-            strengthText = 'Sangat Kuat';
-        } else if (metRequirements >= 4) {
-            strength = 'strong';
-            strengthText = 'Kuat';
-        } else if (metRequirements >= 3) {
-            strength = 'medium';
-            strengthText = 'Sedang';
-        } else if (password.length >= 8) {
-            strength = 'weak';
-            strengthText = 'Lemah';
-        } else {
-            strength = 'weak';
-            strengthText = 'Terlalu Pendek';
-        }
-
-        updatePasswordStrengthUI(requirements, strength, strengthText);
-        return { requirements, strength, strengthText };
-    }
-
-    function updatePasswordStrengthUI(requirements, strength, strengthText) {
-        // Update strength bars
-        const bars = document.querySelectorAll('.strength-bar');
-        bars.forEach(bar => {
-            // Reset semua classes
-            bar.classList.remove('weak', 'medium', 'strong', 'very-strong');
-
-            const barStrength = bar.getAttribute('data-strength');
-
-            // Apply color based on current strength
-            if (barStrength === 'weak') {
-                bar.classList.add(strength);
-            } else if (barStrength === 'medium') {
-                if (strength === 'medium' || strength === 'strong' || strength === 'very-strong') {
-                    bar.classList.add(strength);
-                }
-            } else if (barStrength === 'strong') {
-                if (strength === 'strong' || strength === 'very-strong') {
-                    bar.classList.add(strength);
-                }
-            } else if (barStrength === 'very-strong') {
-                if (strength === 'very-strong') {
-                    bar.classList.add(strength);
-                }
-            }
-        });
-
-        // Update strength text
-        const strengthTextElement = document.getElementById('password-strength-text');
-        if (strengthTextElement) {
-            strengthTextElement.textContent = `Kekuatan: ${strengthText}`;
-            strengthTextElement.className = `text-xs font-medium ${
-                strength === 'very-strong' ? 'text-green-400' :
-                strength === 'strong' ? 'text-green-300' :
-                strength === 'medium' ? 'text-yellow-400' : 'text-red-400'
-            }`;
-        }
-
-        // Update requirements list
-        const requirementsList = document.getElementById('password-requirements');
-        if (requirementsList) {
-            Object.keys(requirements).forEach(req => {
-                const requirementElement = document.querySelector(`[data-requirement="${req}"]`);
-                if (requirementElement) {
-                    const icon = requirementElement.querySelector('i');
-
-                    if (requirements[req]) {
-                        icon.className = 'fas fa-check text-green-400 mr-2 text-xs';
-                        requirementElement.classList.add('met');
-                        requirementElement.classList.remove('not-met');
-                    } else {
-                        icon.className = 'fas fa-times text-red-400 mr-2 text-xs';
-                        requirementElement.classList.add('not-met');
-                        requirementElement.classList.remove('met');
-                    }
-                }
-            });
-        }
-    }
-
-    function checkPasswordMatch() {
-        const password = document.getElementById('new_password').value;
-        const confirmPassword = document.getElementById('new_password_confirmation').value;
-        const matchText = document.getElementById('password-match-text');
-        const mismatchText = document.getElementById('password-mismatch-text');
-
-        if (confirmPassword.length === 0) {
-            if (matchText) matchText.classList.add('hidden');
-            if (mismatchText) mismatchText.classList.add('hidden');
-            return;
-        }
-
-        if (password === confirmPassword) {
-            if (matchText) {
-                matchText.classList.remove('hidden');
-                matchText.classList.add('flex');
-            }
-            if (mismatchText) mismatchText.classList.add('hidden');
-        } else {
-            if (matchText) matchText.classList.add('hidden');
-            if (mismatchText) {
-                mismatchText.classList.remove('hidden');
-                mismatchText.classList.add('flex');
-            }
-        }
-    }
-
-    // Event listeners
-    passwordInput.addEventListener('input', function() {
-        checkPasswordStrength(this.value);
-        validateForm();
-        checkPasswordMatch();
-    });
-
-    confirmInput.addEventListener('input', function() {
-        checkPasswordMatch();
-        validateForm();
-    });
-
-    // Initial validation
-    validateForm();
-    checkPasswordMatch();
-    if (passwordInput.value) {
-        checkPasswordStrength(passwordInput.value);
-    }
-}
-
-// Di bagian scripts, tambahkan fungsi untuk cek cooldown
-function checkCooldown() {
-    const email = document.querySelector('input[name="email"]').value;
-
-    if (!email) return;
-
-    fetch('{{ route("password.check.cooldown") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ email: email })
-    })
-    .then(response => response.json())
-    .then(data => {
-        const submitBtn = document.querySelector('#forgotPasswordForm button[type="submit"]');
-
-        if (!data.success) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fas fa-clock mr-2"></i>${data.message}`;
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            // Update countdown display
-            startCooldownTimer(data.remaining_time);
-        } else {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fas fa-key mr-2"></i>Kirim OTP via WhatsApp`;
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-    });
-}
-
-function startCooldownTimer(remainingTime) {
-    const submitBtn = document.querySelector('#forgotPasswordForm button[type="submit"]');
-    let timeLeft = remainingTime;
-
-    const timer = setInterval(() => {
-        timeLeft--;
-
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fas fa-key mr-2"></i>Kirim OTP via WhatsApp`;
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            return;
-        }
-
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        submitBtn.innerHTML = `<i class="fas fa-clock mr-2"></i>Tunggu ${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }, 1000);
-}
-
-// Event listener untuk input email
-document.addEventListener('DOMContentLoaded', function() {
-    const emailInput = document.querySelector('input[name="email"]');
-    if (emailInput) {
-        emailInput.addEventListener('blur', checkCooldown);
-        emailInput.addEventListener('input', function() {
-            const submitBtn = document.querySelector('#forgotPasswordForm button[type="submit"]');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fas fa-key mr-2"></i>Kirim OTP via WhatsApp`;
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        });
-    }
-});
-</script>
+@if($recaptcha_enabled)
+<script src="https://www.google.com/recaptcha/api.js?render={{ $recaptcha_site_key }}"></script>
+@include('auth.scripts.recaptcha')
+@endif
 @endsection
