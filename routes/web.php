@@ -22,9 +22,14 @@ use App\Http\Controllers\usersetting\SettingController as UserSettingController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\Quota\QuotaController;
 use App\Http\Controllers\Announcement\SeleksiAnnoucementController; // TAMBAHKAN INI
+use App\Http\Controllers\CameraTestController;
+use App\Http\Controllers\Admin\QRcodeScannerController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+
+Route::get('/camera-test', [CameraTestController::class, 'index'])->name('camera-test.index');
+Route::post('/camera-test', [CameraTestController::class, 'store'])->name('camera-test.store');
 
 // QR Code Routes
 Route::prefix('barcode')->name('barcode.')->group(function () {
@@ -66,6 +71,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
+    
+    // camera untuk scan barcode qrcode-scanner
+    Route::get('/qrcode-scanner', [QRcodeScannerController::class, 'index'])->name('qrcode-scanner.index');
+    Route::post('/qrcode-scanner', [QRcodeScannerController::class, 'store'])->name('qrcode-scanner.store');
 
     // Announcement Routes (Pengumuman Kelulusan)
     Route::prefix('announcements')->name('announcements.')->group(function () {

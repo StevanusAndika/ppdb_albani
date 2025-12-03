@@ -1,0 +1,56 @@
+sequenceDiagram
+    actor Calon as Calon Santri
+    participant Browser as Browser
+    participant App as PPDB Albani (Laravel)
+    participant Reg as RegisterController
+    participant DB as Database
+
+    %% 1. Buka halaman register
+    Calon ->> Browser: Akses URL /register
+    activate Browser
+    Browser ->> App: GET /register
+    activate App
+    App -->> Browser: View form register (form pendaftaran)
+    deactivate App
+    Browser -->> Calon: Tampilkan form register
+    deactivate Browser
+
+    %% 2. Submit form register
+    Calon ->> Browser: Isi & submit form (nama, email, NISN, dll)
+    activate Browser
+    Browser ->> App: POST /register (data form)
+    activate App
+
+    %% 3. App teruskan ke controller
+    App ->> Reg: store(request)
+    activate Reg
+
+    %% 4. Validasi & cek duplikasi
+    Reg ->> Reg: Validasi data (required, format, unik)
+    Reg ->> DB: Cek email/NISN sudah terdaftar?
+    activate DB
+    DB -->> Reg: hasil cek (ada / tidak)
+    deactivate DB
+
+    %% 5. Kondisi: data tidak valid / duplikat
+    alt Data tidak valid / email/NISN sudah terdaftar
+        Reg -->> App: throw ValidationException / return error
+        App -->> Browser: redirect back + error message
+        Browser -->> Calon: Tampilkan pesan error di form
+
+    %% 6. Kondisi: data valid dan unik
+    else Data valid & unik
+        Reg ->> DB: Insert user (role: calon santri) & data pendaftaran
+        activate DB
+        DB -->> Reg: Sukses simpan
+        deactivate DB
+
+        Reg -->> App: return success (user created)
+        App ->> App: Auth::login(user) (opsional, jika auto login)
+        App -->> Browser: Redirect ke dashboard calon santri / halaman sukses
+        Browser -->> Calon: Tampilkan "Registrasi berhasil"
+    end
+
+    deactivate Reg
+    deactivate App
+    deactivate Browser
