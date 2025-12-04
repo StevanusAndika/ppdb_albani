@@ -73,16 +73,14 @@
                                 <a href="{{ route('admin.billing.packages.prices.index', $package) }}" class="text-blue-600 hover:text-blue-900 inline-flex items-center">
                                     <i class="fas fa-money-bill-wave mr-1"></i> Biaya
                                 </a>
-                                <a href="{{ route('admin.billing.packages.edit', $package) }}" class="text-yellow-600 hover:text-yellow-900 inline-flex items-center">
+                                <a href="{{ route('admin.billing.packages.edit', $package) }}" class="text-yellow-600 hover:text-yellow-900 inline-flex items-center edit-package-btn">
                                     <i class="fas fa-edit mr-1"></i> Edit
                                 </a>
-                                <form action="{{ route('admin.billing.packages.destroy', $package) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus paket ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900 inline-flex items-center">
-                                        <i class="fas fa-trash mr-1"></i> Hapus
-                                    </button>
-                                </form>
+                                <button type="button" data-package-id="{{ $package->id }}"
+                                        data-package-name="{{ $package->name }}"
+                                        class="text-red-600 hover:text-red-900 inline-flex items-center delete-package-btn">
+                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                </button>
                             </td>
                         </tr>
                         @empty
@@ -103,7 +101,6 @@
             </div>
         </div>
     </main>
-   
  @include('layouts.components.admin.footer')
 
 </div>
@@ -217,6 +214,92 @@
                         background: '#fef2f2',
                         color: '#dc2626'
                     });
+                });
+            });
+        });
+
+        // SweetAlert untuk konfirmasi hapus paket
+        document.querySelectorAll('.delete-package-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const packageId = this.getAttribute('data-package-id');
+                const packageName = this.getAttribute('data-package-name');
+
+                Swal.fire({
+                    title: 'Hapus Paket?',
+                    html: `Apakah Anda yakin ingin menghapus paket <strong>"${packageName}"</strong>?<br><br>
+                           <span class="text-sm text-red-600">
+                           <i class="fas fa-exclamation-triangle mr-1"></i>
+                           Tindakan ini akan menghapus semua biaya yang terkait dengan paket ini dan tidak dapat dikembalikan!
+                           </span>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    reverseButtons: true,
+                    showLoaderOnConfirm: true,
+                    preConfirm: () => {
+                        return fetch(`/admin/billing/packages/${packageId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(response.statusText);
+                            }
+                            return response.json();
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(
+                                `Request failed: ${error}`
+                            );
+                        });
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Terhapus!',
+                            text: 'Paket berhasil dihapus.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Reload halaman setelah 2 detik
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        });
+                    }
+                });
+            });
+        });
+
+        // SweetAlert untuk konfirmasi edit (tampilkan informasi sebelum pindah)
+        document.querySelectorAll('.edit-package-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const editUrl = this.getAttribute('href');
+
+                Swal.fire({
+                    title: 'Edit Paket?',
+                    text: 'Anda akan diarahkan ke halaman edit paket.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Edit',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#10B981',
+                    cancelButtonColor: '#6b7280',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = editUrl;
+                    }
                 });
             });
         });

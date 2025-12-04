@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ $payment->payment_code }}</title>
+    <title>Invoice #{{ $payment->payment_code }} - ADMIN COPY</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -18,80 +18,118 @@
             line-height: 1.6;
             color: #333;
             background: #fff;
+            font-size: 12px;
+            position: relative;
         }
 
         .invoice-container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 30px;
+            padding: 20px;
+        }
+
+        /* Watermark untuk admin */
+        .admin-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            font-weight: bold;
+            color: rgba(5, 117, 114, 0.1);
+            z-index: -1;
+            pointer-events: none;
+            white-space: nowrap;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 2px solid #057572;
         }
 
         .pesantren-info h1 {
             color: #057572;
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 700;
             margin-bottom: 5px;
         }
 
         .pesantren-info .tagline {
             color: #666;
-            font-size: 14px;
+            font-size: 10px;
             font-weight: 400;
+        }
+
+        .pesantren-info p {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
         }
 
         .invoice-title {
             text-align: right;
+            position: relative;
         }
 
         .invoice-title h2 {
             color: #057572;
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
             margin-bottom: 5px;
         }
 
         .invoice-title .number {
             color: #666;
-            font-size: 14px;
+            font-size: 10px;
             font-weight: 500;
+        }
+
+        /* Admin Stamp */
+        .admin-stamp {
+            position: absolute;
+            top: -20px;
+            right: 0;
+            padding: 8px 12px;
+            background: #057572;
+            color: white;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            transform: rotate(15deg);
         }
 
         .info-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
         .info-box {
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #057572;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #057572;
         }
 
         .info-box h3 {
             color: #057572;
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
             border-bottom: 1px solid #e9ecef;
+            font-size: 10px;
         }
 
         .info-row:last-child {
@@ -103,35 +141,32 @@
         .info-label {
             color: #666;
             font-weight: 500;
-            font-size: 14px;
         }
 
         .info-value {
             color: #333;
             font-weight: 600;
-            font-size: 14px;
             text-align: right;
         }
 
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            font-size: 10px;
         }
 
         .items-table th {
             background: #057572;
             color: white;
-            padding: 12px 15px;
+            padding: 8px 10px;
             text-align: left;
             font-weight: 600;
-            font-size: 14px;
         }
 
         .items-table td {
-            padding: 12px 15px;
+            padding: 8px 10px;
             border-bottom: 1px solid #e9ecef;
-            font-size: 14px;
         }
 
         .items-table tr:last-child td {
@@ -141,76 +176,77 @@
         .total-section {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .total-box {
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            width: 300px;
+            padding: 15px;
+            border-radius: 6px;
+            width: 250px;
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 16px;
+            margin-bottom: 8px;
+            font-size: 12px;
         }
 
         .total-row.grand-total {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 700;
             color: #057572;
             border-top: 2px solid #e9ecef;
-            padding-top: 10px;
-            margin-top: 10px;
+            padding-top: 8px;
+            margin-top: 8px;
         }
 
         .payment-info {
             background: #e8f5e8;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #28a745;
-            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+            margin-bottom: 20px;
         }
 
         .payment-info h3 {
             color: #28a745;
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .payment-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 10px;
+            font-size: 10px;
         }
 
         .notes {
             background: #fff3cd;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #ffc107;
-            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #ffc107;
+            margin-bottom: 20px;
         }
 
         .notes h3 {
             color: #856404;
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .notes ul {
             list-style: none;
             padding-left: 0;
+            font-size: 10px;
         }
 
         .notes li {
-            margin-bottom: 5px;
-            font-size: 14px;
+            margin-bottom: 4px;
             color: #856404;
         }
 
@@ -225,9 +261,9 @@
 
         .status-badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 9px;
             font-weight: 600;
             text-transform: uppercase;
         }
@@ -237,71 +273,63 @@
             color: #155724;
         }
 
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .qr-code {
+        /* Footer khusus admin */
+        .admin-footer {
+            background: #f0f8ff;
+            padding: 15px;
+            border-top: 2px dashed #057572;
             text-align: center;
-            margin: 20px 0;
+            margin-top: 30px;
         }
 
-        .qr-code img {
-            max-width: 150px;
-            height: auto;
-        }
-
-        /* Footer Styles */
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
+        .admin-footer p {
+            font-size: 9px;
             color: #666;
-            font-size: 12px;
+            margin-bottom: 5px;
         }
 
+        .admin-footer .print-info {
+            font-size: 8px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        /* Print styles */
         @media print {
             body {
-                background: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
             .invoice-container {
                 padding: 0;
-                max-width: 100%;
             }
 
             .no-print {
                 display: none !important;
             }
-
-            .info-section {
-                page-break-inside: avoid;
-            }
-
-            .items-table {
-                page-break-inside: avoid;
-            }
         }
     </style>
 </head>
 <body>
+    <div class="admin-watermark">SALINAN ADMIN</div>
+
     <div class="invoice-container">
         <!-- Header -->
         <div class="header">
             <div class="pesantren-info">
-                <h1>Pondok Pesantren Al-Qur'an Bani Syahid</h1>
-                <p class="tagline">Lembaga Pendidikan Islam Berbasis Al-Qur'an dan Sunnah</p>
-                <p style="margin-top: 10px; font-size: 14px; color: #666;">
-                   Jl. Kp. Tipar Tengah, RT.5/RW.10, Mekarsari, Kec. Cimanggis, Kota Depok, Jawa Barat 16452<br>
+                <h1>Pondok Pesantren Al-Quran Bani Syahid</h1>
+                <p class="tagline">Lembaga Pendidikan Islam Berbasis Al-Quran dan Sunnah</p>
+                <p>
+                    Jl. Kp. Tipar Tengah, RT.5/RW.10, Mekarsari, Kec. Cimanggis, Kota Depok, Jawa Barat 16452<br>
                     Telp: (021) 1234-5678 | Email: admin@banisyahid.sch.id
                 </p>
             </div>
             <div class="invoice-title">
+                <div class="admin-stamp">SALINAN ADMIN</div>
                 <h2>INVOICE</h2>
                 <p class="number">#{{ $payment->payment_code }}</p>
-                <p style="margin-top: 10px; font-size: 14px; color: #666;">
+                <p style="margin-top: 5px; font-size: 10px; color: #666;">
                     Tanggal: {{ $payment->created_at->translatedFormat('d F Y') }}<br>
                     Status: <span class="status-badge status-success">LUNAS</span>
                 </p>
@@ -318,7 +346,7 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">ID Pendaftaran:</span>
-                    <span class="info-value">{{ $payment->registration->id_pendaftaran }}</span>
+                    <span class="info-value">{{ $payment->registration->id_pendaftaran ?? '-' }}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Email:</span>
@@ -338,7 +366,7 @@
                         @if($payment->payment_method === 'cash')
                         <strong>Cash</strong>
                         @else
-                        <strong>Online (Xendit)</strong>
+                        <strong>Online</strong>
                         @endif
                     </span>
                 </div>
@@ -352,10 +380,19 @@
                         @endif
                     </span>
                 </div>
-
                 <div class="info-row">
                     <span class="info-label">Paket:</span>
                     <span class="info-value">{{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status Pendaftaran:</span>
+                    <span class="info-value">
+                        @if($payment->registration->status_pendaftaran === 'diterima')
+                        <strong style="color: #28a745;">Diterima</strong>
+                        @else
+                        {{ $payment->registration->status_pendaftaran ?? '-' }}
+                        @endif
+                    </span>
                 </div>
             </div>
         </div>
@@ -365,22 +402,22 @@
             <thead>
                 <tr>
                     <th>Deskripsi</th>
-                    <th style="width: 100px; text-align: center;">Qty</th>
-                    <th style="width: 150px; text-align: right;">Harga Satuan</th>
-                    <th style="width: 150px; text-align: right;">Subtotal</th>
+                    <th style="width: 60px; text-align: center;">Qty</th>
+                    <th style="width: 100px; text-align: right;">Harga Satuan</th>
+                    <th style="width: 100px; text-align: right;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>
                         <strong>Biaya Pendaftaran Santri</strong><br>
-                        <small>Paket: {{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</small><br>
-                        
+                        <small>Paket: {{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</small>
                     </td>
                     <td style="text-align: center;">1</td>
-                    <td style="text-align: right;">{{ $payment->formatted_amount }}</td>
-                    <td style="text-align: right;">{{ $payment->formatted_amount }}</td>
+                    <td style="text-align: right;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
+                    <td style="text-align: right;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
                 </tr>
+
                 <!-- Jika ada rincian harga dari package -->
                 @if(isset($packagePrices) && $packagePrices->count() > 0)
                     @foreach($packagePrices as $price)
@@ -397,6 +434,12 @@
                     </tr>
                     @endforeach
                 @endif
+
+                <!-- Row untuk total -->
+                <tr style="background: #f8f9fa;">
+                    <td colspan="3" style="text-align: right; font-weight: bold;">Total:</td>
+                    <td style="text-align: right; font-weight: bold;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
+                </tr>
             </tbody>
         </table>
 
@@ -405,7 +448,7 @@
             <div class="total-box">
                 <div class="total-row">
                     <span>Subtotal:</span>
-                    <span>{{ $payment->formatted_amount }}</span>
+                    <span>Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
                 </div>
                 <div class="total-row">
                     <span>Diskon:</span>
@@ -413,7 +456,7 @@
                 </div>
                 <div class="total-row grand-total">
                     <span>TOTAL:</span>
-                    <span>{{ $payment->formatted_amount }}</span>
+                    <span>Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
                 </div>
             </div>
         </div>
@@ -445,50 +488,24 @@
             </div>
         </div>
 
-
         <!-- Catatan -->
         <div class="notes">
             <h3>Catatan Penting</h3>
             <ul>
-                <li>Invoice ini merupakan bukti pembayaran yang sah</li>
-                <li>Simpan invoice ini untuk keperluan administrasi</li>
-                <li>Untuk pertanyaan terkait pembayaran, hubungi admin pesantren</li>
+                <li>Invoice ini merupakan salinan untuk administrasi pesantren</li>
+                <li>Simpan invoice ini untuk keperluan audit dan laporan</li>
+                <li>Data santri telah diverifikasi dan diterima</li>
                 <li>Pembayaran sudah termasuk biaya administrasi pendaftaran</li>
             </ul>
         </div>
 
-        <!-- Footer dari Komponen -->
-        @include('layouts.components.invoice.footer')
-
-        <!-- Print Button (Hanya tampil di browser) -->
-        <div class="no-print" style="text-align: center; margin-top: 30px;">
-            <button onclick="window.print()" style="
-                background: #057572;
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 6px;
-                font-size: 16px;
-                font-weight: 600;
-                cursor: pointer;
-                margin-right: 10px;
-            ">
-                <i class="fas fa-print"></i> Print Invoice
-            </button>
-
+        <!-- Footer Admin -->
+        <div class="admin-footer">
+            <p>INVOICE ADMIN - Pondok Pesantren Al-Quran Bani Syahid</p>
+            <p>Dicetak oleh: {{ auth()->user()->name }} | ID Admin: {{ auth()->id() }}</p>
+            <p>Tanggal Cetak: {{ now()->translatedFormat('d F Y H:i:s') }}</p>
+            <p class="print-info">Dokumen ini dicetak secara otomatis oleh sistem pesantren</p>
         </div>
     </div>
-
-    <script>
-        function downloadPDF() {
-            // Redirect ke route download PDF
-            window.location.href = "{{ route('santri.payments.download-invoice-pdf', $payment->payment_code) }}";
-        }
-
-        // Optional: Auto print ketika halaman dimuat
-        // window.onload = function() {
-        //     window.print();
-        // }
-    </script>
 </body>
 </html>

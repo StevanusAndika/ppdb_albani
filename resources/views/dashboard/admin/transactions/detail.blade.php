@@ -5,7 +5,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
-     @include('layouts.components.admin.navbar')
+    @include('layouts.components.admin.navbar')
 
     <!-- Header -->
     <header class="py-8 px-4">
@@ -15,11 +15,15 @@
                     <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Detail Transaksi</h1>
                     <p class="text-secondary">Kode: {{ $payment->payment_code }}</p>
                 </div>
-                <a href="{{ route('admin.transactions.index') }}"
-                   class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-300 flex items-center gap-2">
-                    <i class="fas fa-arrow-left"></i>
-                    Kembali
-                </a>
+                <div class="flex gap-2">
+                    <a href="{{ route('admin.transactions.index') }}"
+                       class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i>
+                        Kembali
+                    </a>
+
+                   
+                </div>
             </div>
         </div>
     </header>
@@ -49,7 +53,7 @@
                                 @if($payment->payment_method === 'cash')
                                 <i class="fas fa-money-bill-wave text-green-500 mr-2"></i>Cash
                                 @else
-                                <i class="fas fa-credit-card text-blue-500 mr-2"></i>Online
+                                <i class="fas fa-credit-card text-blue-500 mr-2"></i>Online (Xendit)
                                 @endif
                             </p>
                         </div>
@@ -88,7 +92,7 @@
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-500">ID Pendaftaran</label>
-                            <p class="font-mono text-gray-800">{{ $payment->registration->id_pendaftaran }}</p>
+                            <p class="font-mono text-gray-800">{{ $payment->registration->id_pendaftaran ?? '-' }}</p>
                         </div>
                     </div>
                 </div>
@@ -99,15 +103,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="text-sm font-medium text-gray-500">Nama Paket</label>
-                            <p class="font-semibold text-gray-800">{{ $payment->registration->package->name }}</p>
+                            <p class="font-semibold text-gray-800">{{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</p>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-500">Tipe Paket</label>
-                            <p class="text-gray-800">{{ $payment->registration->package->type_label }}</p>
+                            <p class="text-gray-800">{{ $payment->registration->package->type_label ?? '-' }}</p>
                         </div>
                         <div class="md:col-span-2">
                             <label class="text-sm font-medium text-gray-500">Deskripsi</label>
-                            <p class="text-gray-800">{{ $payment->registration->package->description }}</p>
+                            <p class="text-gray-800">{{ $payment->registration->package->description ?? '-' }}</p>
                         </div>
                     </div>
                 </div>
@@ -119,19 +123,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="text-sm font-medium text-gray-500">Xendit ID</label>
-                            <p class="font-mono text-sm text-gray-800">{{ $payment->xendit_id }}</p>
+                            <p class="font-mono text-sm text-gray-800 break-all">{{ $payment->xendit_id }}</p>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-500">External ID</label>
-                            <p class="font-mono text-sm text-gray-800">{{ $payment->xendit_external_id }}</p>
+                            <p class="font-mono text-sm text-gray-800 break-all">{{ $payment->xendit_external_id }}</p>
                         </div>
                         @if($payment->xendit_response['invoice_url'] ?? false)
                         <div class="md:col-span-2">
                             <label class="text-sm font-medium text-gray-500">Invoice URL</label>
                             <a href="{{ $payment->xendit_response['invoice_url'] }}"
                                target="_blank"
-                               class="text-blue-600 hover:text-blue-800 break-all">
-                                {{ $payment->xendit_response['invoice_url'] }}
+                               class="text-blue-600 hover:text-blue-800 break-all block mt-1">
+                                <i class="fas fa-external-link-alt mr-1"></i> {{ $payment->xendit_response['invoice_url'] }}
                             </a>
                         </div>
                         @endif
@@ -147,6 +151,7 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Aksi</h2>
 
                     @if($payment->payment_method === 'cash' && $payment->isPending())
+                    <!-- Update Status Form -->
                     <form action="{{ route('admin.transactions.update-status', $payment) }}" method="POST" class="space-y-3">
                         @csrf
                         @method('PUT')
@@ -171,7 +176,34 @@
                         </button>
                     </form>
                     @else
-                    <p class="text-gray-500 text-sm">Tidak ada aksi yang tersedia untuk transaksi ini.</p>
+                    <p class="text-gray-500 text-sm mb-4">Download PDF Untuk Melihat Data Transaksi Calon Santri.</p>
+                    @endif
+
+                    <!-- Invoice Buttons -->
+                    @if($payment->isPaid())
+                    <div class="pt-4 border-t">
+
+                        <div class="flex gap-2">
+                            <a href="{{ route('admin.transactions.invoice.pdf', ['paymentCode' => $payment->payment_code]) }}"
+                               class="flex-1 bg-green-100 text-green-700 hover:bg-green-200 text-center py-2 rounded-lg transition duration-300 font-medium">
+                                <i class="fas fa-download mr-2"></i>PDF
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Manual Sync Button untuk Xendit -->
+                    @if($payment->payment_method === 'xendit' && $payment->xendit_id && !$payment->isPaid())
+                    <div class="pt-4 border-t">
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Sinkronisasi Xendit</h3>
+                        <form action="{{ route('admin.transactions.manual-sync', ['paymentCode' => $payment->payment_code]) }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full bg-yellow-100 text-yellow-700 hover:bg-yellow-200 py-2 rounded-lg transition duration-300 font-medium">
+                                <i class="fas fa-sync-alt mr-2"></i>Cek Status Xendit
+                            </button>
+                        </form>
+                    </div>
                     @endif
                 </div>
 
@@ -179,7 +211,7 @@
                 @if($payment->admin_notes)
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Catatan Admin</h2>
-                    <p class="text-gray-700">{{ $payment->admin_notes }}</p>
+                    <p class="text-gray-700 whitespace-pre-wrap">{{ $payment->admin_notes }}</p>
                 </div>
                 @endif
 
@@ -207,8 +239,38 @@
                 </div>
             </div>
         </div>
-
     </main>
-     @include('layouts.components.admin.footer')
+
+    @include('layouts.components.admin.footer')
 </div>
+
+<!-- Success/Error Messages -->
+@if(session('success'))
+<div id="successMessage" class="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-lg z-50">
+    <div class="flex items-center">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span>{{ session('success') }}</span>
+    </div>
+</div>
+@endif
+
+@if(session('error'))
+<div id="errorMessage" class="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg z-50">
+    <div class="flex items-center">
+        <i class="fas fa-exclamation-circle mr-2"></i>
+        <span>{{ session('error') }}</span>
+    </div>
+</div>
+@endif
+
+<script>
+// Auto hide messages
+setTimeout(function() {
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+
+    if (successMessage) successMessage.style.display = 'none';
+    if (errorMessage) errorMessage.style.display = 'none';
+}, 5000);
+</script>
 @endsection

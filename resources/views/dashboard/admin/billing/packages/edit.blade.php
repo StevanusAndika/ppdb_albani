@@ -5,7 +5,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
-       @include('layouts.components.admin.navbar')
+    @include('layouts.components.admin.navbar')
 
     <!-- Header -->
     <header class="py-6 px-4">
@@ -14,8 +14,31 @@
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold text-primary">Edit Paket Billing</h1>
                     <p class="text-secondary mt-2">Edit paket pembayaran: {{ $package->name }}</p>
+                    <div class="mt-3 flex items-center space-x-4">
+                        <div class="bg-white px-3 py-1 rounded-full border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">
+                                <i class="fas fa-tag mr-1"></i> Tipe:
+                                <span class="{{ $package->type === 'takhossus' ? 'text-blue-600' : 'text-green-600' }}">
+                                    {{ $package->type_label }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="bg-white px-3 py-1 rounded-full border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">
+                                <i class="fas fa-money-bill-wave mr-1"></i> Total Harga:
+                                <span class="text-primary font-bold">{{ $package->formatted_total_amount }}</span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-
+                <div class="flex space-x-3">
+                    <a href="{{ route('admin.billing.packages.prices.index', $package) }}" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-full transition duration-300 flex items-center">
+                        <i class="fas fa-money-bill-wave mr-2"></i> Kelola Biaya
+                    </a>
+                    <a href="{{ route('admin.billing.packages.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full transition duration-300 flex items-center">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                    </a>
+                </div>
             </div>
         </div>
     </header>
@@ -28,75 +51,107 @@
                 @method('PUT')
 
                 <div class="space-y-6">
-                    <!-- Nama Paket -->
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nama Paket *</label>
-                        <input type="text" name="name" id="name" value="{{ old('name', $package->name) }}"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
-                            placeholder="Masukkan nama paket" required>
-                        @error('name')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <!-- Tipe Paket -->
                     <div>
                         <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Paket *</label>
-                        <select name="type" id="type"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300" required>
+                        <select name="type" id="type" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
+                            onchange="updatePackageName()">
                             <option value="">Pilih Tipe Paket</option>
                             <option value="takhossus" {{ old('type', $package->type) == 'takhossus' ? 'selected' : '' }}>Takhossus Pesantren</option>
                             <option value="plus_sekolah" {{ old('type', $package->type) == 'plus_sekolah' ? 'selected' : '' }}>Plus Sekolah</option>
                         </select>
+                        <p class="text-sm text-gray-500 mt-1">Pilih tipe paket untuk menentukan nama paket</p>
                         @error('type')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Nama Paket -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nama Paket *</label>
+                        <div class="relative">
+                            <input type="text" name="name" id="name" value="{{ old('name', $package->name) }}"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
+                                placeholder="Masukkan nama paket" required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <button type="button" onclick="suggestPackageName()" class="text-sm text-primary hover:text-secondary">
+                                    <i class="fas fa-magic mr-1"></i> Saran Nama
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">
+                            <i class="fas fa-lightbulb mr-1"></i> Klik "Saran Nama" untuk menghasilkan nama berdasarkan tipe paket
+                        </p>
+                        @error('name')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Deskripsi -->
                     <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Paket</label>
                         <textarea name="description" id="description" rows="4"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
                             placeholder="Masukkan deskripsi paket (opsional)">{{ old('description', $package->description) }}</textarea>
+                        <p class="text-sm text-gray-500 mt-1">Deskripsi akan ditampilkan di halaman detail paket</p>
                         @error('description')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Info Status -->
+                    <!-- Informasi Status -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div class="flex items-start">
                             <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
-                            <div>
-                                <p class="text-sm text-blue-800 font-medium">Status Paket:
-                                    <span class="font-semibold {{ $package->is_active ? 'text-green-600' : 'text-red-600' }}">
+                            <div class="w-full">
+                                <div class="flex justify-between items-center mb-2">
+                                    <p class="text-sm text-blue-800 font-medium">Status Paket:</p>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                        {{ $package->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        <i class="fas {{ $package->is_active ? 'fa-check-circle' : 'fa-times-circle' }} mr-1"></i>
                                         {{ $package->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
-                                </p>
-                                <p class="text-xs text-blue-600 mt-1">Status dapat diubah di halaman daftar paket menggunakan toggle switch</p>
+                                </div>
+                                <ul class="text-xs text-blue-600 mt-1 list-disc pl-5 space-y-1">
+                                    <li>Status dapat diubah di halaman daftar paket menggunakan toggle switch</li>
+                                    <li>Paket nonaktif tidak akan muncul untuk dipilih oleh calon santri</li>
+                                    <li>Total harga saat ini: <strong>{{ $package->formatted_total_amount }}</strong> (dari {{ $package->activePrices->count() }} biaya aktif)</li>
+                                    <li><a href="{{ route('admin.billing.packages.prices.index', $package) }}" class="text-primary hover:underline font-medium">Kelola biaya paket →</a></li>
+                                </ul>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Total Harga -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Total Harga Paket</p>
+                                <p class="text-2xl font-bold text-primary mt-1">{{ $package->formatted_total_amount }}</p>
+                                <p class="text-xs text-gray-500 mt-1">Jumlah dari {{ $package->activePrices->count() }} biaya aktif</p>
+                            </div>
+                            <a href="{{ route('admin.billing.packages.prices.index', $package) }}" class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-full transition duration-300 flex items-center">
+                                <i class="fas fa-eye mr-2"></i> Lihat Detail Biaya
+                            </a>
                         </div>
                     </div>
 
                     <!-- Submit Button -->
                     <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                        <button type="button" onclick="window.history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full transition duration-300 flex items-center">
+                            <i class="fas fa-times mr-2"></i> Batal
+                        </button>
                         <button type="submit" class="bg-primary hover:bg-secondary text-white px-8 py-3 rounded-full transition duration-300 flex items-center">
                             <i class="fas fa-save mr-2"></i> Update Paket
                         </button>
                     </div>
                 </div>
             </form>
-
-            <!-- Tombol Kembali di bawah form -->
-            <div class="mt-6 flex justify-start">
-                <a href="{{ route('admin.billing.packages.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full transition duration-300 flex items-center">
-                    <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar Paket
-                </a>
-            </div>
         </div>
     </main>
-        @include('layouts.components.admin.footer')
+
+    @include('layouts.components.admin.footer')
 </div>
 
 <script>
@@ -105,5 +160,137 @@
         const mobileMenu = document.getElementById('mobile-menu');
         if (mobileMenu) mobileMenu.classList.toggle('hidden');
     });
+
+    // Function to suggest package name based on type
+    function suggestPackageName() {
+        const typeSelect = document.getElementById('type');
+        const nameInput = document.getElementById('name');
+        const selectedType = typeSelect.value;
+
+        if (selectedType) {
+            const packageNames = {
+                'takhossus': 'Paket Takhossus Pesantren',
+                'plus_sekolah': 'Paket Plus Sekolah'
+            };
+
+            const suggestedName = packageNames[selectedType] || '';
+
+            Swal.fire({
+                title: 'Gunakan nama saran?',
+                text: suggestedName,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Gunakan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#10B981',
+                cancelButtonColor: '#6B7280'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    nameInput.value = suggestedName;
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Nama paket telah diisi otomatis.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Silakan pilih tipe paket terlebih dahulu.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444'
+            });
+            typeSelect.focus();
+        }
+    }
+
+    // Function to update package name based on type (for onchange event)
+    function updatePackageName() {
+        const typeSelect = document.getElementById('type');
+        const nameInput = document.getElementById('name');
+        const selectedType = typeSelect.value;
+
+        // Only update if name is empty
+        if (selectedType && (!nameInput.value || nameInput.value.trim() === '')) {
+            const packageNames = {
+                'takhossus': 'Paket Takhossus Pesantren',
+                'plus_sekolah': 'Paket Plus Sekolah'
+            };
+
+            nameInput.value = packageNames[selectedType] || '';
+        }
+    }
+
+    // Form validation
+    document.getElementById('packageForm').addEventListener('submit', function(e) {
+        const typeSelect = document.getElementById('type');
+        const nameInput = document.getElementById('name');
+
+        if (!typeSelect.value) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Silakan pilih tipe paket terlebih dahulu.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444'
+            });
+            typeSelect.focus();
+            return false;
+        }
+
+        if (!nameInput.value.trim()) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Nama paket tidak boleh kosong.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444'
+            });
+            nameInput.focus();
+            return false;
+        }
+
+        // Confirm before updating
+        e.preventDefault();
+        Swal.fire({
+            title: 'Update Paket?',
+            text: 'Apakah Anda yakin ingin memperbarui paket ini?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Update',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#10B981',
+            cancelButtonColor: '#6B7280',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit the form
+                document.getElementById('packageForm').submit();
+            }
+        });
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-focus on name field if it's empty
+        const nameInput = document.getElementById('name');
+        if (!nameInput.value.trim()) {
+            nameInput.focus();
+        }
+    });
 </script>
+
+<style>
+    #name:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+</style>
 @endsection

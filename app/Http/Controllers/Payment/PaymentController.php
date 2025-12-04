@@ -336,19 +336,19 @@ class PaymentController extends Controller
         return view('dashboard.calon_santri.payments.failed');
     }
 
-    /**
-     * Download invoice as PDF
-     */
-    public function downloadInvoicePdf($paymentCode)
+        /**
+         * Download invoice as PDF
+         */
+            public function downloadInvoicePdf($paymentCode)
     {
         $payment = Payment::where('payment_code', $paymentCode)
-                         ->with([
-                             'user',
-                             'registration',
-                             'registration.package',
-                             'registration.programUnggulan'
-                         ])
-                         ->firstOrFail();
+                        ->with([
+                            'user',
+                            'registration',
+                            'registration.package',
+                            'registration.programUnggulan'
+                        ])
+                        ->firstOrFail();
 
         // Validasi ownership untuk santri
         if (auth()->user()->isCalonSantri() && $payment->user_id !== auth()->id()) {
@@ -361,16 +361,22 @@ class PaymentController extends Controller
 
         // Load package prices for detailed breakdown
         $packagePrices = Price::where('package_id', $payment->registration->package_id)
-                             ->active()
-                             ->ordered()
-                             ->get();
+                            ->active()
+                            ->ordered()
+                            ->get();
 
         $data = [
             'payment' => $payment,
             'packagePrices' => $packagePrices,
         ];
 
+        // Konfigurasi PDF tanpa font custom
         $pdf = \PDF::loadView('dashboard.calon_santri.payments.invoice-pdf', $data);
+
+        // Set options untuk menghindari error font
+        $pdf->setOption('defaultFont', 'dejavu sans');
+        $pdf->setOption('isFontSubsettingEnabled', true);
+        $pdf->setOption('isHtml5ParserEnabled', true);
 
         $filename = "Invoice-{$payment->payment_code}.pdf";
 
@@ -406,7 +412,7 @@ class PaymentController extends Controller
                              ->ordered()
                              ->get();
 
-        return view('dashboard.calon_santri.payments.invoice', compact('payment', 'packagePrices'));
+        return view('dashboard.calon_santri.payments.invoice-pdf', compact('payment', 'packagePrices'));
     }
 
     /**

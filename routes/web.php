@@ -21,7 +21,7 @@ use App\Http\Controllers\Announcement\AnnouncementController;
 use App\Http\Controllers\usersetting\SettingController as UserSettingController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\Quota\QuotaController;
-use App\Http\Controllers\Announcement\SeleksiAnnoucementController; // TAMBAHKAN INI
+use App\Http\Controllers\Announcement\SeleksiAnnoucementController;
 use App\Http\Controllers\CameraTestController;
 use App\Http\Controllers\Admin\QRcodeScannerController;
 
@@ -71,7 +71,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
-    
+
     // camera untuk scan barcode qrcode-scanner
     Route::get('/qrcode-scanner', [QRcodeScannerController::class, 'index'])->name('qrcode-scanner.index');
     Route::post('/qrcode-scanner', [QRcodeScannerController::class, 'store'])->name('qrcode-scanner.store');
@@ -81,11 +81,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [AnnouncementController::class, 'index'])->name('index');
         Route::post('/send-individual/{registrationId}', [AnnouncementController::class, 'sendIndividualMessage'])->name('send-individual');
         Route::post('/send-bulk', [AnnouncementController::class, 'sendBulkMessage'])->name('send-bulk');
-        // Tambahkan route baru untuk update status seleksi
-    Route::post('/update-status-seleksi/{registrationId}', [AnnouncementController::class, 'updateStatusSeleksi'])->name('update-status-seleksi');
+        Route::post('/update-status-seleksi/{registrationId}', [AnnouncementController::class, 'updateStatusSeleksi'])->name('update-status-seleksi');
     });
 
-    // Seleksi Announcement Routes (Undangan Tes Seleksi) - TAMBAHKAN INI
+    // Seleksi Announcement Routes (Undangan Tes Seleksi)
     Route::prefix('seleksi-announcements')->name('seleksi-announcements.')->group(function () {
         Route::get('/', [SeleksiAnnoucementController::class, 'index'])->name('index');
         Route::post('/send-individual/{registrationId}', [SeleksiAnnoucementController::class, 'sendIndividualSeleksi'])->name('send-individual');
@@ -186,7 +185,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{registration}/debug-documents', [RegistrationController::class, 'debugDocumentPaths'])->name('debug-documents');
     });
 
-    // Transaction Management
+    // Transaction Management - UPDATE DENGAN ROUTES INVOICE
     Route::prefix('transactions')->name('transactions.')->group(function () {
         Route::get('/', [AdminPaymentController::class, 'index'])->name('index');
         Route::get('/search', [AdminPaymentController::class, 'search'])->name('search');
@@ -194,7 +193,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{payment}/status', [AdminPaymentController::class, 'updateStatus'])->name('update-status');
         Route::post('/bulk-update', [AdminPaymentController::class, 'bulkUpdate'])->name('bulk-update');
         Route::get('/export', [AdminPaymentController::class, 'export'])->name('export');
-        Route::post('/{payment}/manual-sync', [PaymentController::class, 'manualSync'])->name('manual-sync');
+
+        // Manual sync routes untuk admin
+        Route::get('/{paymentCode}/manual-sync', [AdminPaymentController::class, 'manualSync'])
+             ->name('manual-sync.ajax');
+        Route::post('/{paymentCode}/manual-sync', [AdminPaymentController::class, 'manualSyncPost'])
+             ->name('manual-sync');
+
+        // Invoice routes untuk admin (Cash dan Xendit)
+        Route::get('/invoice/{paymentCode}/pdf', [AdminPaymentController::class, 'downloadInvoicePdf'])
+             ->name('invoice.pdf');
+        Route::get('/invoice/{paymentCode}', [AdminPaymentController::class, 'downloadInvoice'])
+             ->name('invoice');
     });
 });
 
@@ -240,21 +250,35 @@ Route::middleware(['auth', 'santri'])->prefix('santri')->name('santri.')->group(
         Route::get('/check-complete', [DocumentController::class, 'checkAllDocumentsCompleteApi'])->name('check-complete');
     });
 
-    // Payment Routes
-    Route::prefix('payments')->name('payments.')->group(function () {
-        Route::get('/', [PaymentController::class, 'index'])->name('index');
-        Route::get('/create', [PaymentController::class, 'create'])->name('create');
-        Route::post('/', [PaymentController::class, 'store'])->name('store');
-        Route::get('/success', [PaymentController::class, 'success'])->name('success');
-        Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
-        Route::get('/invoice/{paymentCode}', [PaymentController::class, 'downloadInvoice'])->name('download-invoice');
-        Route::get('/invoice/{paymentCode}/pdf', [PaymentController::class, 'downloadInvoicePdf'])->name('download-invoice-pdf');
-        Route::get('/{id}/detail', [PaymentController::class, 'detail'])->name('detail');
-        Route::get('/check-status/{paymentCode}', [PaymentController::class, 'checkStatus'])->name('check-status');
-        Route::get('/retry/{paymentCode}', [PaymentController::class, 'retryPayment'])->name('retry');
-        Route::post('/manual-sync/{paymentCode}', [PaymentController::class, 'manualSync'])->name('manual-sync');
-        Route::get('/check-quota', [PaymentController::class, 'checkQuota'])->name('check-quota');
-    });
+    // Payment Routes untuk Santri
+   // routes/web.php - Update bagian santri payments routes:
+
+Route::prefix('payments')->name('payments.')->group(function () {
+    Route::get('/', [PaymentController::class, 'index'])->name('index');
+    Route::get('/create', [PaymentController::class, 'create'])->name('create');
+    Route::post('/', [PaymentController::class, 'store'])->name('store');
+    Route::get('/success', [PaymentController::class, 'success'])->name('success');
+    Route::get('/failed', [PaymentController::class, 'failed'])->name('failed');
+
+    // Route untuk invoice HTML
+    Route::get('/invoice/{paymentCode}', [PaymentController::class, 'downloadInvoice'])->name('download-invoice');
+
+    // Route untuk invoice PDF
+    Route::get('/invoice/{paymentCode}/pdf', [PaymentController::class, 'downloadInvoicePdf'])->name('download-invoice-pdf');
+
+    Route::get('/{id}/detail', [PaymentController::class, 'detail'])->name('detail');
+    Route::get('/check-status/{paymentCode}', [PaymentController::class, 'checkStatus'])->name('check-status');
+    Route::get('/retry/{paymentCode}', [PaymentController::class, 'retryPayment'])->name('retry');
+
+    // Manual sync dengan dua metode (GET untuk AJAX, POST untuk form)
+    Route::get('/manual-sync/{paymentCode}', [PaymentController::class, 'manualSync'])
+         ->name('manual-sync.ajax');
+
+    Route::post('/manual-sync/{paymentCode}', [PaymentController::class, 'manualSyncPost'])
+         ->name('manual-sync');
+
+    Route::get('/check-quota', [PaymentController::class, 'checkQuota'])->name('check-quota');
+});
 
     // Settings Routes untuk Calon Santri
     Route::prefix('settings')->name('settings.')->group(function () {
@@ -269,7 +293,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-// Xendit Webhook Route
+// Xendit Webhook Route (TANPA MIDDLEWARE CSRF)
 Route::post('/webhook/xendit', [PaymentController::class, 'webhook'])
     ->name('webhook.xendit')
     ->withoutMiddleware(['web']);
+
+// ==================== ROUTES FALLBACK ====================
+Route::fallback(function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('welcome');
+});

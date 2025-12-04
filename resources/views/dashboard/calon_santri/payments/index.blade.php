@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
-     @include('layouts.components.calon_santri.navbar')
+    @include('layouts.components.calon_santri.navbar')
 
     <main class="max-w-6xl mx-auto py-8 px-4">
         <!-- Kuota Information Card -->
@@ -127,7 +127,6 @@
                         <tr class="bg-gray-50 border-b">
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Kode Pembayaran</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Paket</th>
-                            <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Program Unggulan</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Jumlah</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Metode</th>
                             <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">Status</th>
@@ -137,11 +136,10 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @foreach($payments as $payment)
-                        <tr class="hover:bg-gray-50"
-                            @if($payment->isPending())
-                            data-payment-pending="true"
+                        <tr class="hover:bg-gray-50 payment-row"
                             data-payment-code="{{ $payment->payment_code }}"
-                            @endif>
+                            data-payment-status="{{ $payment->status }}"
+                            data-payment-method="{{ $payment->payment_method }}">
                             <td class="py-4 px-4">
                                 <div class="font-medium text-gray-900">{{ $payment->payment_code }}</div>
                                 <div class="text-sm text-gray-500">{{ $payment->registration->id_pendaftaran }}</div>
@@ -149,15 +147,7 @@
                             <td class="py-4 px-4">
                                 <span class="text-sm text-gray-700">{{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</span>
                             </td>
-                            <td class="py-4 px-4">
-                                <span class="text-sm text-gray-700">
-                                    @if($payment->registration->programUnggulan && $payment->registration->programUnggulan->judul)
-                                        {{ $payment->registration->programUnggulan->judul }}
-                                    @else
-                                        Tidak ada program unggulan
-                                    @endif
-                                </span>
-                            </td>
+                            
                             <td class="py-4 px-4">
                                 <div class="font-semibold text-primary">{{ $payment->formatted_amount }}</div>
                             </td>
@@ -173,7 +163,7 @@
                                 @endif
                             </td>
                             <td class="py-4 px-4">
-                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ $payment->status_color }}">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ $payment->status_color }}" id="status-{{ $payment->payment_code }}">
                                     <i class="fas {{ $payment->status_icon }} mr-1"></i>
                                     {{ $payment->status_label }}
                                 </span>
@@ -184,10 +174,10 @@
                                 @endif
 
                                 <!-- Auto Sync Indicator -->
-                                @if($payment->isPending())
+                                @if($payment->isPending() && $payment->payment_method === 'xendit')
                                 <div class="text-xs text-blue-600 mt-1 flex items-center">
                                     <i class="fas fa-sync-alt fa-spin mr-1"></i>
-                                    Auto sync aktif
+                                    <span id="sync-indicator-{{ $payment->payment_code }}">Auto sync aktif</span>
                                 </div>
                                 @endif
                             </td>
@@ -211,25 +201,25 @@
                                     </a>
                                     @endif
 
-                                    @if($payment->isPaid())
-                                    <a href="{{ route('santri.payments.download-invoice', $payment->payment_code) }}"
+                                    {{-- @if($payment->isPaid())
+                                    <!-- Tombol Download Invoice PDF -->
+                                    <a href="{{ route('santri.payments.download-invoice-pdf', $payment->payment_code) }}"
                                        target="_blank"
-                                       class="text-green-600 hover:text-green-900 transition duration-200 p-2 rounded-full hover:bg-green-50"
-                                       title="Download Invoice PDF">
+                                       class="text-green-600 hover:text-green-900 transition duration-200 p-2 rounded-full hover:bg-green-50 download-invoice-btn"
+                                       title="Download Invoice PDF"
+                                       data-payment-code="{{ $payment->payment_code }}">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
-                                    @endif
+                                    @endif --}}
 
                                     <!-- Manual Sync Button -->
                                     @if($payment->payment_method === 'xendit' && $payment->isPending())
-                                    <form action="{{ route('santri.payments.manual-sync', $payment->payment_code) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit"
-                                                class="text-orange-600 hover:text-orange-900 transition duration-200 p-2 rounded-full hover:bg-orange-50"
-                                                title="Sinkronisasi Status Sekarang">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="text-orange-600 hover:text-orange-900 transition duration-200 p-2 rounded-full hover:bg-orange-50 sync-btn"
+                                            title="Sinkronisasi Status Sekarang"
+                                            data-payment-code="{{ $payment->payment_code }}">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
                                     @endif
 
                                     <!-- Retry Button untuk payment expired -->
@@ -341,7 +331,7 @@
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-map-marker-alt text-red-500 mr-3"></i>
-                        <span>Alamat: Pondok Pesantren Al-Qur'an Bani Syahid</span>
+                        <span>Alamat: Pondok Pesantren Al-Quran Bani Syahid</span>
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-clock text-orange-500 mr-3"></i>
@@ -356,121 +346,432 @@
     @include('layouts.components.calon_santri.footer')
 </div>
 
+<!-- Modal untuk Loading -->
+<div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 text-center max-w-sm">
+        <i class="fas fa-spinner fa-spin text-3xl text-primary mb-4"></i>
+        <h3 class="text-lg font-bold text-gray-800 mb-2" id="loadingTitle">Memproses...</h3>
+        <p class="text-gray-600" id="loadingMessage">Harap tunggu sebentar</p>
+    </div>
+</div>
+
+<!-- Modal untuk Konfirmasi -->
+<div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 max-w-sm">
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Konfirmasi</h3>
+        <p class="text-gray-600 mb-4" id="confirmationMessage"></p>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="hideConfirmation()" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                Batal
+            </button>
+            <button type="button" onclick="confirmAction()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary font-medium">
+                Ya, Lanjutkan
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+// Global variables
+let currentAction = null;
+let currentPaymentCode = null;
+
+// Show/hide loading modal
+function showLoading(title = 'Memproses...', message = 'Harap tunggu sebentar') {
+    const modal = document.getElementById('loadingModal');
+    if (modal) {
+        const titleEl = document.getElementById('loadingTitle');
+        const messageEl = document.getElementById('loadingMessage');
+        if (titleEl) titleEl.textContent = title;
+        if (messageEl) messageEl.textContent = message;
+        modal.classList.remove('hidden');
+    }
+}
+
+function hideLoading() {
+    const modal = document.getElementById('loadingModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+// Show/hide confirmation modal
+function showConfirmation(message, action, paymentCode) {
+    const modal = document.getElementById('confirmationModal');
+    const messageEl = document.getElementById('confirmationMessage');
+
+    if (modal && messageEl) {
+        currentAction = action;
+        currentPaymentCode = paymentCode;
+        messageEl.textContent = message;
+        modal.classList.remove('hidden');
+    }
+}
+
+function hideConfirmation() {
+    const modal = document.getElementById('confirmationModal');
+    if (modal) modal.classList.add('hidden');
+    currentAction = null;
+    currentPaymentCode = null;
+}
+
+function confirmAction() {
+    if (currentAction === 'sync' && currentPaymentCode) {
+        manualSync(currentPaymentCode);
+    }
+    hideConfirmation();
+}
+
+// Function untuk sinkronisasi manual (AJAX GET)
+async function manualSync(paymentCode) {
+    showLoading('Mensinkronisasi', 'Memeriksa status pembayaran...');
+
+    try {
+        // Gunakan route AJAX
+        const response = await fetch(`/santri/payments/manual-sync/${paymentCode}`, {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+
+        // Cek content type
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            // Jika bukan JSON, mungkin error page
+            const text = await response.text();
+            console.error('Server returned non-JSON response:', text.substring(0, 200));
+
+            // Coba parse sebagai HTML untuk error messages
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(text, 'text/html');
+            const errorMsg = htmlDoc.querySelector('.error-message, .alert-danger')?.textContent ||
+                           htmlDoc.title ||
+                           'Terjadi kesalahan pada server';
+
+            throw new Error(`Format response tidak valid: ${errorMsg}`);
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Handle HTTP errors
+            if (response.status === 401 || response.status === 403) {
+                throw new Error('Anda tidak memiliki izin untuk aksi ini.');
+            } else if (response.status === 404) {
+                throw new Error('Pembayaran tidak ditemukan.');
+            } else if (response.status === 500) {
+                throw new Error('Terjadi kesalahan pada server.');
+            } else {
+                throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+            }
+        }
+
+        if (data.success) {
+            if (data.status_updated) {
+                showNotification('Status pembayaran berhasil diperbarui! Halaman akan refresh...', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                showNotification(data.message || 'Tidak ada perubahan status', 'info');
+            }
+        } else {
+            throw new Error(data.message || 'Gagal sinkronisasi');
+        }
+    } catch (error) {
+        console.error('Sync error:', error);
+
+        // Tampilkan pesan error yang lebih user-friendly
+        let errorMessage = 'Gagal sinkronisasi: ';
+
+        if (error.message.includes('JSON') || error.message.includes('Format response')) {
+            errorMessage = 'Terjadi kesalahan pada server. Silakan refresh halaman dan coba lagi.';
+        } else if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+            errorMessage = 'Koneksi jaringan bermasalah. Periksa koneksi internet Anda.';
+        } else if (error.message.includes('401') || error.message.includes('403')) {
+            errorMessage = 'Sesi Anda mungkin telah berakhir. Silakan login ulang.';
+        } else if (error.message.includes('404')) {
+            errorMessage = 'Data pembayaran tidak ditemukan.';
+        } else if (error.message.includes('500')) {
+            errorMessage = 'Terjadi kesalahan pada server. Silakan coba lagi nanti.';
+        } else {
+            errorMessage += error.message;
+        }
+
+        showNotification(errorMessage, 'error');
+
+        // Log error untuk debugging
+        if (typeof console !== 'undefined' && console.error) {
+            console.error('Full error:', error);
+        }
+    } finally {
+        hideLoading();
+    }
+}
+
+// Function untuk check status payment (auto sync)
+async function checkPaymentStatus(paymentCode) {
+    try {
+        const response = await fetch(`/santri/payments/check-status/${paymentCode}`, {
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+
+        // Skip if response is not JSON
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.status_updated) {
+            // Update status indicator
+            const indicator = document.getElementById(`sync-indicator-${paymentCode}`);
+            if (indicator) {
+                indicator.innerHTML = '<i class="fas fa-check-circle mr-1"></i>Status diperbarui';
+                indicator.className = 'text-xs text-green-600 mt-1 flex items-center';
+            }
+
+            // Show notification and reload after 2 seconds
+            showNotification('Status pembayaran diperbarui otomatis!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else if (data.success) {
+            // Just update the indicator
+            const indicator = document.getElementById(`sync-indicator-${paymentCode}`);
+            if (indicator) {
+                const now = new Date();
+                indicator.innerHTML = `<i class="fas fa-sync-alt fa-spin mr-1"></i>Terakhir dicek: ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            }
+        }
+    } catch (error) {
+        console.error('Auto sync error for', paymentCode, ':', error);
+        // Don't show error notifications for auto sync
+    }
+}
+
+// Function untuk download invoice
+async function downloadInvoice(paymentCode) {
+    showLoading('Menyiapkan Invoice', 'Membuat file PDF...');
+
+    try {
+        // Trigger download in new tab
+        window.open(`/santri/payments/invoice/${paymentCode}/pdf`, '_blank');
+
+        // Wait a bit then hide loading
+        setTimeout(() => {
+            hideLoading();
+            showNotification('Invoice sedang dipersiapkan...', 'info');
+        }, 1000);
+
+    } catch (error) {
+        console.error('Download error:', error);
+        showNotification('Gagal mempersiapkan invoice', 'error');
+        hideLoading();
+    }
+}
+
+// Check kuota availability
+async function checkQuotaAvailability() {
+    try {
+        const response = await fetch(`/santri/payments/check-quota`, {
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success && !data.available) {
+            showNotification('Kuota pendaftaran sudah penuh!', 'warning');
+        }
+    } catch (error) {
+        console.error('Error checking quota:', error);
+    }
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const types = {
+        'success': {
+            icon: 'fa-check-circle',
+            bgColor: 'bg-green-500',
+            textColor: 'text-white'
+        },
+        'error': {
+            icon: 'fa-exclamation-triangle',
+            bgColor: 'bg-red-500',
+            textColor: 'text-white'
+        },
+        'info': {
+            icon: 'fa-info-circle',
+            bgColor: 'bg-blue-500',
+            textColor: 'text-white'
+        },
+        'warning': {
+            icon: 'fa-exclamation-circle',
+            bgColor: 'bg-yellow-500',
+            textColor: 'text-white'
+        }
+    };
+
+    const config = types[type] || types.info;
+
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification-toast');
+    if (existingNotifications.length > 3) {
+        existingNotifications[0].remove();
+    }
+
+    const notification = document.createElement('div');
+    notification.className = `notification-toast fixed top-4 right-4 ${config.bgColor} ${config.textColor} px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${config.icon} mr-3"></i>
+            <span class="font-medium">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 hover:opacity-75">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 10);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 5000);
+}
+
 // Auto sync untuk pembayaran pending
-function autoSyncPayments() {
-    const pendingPayments = document.querySelectorAll('[data-payment-pending]');
+function setupAutoSync() {
+    const pendingPayments = document.querySelectorAll('.payment-row[data-payment-status="pending"][data-payment-method="xendit"]');
 
-    pendingPayments.forEach(paymentElement => {
-        const paymentCode = paymentElement.getAttribute('data-payment-code');
+    pendingPayments.forEach(paymentRow => {
+        const paymentCode = paymentRow.getAttribute('data-payment-code');
 
-        // Check status setiap 30 detik untuk payment pending
+        // Check immediately
+        setTimeout(() => {
+            checkPaymentStatus(paymentCode);
+        }, 1000);
+
+        // Then check every 30 seconds
         setInterval(() => {
             checkPaymentStatus(paymentCode);
         }, 30000);
     });
 }
 
-// Function untuk check status payment
-function checkPaymentStatus(paymentCode) {
-    fetch(`/santri/payments/check-status/${paymentCode}`, {
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            if (data.status_updated) {
-                // Jika status berubah, refresh halaman
-                showStatusUpdateNotification();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error checking payment status:', error);
-    });
-}
-
-// Check kuota availability
-function checkQuotaAvailability() {
-    fetch(`/santri/payments/check-quota`, {
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            if (!data.available) {
-                // Jika kuota habis, show notification
-                showQuotaFullNotification();
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error checking quota:', error);
-    });
-}
-
-// Show notification ketika status berubah
-function showStatusUpdateNotification() {
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    notification.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-sync-alt mr-2"></i>
-            <span>Status pembayaran diperbarui. Halaman akan refresh...</span>
-        </div>
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
-// Show notification ketika kuota penuh
-function showQuotaFullNotification() {
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    notification.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-triangle mr-2"></i>
-            <span>Kuota pendaftaran sudah penuh!</span>
-        </div>
-    `;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-
-// Jalankan auto sync ketika halaman dimuat
+// Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    autoSyncPayments();
+    // Setup sync button click handlers
+    document.querySelectorAll('.sync-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const paymentCode = this.getAttribute('data-payment-code');
+
+            if (paymentCode) {
+                showConfirmation(
+                    'Apakah Anda yakin ingin mensinkronisasi status pembayaran ini?',
+                    'sync',
+                    paymentCode
+                );
+            }
+        });
+    });
+
+    // Setup download invoice button click handlers
+    document.querySelectorAll('.download-invoice-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const paymentCode = this.getAttribute('data-payment-code');
+
+            if (paymentCode) {
+                downloadInvoice(paymentCode);
+            }
+        });
+    });
+
+    // Setup auto sync for pending payments
+    setupAutoSync();
 
     // Check kuota setiap 2 menit
     setInterval(() => {
         checkQuotaAvailability();
     }, 120000);
 
-    // Juga check status setiap 60 detik untuk semua payment
-    setInterval(() => {
-        const pendingPayments = document.querySelectorAll('[data-payment-pending]');
-        pendingPayments.forEach(paymentElement => {
-            const paymentCode = paymentElement.getAttribute('data-payment-code');
-            checkPaymentStatus(paymentCode);
-        });
-    }, 60000);
+    // Global error handler untuk AJAX
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+
+        // Show user-friendly error
+        if (event.reason && event.reason.message) {
+            showNotification('Terjadi kesalahan: ' + event.reason.message, 'error');
+        }
+    });
 });
+
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    .notification-toast {
+        animation: slideIn 0.3s ease-out forwards;
+    }
+
+    .notification-toast.fade-out {
+        animation: fadeOut 0.3s ease-out forwards;
+    }
+
+    .fa-spin {
+        animation: fa-spin 2s infinite linear;
+    }
+
+    @keyframes fa-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
 </script>
 @endsection

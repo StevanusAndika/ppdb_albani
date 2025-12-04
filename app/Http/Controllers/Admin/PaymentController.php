@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Registration;
+use App\Models\Price;
+use App\Models\ContentSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -58,8 +61,13 @@ class PaymentController extends Controller
                 'paid_at' => $request->status === 'lunas' ? now() : null
             ]);
 
-            // Kirim notifikasi jika status berubah menjadi lunas
+            // Update registration status if payment is successful
             if ($request->status === 'lunas' && $oldStatus !== 'lunas') {
+                $payment->registration->update([
+                    'status_pendaftaran' => 'diterima'
+                ]);
+
+                // Kirim notifikasi jika status berubah menjadi lunas
                 $fonnte = app('fonnte');
                 $fonnte->sendManualPaymentConfirmation(
                     $payment->user->getFormattedPhoneNumber(),
@@ -144,6 +152,12 @@ class PaymentController extends Controller
                         'paid_at' => $request->status === 'lunas' ? now() : null
                     ]);
 
+                    if ($request->status === 'lunas') {
+                        $payment->registration->update([
+                            'status_pendaftaran' => 'diterima'
+                        ]);
+                    }
+
                     $updatedCount++;
                 }
             }
@@ -156,5 +170,361 @@ class PaymentController extends Controller
             DB::rollBack();
             return back()->with('error', 'Gagal memperbarui pembayaran: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Download invoice as PDF untuk admin
+     */
+    public function downloadInvoicePdf($paymentCode)
+    {
+        try {
+            Log::info('=== ADMIN PDF INVOICE GENERATION START ===');
+            Log::info('Payment Code: ' . $paymentCode);
+            Log::info('Admin ID: ' . auth()->id());
+
+            $payment = Payment::where('payment_code', $paymentCode)
+                             ->with([
+                                 'user',
+                                 'registration',
+                                 'registration.package',
+                                 'registration.programUnggulan'
+                             ])
+                             ->first();
+
+            if (!$payment) {
+                Log::error('Payment not found for code: ' . $paymentCode);
+                return back()->with('error', 'Pembayaran tidak ditemukan.');
+            }
+
+            // Validasi hanya admin yang bisa akses
+            if (!auth()->user()->isAdmin()) {
+                Log::warning('Unauthorized admin PDF access attempt for payment: ' . $paymentCode . ' by user: ' . auth()->id());
+                abort(403, 'Unauthorized');
+            }
+
+            // Load package prices for detailed breakdown
+            $packagePrices = Price::where('package_id', $payment->registration->package_id)
+                                 ->active()
+                                 ->ordered()
+                                 ->get();
+
+            // Ambil nama program unggulan
+            $programUnggulanName = 'Tidak ada program unggulan';
+            if ($payment->registration->program_unggulan_id) {
+                $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
+                if ($programUnggulan) {
+                    $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+                }
+            }
+
+            $data = [
+                'payment' => $payment,
+                'packagePrices' => $packagePrices,
+                'programUnggulanName' => $programUnggulanName,
+                'isAdmin' => true // Flag untuk template admin
+            ];
+
+            Log::info('Generating admin PDF for payment: ' . $paymentCode);
+
+            // Gunakan view yang sama atau khusus admin
+            $viewPath = 'dashboard.calon_santri.payments.invoice-pdf';
+
+            if (!view()->exists($viewPath)) {
+                Log::error('View not found: ' . $viewPath);
+                throw new \Exception('Template invoice tidak ditemukan.');
+            }
+
+            // Konfigurasi PDF
+            $pdfOptions = [
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'sans-serif',
+                'margin_top' => 10,
+                'margin_right' => 10,
+                'margin_bottom' => 10,
+                'margin_left' => 10,
+            ];
+
+            // Generate PDF
+            $pdf = \PDF::loadView($viewPath, $data)
+                       ->setPaper('a4', 'portrait')
+                       ->setOptions($pdfOptions);
+
+            $filename = "Invoice-{$payment->payment_code}.pdf";
+
+            Log::info('Admin PDF generated successfully for: ' . $paymentCode);
+
+            // Return download response
+            return $pdf->download($filename);
+
+        } catch (\Exception $e) {
+            Log::error('=== ADMIN PDF GENERATION FAILED ===');
+            Log::error('Error: ' . $e->getMessage());
+            Log::error('File: ' . $e->getFile());
+            Log::error('Line: ' . $e->getLine());
+            Log::error('Trace: ' . $e->getTraceAsString());
+
+            return back()->with('error', 'Gagal generate invoice. Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display invoice page (HTML) untuk admin
+     */
+    public function downloadInvoice($paymentCode)
+    {
+        $payment = Payment::where('payment_code', $paymentCode)
+                         ->with([
+                             'user',
+                             'registration',
+                             'registration.package',
+                             'registration.programUnggulan'
+                         ])
+                         ->firstOrFail();
+
+        // Validasi hanya admin yang bisa akses
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Load package prices for detailed breakdown
+        $packagePrices = Price::where('package_id', $payment->registration->package_id)
+                             ->active()
+                             ->ordered()
+                             ->get();
+
+        // Ambil nama program unggulan
+        $programUnggulanName = 'Tidak ada program unggulan';
+        if ($payment->registration->program_unggulan_id) {
+            $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
+            if ($programUnggulan) {
+                $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+            }
+        }
+
+        return view('dashboard.calon_santri.payments.invoice', compact('payment', 'packagePrices', 'programUnggulanName'));
+    }
+
+    /**
+     * Manual sync payment status untuk admin
+     */
+    public function manualSync($paymentCode)
+    {
+        try {
+            Log::info('=== ADMIN MANUAL SYNC STARTED ===');
+            Log::info('Payment Code: ' . $paymentCode);
+            Log::info('Admin ID: ' . auth()->id());
+
+            $payment = Payment::where('payment_code', $paymentCode)->first();
+
+            if (!$payment) {
+                Log::error('Payment not found for code: ' . $paymentCode);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran tidak ditemukan'
+                ], 404);
+            }
+
+            // Validasi hanya admin yang bisa akses
+            if (!auth()->user()->isAdmin()) {
+                Log::warning('Unauthorized admin sync attempt', [
+                    'current_user_id' => auth()->id()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+
+            $statusUpdated = false;
+            $oldStatus = $payment->status;
+            $message = '';
+
+            // Jika payment via xendit, check status di xendit
+            if ($payment->payment_method === 'xendit' && $payment->xendit_id) {
+                try {
+                    $xendit = app('xendit');
+                    Log::info('Admin checking Xendit status for invoice: ' . $payment->xendit_id);
+
+                    $invoiceResult = $xendit->getInvoice($payment->xendit_id);
+
+                    if ($invoiceResult['success']) {
+                        $invoice = $invoiceResult['data'];
+                        $newStatus = $this->mapXenditStatus($invoice['status']);
+
+                        Log::info('Xendit status received', [
+                            'old_status' => $oldStatus,
+                            'new_status' => $newStatus,
+                            'xendit_status' => $invoice['status']
+                        ]);
+
+                        if ($newStatus !== $payment->status) {
+                            DB::beginTransaction();
+                            try {
+                                $updateData = [
+                                    'status' => $newStatus,
+                                    'xendit_response' => array_merge($payment->xendit_response ?? [], $invoice)
+                                ];
+
+                                // Set paid_at jika status success
+                                if ($newStatus === 'success') {
+                                    $updateData['paid_at'] = isset($invoice['paid_at'])
+                                        ? \Carbon\Carbon::parse($invoice['paid_at'])
+                                        : now();
+
+                                    // Update registration status
+                                    $payment->registration->update([
+                                        'status_pendaftaran' => 'diterima'
+                                    ]);
+                                }
+
+                                $payment->update($updateData);
+
+                                $statusUpdated = true;
+                                $message = 'Status pembayaran berhasil diperbarui';
+
+                                Log::info('Payment status updated by admin', [
+                                    'payment_id' => $payment->id,
+                                    'old_status' => $oldStatus,
+                                    'new_status' => $newStatus
+                                ]);
+
+                                // Kirim notifikasi jika status berubah menjadi success
+                                if ($newStatus === 'success') {
+                                    $fonnte = app('fonnte');
+
+                                    // Ambil data program unggulan
+                                    $programUnggulanName = 'Tidak ada program unggulan';
+                                    if ($payment->registration->program_unggulan_id) {
+                                        $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
+                                        if ($programUnggulan) {
+                                            $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
+                                        }
+                                    }
+
+                                    // Kirim bukti pembayaran sukses
+                                    $fonnte->sendPaymentSuccess(
+                                        $payment->user->getFormattedPhoneNumber(),
+                                        $payment->user->name,
+                                        $payment->payment_code,
+                                        number_format($payment->amount, 0, ',', '.'),
+                                        $payment->registration->package->name ?? 'Paket Pendaftaran',
+                                        $programUnggulanName
+                                    );
+
+                                    $message .= ' - Pembayaran berhasil!';
+                                }
+
+                                DB::commit();
+
+                            } catch (\Exception $e) {
+                                DB::rollBack();
+                                Log::error('Error updating payment status: ' . $e->getMessage());
+                                Log::error('Stack trace: ' . $e->getTraceAsString());
+                                throw new \Exception('Gagal update status pembayaran: ' . $e->getMessage());
+                            }
+                        } else {
+                            $message = 'Status pembayaran sudah up-to-date';
+                            Log::info('Payment status already up-to-date');
+                        }
+                    } else {
+                        Log::error('Xendit API error', ['error' => $invoiceResult['message']]);
+                        throw new \Exception('Gagal mengambil data dari Xendit: ' . $invoiceResult['message']);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Xendit check error: ' . $e->getMessage());
+                    throw new \Exception('Error checking Xendit: ' . $e->getMessage());
+                }
+            } else {
+                $message = 'Tidak dapat sinkronisasi: Metode pembayaran bukan Xendit atau invoice ID tidak tersedia';
+                Log::info('Cannot sync non-xendit payment', [
+                    'method' => $payment->payment_method,
+                    'has_xendit_id' => !empty($payment->xendit_id)
+                ]);
+            }
+
+            Log::info('=== ADMIN MANUAL SYNC COMPLETED ===');
+
+            return response()->json([
+                'success' => true,
+                'status_updated' => $statusUpdated,
+                'message' => $message,
+                'payment' => [
+                    'id' => $payment->id,
+                    'payment_code' => $payment->payment_code,
+                    'status' => $payment->status,
+                    'status_label' => $payment->status_label,
+                    'status_color' => $payment->status_color,
+                    'paid_at' => $payment->paid_at ? $payment->paid_at->format('Y-m-d H:i:s') : null,
+                    'formatted_amount' => $payment->formatted_amount,
+                    'is_paid' => $payment->isPaid()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Admin manual sync error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal sinkronisasi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manual sync untuk POST request (dari form) untuk admin
+     */
+    public function manualSyncPost(Request $request, $paymentCode)
+    {
+        try {
+            Log::info('Admin manual sync POST request for payment: ' . $paymentCode);
+
+            // Lakukan sinkronisasi
+            $result = $this->manualSync($paymentCode);
+
+            // Jika request dari form, redirect back dengan message
+            if ($request->ajax()) {
+                return $result;
+            } else {
+                $data = json_decode($result->getContent(), true);
+
+                if ($data['success']) {
+                    return back()->with('success', $data['message']);
+                } else {
+                    return back()->with('error', $data['message']);
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Admin manual sync POST error: ' . $e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            } else {
+                return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Map Xendit status to our status
+     */
+    private function mapXenditStatus($xenditStatus)
+    {
+        $statusMap = [
+            'PENDING' => 'waiting_payment',
+            'PAID' => 'success',
+            'SETTLED' => 'success',
+            'COMPLETED' => 'success',
+            'EXPIRED' => 'expired',
+            'FAILED' => 'failed',
+            'CANCELLED' => 'failed'
+        ];
+
+        return $statusMap[$xenditStatus] ?? 'failed';
     }
 }

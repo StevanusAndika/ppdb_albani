@@ -12,23 +12,43 @@ class Package extends Model
     protected $fillable = [
         'name',
         'description',
-        'total_amount',
+        'type',
         'is_active'
     ];
 
     protected $casts = [
-        'total_amount' => 'decimal:2',
         'is_active' => 'boolean'
     ];
 
-    protected $appends = ['formatted_total_amount'];
+    protected $appends = ['formatted_total_amount', 'type_label'];
 
     /**
      * Get formatted total amount
      */
     public function getFormattedTotalAmountAttribute()
     {
-        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
+        $total = $this->activePrices->sum('amount');
+        return 'Rp ' . number_format($total, 0, ',', '.');
+    }
+
+    /**
+     * Get total amount without formatting
+     */
+    public function getTotalAmountAttribute()
+    {
+        return $this->activePrices->sum('amount');
+    }
+
+    /**
+     * Get type label
+     */
+    public function getTypeLabelAttribute()
+    {
+        return match($this->type) {
+            'takhossus' => 'Takhossus Pesantren',
+            'plus_sekolah' => 'Plus Sekolah',
+            default => $this->type
+        };
     }
 
     /**

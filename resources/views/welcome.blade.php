@@ -4,6 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $contentSettings->judul ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025' }}</title>
+     <title>{{ $contentSettings->judul ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025 - Pendaftaran Santri Baru' }}</title>
+    <meta name="title" content="{{ $contentSettings->judul_seo ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025 - Pendaftaran Santri Baru' }}">
+    <meta name="description" content="{{ $contentSettings->meta_deskripsi ?? 'Sistem Penerimaan Peserta Didik Baru Pesantren AI-Our\'an Bani Syahid 2025. Program Tahfidz, Qiraat Sab\'ah, dan Pendidikan Islam Berbasis Al-Qur\'an.' }}">
+    <meta name="keywords" content="{{ $contentSettings->meta_keywords ?? 'PPDB Pesantren, Pesantren Al-Qur\'an, Tahfidz, Santri Baru, Pendidikan Islam, Bani Syahid, 2025' }}">
+    <meta name="author" content="Pesantren AI-Our'an Bani Syahid">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="language" content="Indonesian">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $contentSettings->judul_og ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025' }}">
+    <meta property="og:description" content="{{ $contentSettings->og_deskripsi ?? 'Bergabunglah menjadi santri Pesantren AI-Our\'an Bani Syahid. Program Tahfidz dan Pendidikan Islam Terpadu.' }}">
+    <meta property="og:image" content="{{ $contentSettings->og_image ?? '/images/ppdb-og-image.jpg' }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="PPDB Pesantren AI-Our'an Bani Syahid 2025">
+    <meta property="og:site_name" content="Pesantren AI-Our'an Bani Syahid">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="{{ $contentSettings->judul_twitter ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025' }}">
+    <meta property="twitter:description" content="{{ $contentSettings->twitter_deskripsi ?? 'Pendaftaran Santri Baru Pesantren AI-Our\'an Bani Syahid. Program Unggulan Tahfidz dan Qiraat.' }}">
+    <meta property="twitter:image" content="{{ $contentSettings->twitter_image ?? '/images/ppdb-twitter-image.jpg' }}">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -718,7 +748,7 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                     <ul class="space-y-2">
                         <li><a href="#visi-misi" class="hover:text-accent transition duration-300">Visi & Misi</a></li>
                         <li><a href="#" class="hover:text-accent transition duration-300">Galeri</a></li>
-                       
+
                     </ul>
                 </div>
 

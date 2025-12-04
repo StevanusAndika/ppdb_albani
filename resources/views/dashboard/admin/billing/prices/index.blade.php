@@ -17,7 +17,7 @@
                 </div>
                 <div class="flex space-x-4">
                     <a href="{{ route('admin.billing.packages.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full transition duration-300 flex items-center">
-                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali 
                     </a>
                     <a href="{{ route('admin.billing.packages.prices.create', $package) }}" class="bg-primary hover:bg-secondary text-white px-6 py-3 rounded-full transition duration-300 flex items-center">
                         <i class="fas fa-plus mr-2"></i> Tambah Biaya

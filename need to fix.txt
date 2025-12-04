@@ -27,26 +27,26 @@ buat footernya full di halaman admin/prices/index.blade.php(cek dashboard kompon
 
 tambahin alert ketika mau hapus data di  halaman admin/billing/prices/index.blade.php dan admin/billing/packages/index.blade.php
 
-buat untuk di admin/billing/packages/index.blade.php untuk nama paket ambil value langsung  dari tipe paket
+buat untuk di admin/billing/packages/index.blade.php untuk nama paket ambil value langsung  dari tipe paket[done]
 
-tambahin alert ketika mau hapus data di  halaman admin/billing/index.blade.php dan admin/billing/packages/index.blade.php dengan sweetalert
+tambahin alert ketika mau hapus data di  halaman admin/billing/index.blade.php dan admin/billing/packages/index.blade.php dengan sweetalert(baru billing yg udah)
 
 untuk kelola konten buat 1 layout aja
 pecah file js dan modal  disetiap file jadi file yang beda (yang ada )
 
 backend:
 
-perbaiki tombol sinkronisasi dan download invoice pdf di halaman views/dashboard/calon_santri/payments/index.blade.php(error 403 di hosting)
+perbaiki tombol sinkronisasi  di halaman views/dashboard/calon_santri/payments/index.blade.php(error 403 di hosting)[Done]
 
-ketika registrasi buat agar nomor dan email yg sudah didaftarkan tidak bisa digunakan lagi[done]
+ketika registrasi buat agar email yg sudah didaftarkan tidak bisa digunakan lagi[done]
 
 perbaiki untuk annoucement kelulusan dan tes seleksi tidak bentrok
 
-tambahin di  admin/registrationcontroller biar admin bisa lihat invoice dalam pembayaran cash dan xendit
+tambahin di  admin/paymentcontroller biar admin bisa lihat invoice dalam pembayaran cash dan xendit[done]
 
 tambahin status pembayaran di halaman qr code[done]
 
-tambahin total biaya di admin/paket  dan ambil tipe paketnya di http://localhost:8000/admin/billing/packages dan http://localhost:8000/admin/billing/packages/1/prices
+tambahin total biaya di admin/paket  dan ambil tipe paketnya di http://localhost:8000/admin/billing/packages dan http://localhost:8000/admin/billing/packages/1/prices[Done]
 
 tambahin authentifikasi recaptcha v3 google[Done]
 tambahin cooldown otp send[done]

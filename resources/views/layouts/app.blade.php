@@ -31,7 +31,6 @@
     <!-- CSS Files -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
-
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -103,44 +102,6 @@
             });
         @endif
 
-        // Global password toggle functionality
-        function initPasswordToggle() {
-            const passwordToggles = document.querySelectorAll('.password-toggle-btn');
-
-            passwordToggles.forEach(btn => {
-                // Set initial title
-                btn.setAttribute('title', 'Tampilkan password');
-                btn.setAttribute('aria-label', 'Tampilkan password');
-
-                btn.addEventListener('click', function() {
-                    const targetId = this.getAttribute('data-target');
-                    const passwordInput = document.getElementById(targetId);
-                    const icon = this.querySelector('i');
-
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                        this.setAttribute('title', 'Sembunyikan password');
-                        this.setAttribute('aria-label', 'Sembunyikan password');
-                    } else {
-                        passwordInput.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                        this.setAttribute('title', 'Tampilkan password');
-                        this.setAttribute('aria-label', 'Tampilkan password');
-                    }
-
-                    // Focus kembali ke input setelah toggle
-                    passwordInput.focus();
-                });
-            });
-        }
-
-        // Initialize when document is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            initPasswordToggle();
-        });
     </script>
 
     @yield('scripts')

@@ -64,17 +64,36 @@ class PackageController extends Controller
         }
     }
 
-    public function destroy(Package $package)
-    {
-        try {
-            $package->delete();
-            return redirect()->route('admin.billing.packages.index')
-                ->with('success', 'Paket berhasil dihapus!');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat menghapus paket.');
+public function destroy(Package $package)
+{
+    try {
+        // Hapus semua prices terkait terlebih dahulu
+        $package->prices()->delete();
+
+        // Hapus package
+        $package->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Paket berhasil dihapus!'
+            ]);
         }
+
+        return redirect()->route('admin.billing.packages.index')
+            ->with('success', 'Paket berhasil dihapus!');
+    } catch (\Exception $e) {
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus paket.'
+            ], 500);
+        }
+
+        return redirect()->back()
+            ->with('error', 'Terjadi kesalahan saat menghapus paket.');
     }
+}
 
     public function toggleStatus(Package $package, Request $request)
     {

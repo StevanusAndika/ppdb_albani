@@ -5,7 +5,8 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
-     @include('layouts.components.admin.navbar')
+    @include('layouts.components.admin.navbar')
+
     <!-- Header -->
     <header class="py-8 px-4 text-center">
         <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Manajemen Transaksi</h1>
@@ -17,25 +18,19 @@
         <!-- Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div class="bg-white rounded-xl shadow-md p-6 text-center">
-                <div class="text-3xl font-bold text-blue-600">{{ $payments->total() }}</div>
+                <div class="text-3xl font-bold text-blue-600">{{ $stats['total'] }}</div>
                 <div class="text-sm text-gray-600">Total Transaksi</div>
             </div>
             <div class="bg-white rounded-xl shadow-md p-6 text-center">
-                <div class="text-3xl font-bold text-green-600">
-                    {{ $payments->whereIn('status', ['success', 'lunas'])->count() }}
-                </div>
+                <div class="text-3xl font-bold text-green-600">{{ $stats['success'] }}</div>
                 <div class="text-sm text-gray-600">Berhasil</div>
             </div>
             <div class="bg-white rounded-xl shadow-md p-6 text-center">
-                <div class="text-3xl font-bold text-yellow-600">
-                    {{ $payments->whereIn('status', ['pending', 'waiting_payment'])->count() }}
-                </div>
+                <div class="text-3xl font-bold text-yellow-600">{{ $stats['pending'] }}</div>
                 <div class="text-sm text-gray-600">Menunggu</div>
             </div>
             <div class="bg-white rounded-xl shadow-md p-6 text-center">
-                <div class="text-3xl font-bold text-red-600">
-                    {{ $payments->whereIn('status', ['failed', 'expired'])->count() }}
-                </div>
+                <div class="text-3xl font-bold text-red-600">{{ $stats['failed'] }}</div>
                 <div class="text-sm text-gray-600">Gagal</div>
             </div>
         </div>
@@ -85,14 +80,14 @@
                         <tr class="hover:bg-gray-50">
                             <td class="py-4 px-4">
                                 <div class="font-mono font-bold text-gray-900">{{ $payment->payment_code }}</div>
-                                <div class="text-xs text-gray-500">{{ $payment->registration->id_pendaftaran }}</div>
+                                <div class="text-xs text-gray-500">{{ $payment->registration->id_pendaftaran ?? '-' }}</div>
                             </td>
                             <td class="py-4 px-4">
                                 <div class="font-medium text-gray-900">{{ $payment->user->name }}</div>
                                 <div class="text-sm text-gray-500">{{ $payment->user->email }}</div>
                             </td>
                             <td class="py-4 px-4">
-                                <span class="text-sm text-gray-700">{{ $payment->registration->package->name }}</span>
+                                <span class="text-sm text-gray-700">{{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</span>
                             </td>
                             <td class="py-4 px-4">
                                 <div class="font-semibold text-primary">{{ $payment->formatted_amount }}</div>
@@ -124,6 +119,9 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
 
+                                    <!-- Tombol Invoice jika payment sudah berhasil -->
+                                   
+
                                     @if($payment->payment_method === 'cash' && $payment->isPending())
                                     <button onclick="showUpdateForm('{{ $payment->id }}', '{{ $payment->payment_code }}')"
                                             class="text-green-600 hover:text-green-900 transition duration-200 p-2 rounded-full hover:bg-green-50"
@@ -152,7 +150,8 @@
             @endif
         </div>
     </main>
-      @include('layouts.components.admin.footer')
+
+    @include('layouts.components.admin.footer')
 </div>
 
 <!-- Update Status Modal -->
