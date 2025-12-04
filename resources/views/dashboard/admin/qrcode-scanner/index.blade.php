@@ -14,18 +14,18 @@
             <!-- Main Content -->
             <div class="d-flex justify-content-center align-items-center mx-auto" style="min-height: 80vh;">
                 <div style="width: 500px; max-width: 100%; text-align: center;">
-    
+
                     {{-- Kotak kamera / QR view --}}
                     <div id="camera-wrapper"
                         style="background:#9e9e9e; border-radius:8px; padding:8px; margin-bottom:20px;">
                         <div id="qr-reader"
                             style="width:100%; height:260px; border-radius:6px; overflow:hidden;"></div>
                     </div>
-    
+
                     {{-- Form --}}
                     <form method="POST" action="{{ route('camera-test.store') }}" id="camera-form">
                         @csrf
-    
+
                         <div style="margin-bottom:16px;">
                             <input type="text"
                                 name="field_input"
@@ -34,7 +34,7 @@
                                 class="form-control"
                                 style="height:44px; text-align:center;">
                         </div>
-    
+
                         <button type="submit"
                                 style="width:100%; height:48px; border:none; border-radius:8px;
                                     background:#007b3a; color:white; font-weight:600;">
@@ -45,7 +45,10 @@
             </div>
         </div>
     </main>
+    @include('layouts.components.admin.footer')
+
 </div>
+
 {{-- LIBRARY QR CODE VIA CDN --}}
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
@@ -91,7 +94,7 @@
             alert("Tidak dapat memulai scanner: " + err);
         });
     });
-    
+
 </script>
 @if(session('success'))
 <script>
