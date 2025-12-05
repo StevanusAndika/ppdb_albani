@@ -18,6 +18,7 @@ class Registration extends Model
         'nama_lengkap',
         'nik',
         'program_unggulan_id',
+        'program_pendidikan', // TAMBAHKAN INI
         'tempat_lahir',
         'tanggal_lahir',
         'jenis_kelamin',
@@ -73,7 +74,8 @@ class Registration extends Model
         'penghasilan_ibu' => 'decimal:2',
         'dilihat_pada' => 'datetime',
         'ditolak_pada' => 'datetime',
-        'diperbarui_setelah_ditolak' => 'boolean'
+        'diperbarui_setelah_ditolak' => 'boolean',
+        'program_pendidikan' => 'string',
     ];
 
     protected $appends = [
@@ -87,7 +89,10 @@ class Registration extends Model
         'is_documents_complete',
         'has_successful_payment',
         'uploaded_documents_count',
-        'needs_re_review'
+        'needs_review',
+        'usia', // TAMBAHKAN INI
+        'program_pendidikan_label', // TAMBAHKAN INI
+        'is_eligible_for_takhassus' // TAMBAHKAN INI
     ];
 
     protected static function boot()
@@ -116,7 +121,8 @@ class Registration extends Model
                     'nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
                     'alamat_tinggal', 'kecamatan', 'kelurahan', 'kota', 'kode_pos',
                     'nama_ibu_kandung', 'nama_ayah_kandung', 'nomor_telpon_orang_tua', 'agama',
-                    'kartu_keluaga_path', 'ijazah_path', 'akta_kelahiran_path', 'pas_foto_path'
+                    'kartu_keluaga_path', 'ijazah_path', 'akta_kelahiran_path', 'pas_foto_path',
+                    'program_pendidikan' // TAMBAHKAN INI
                 ];
 
                 foreach ($importantFields as $field) {
@@ -357,7 +363,9 @@ class Registration extends Model
         $requiredFields = [
             'nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
             'alamat_tinggal', 'kecamatan', 'kelurahan', 'kota', 'kode_pos',
-            'nama_ibu_kandung', 'nama_ayah_kandung', 'nomor_telpon_orang_tua', 'agama'
+            'nama_ibu_kandung', 'nama_ayah_kandung', 'nomor_telpon_orang_tua', 'agama',
+            'program_pendidikan', // TAMBAHKAN INI
+            'jenjang_pendidikan_terakhir' // TAMBAHKAN INI
         ];
 
         foreach ($requiredFields as $field) {
@@ -438,6 +446,134 @@ class Registration extends Model
     {
         $program = $this->program_unggulan;
         return $program['deskripsi'] ?? '';
+    }
+
+    /**
+     * METODE BARU: VALIDASI PROGRAM PENDIDIKAN
+     */
+
+    /**
+     * Hitung usia berdasarkan tanggal lahir
+     */
+    public function calculateAge()
+    {
+        if (!$this->tanggal_lahir) {
+            return 0;
+        }
+
+        return now()->diffInYears($this->tanggal_lahir);
+    }
+
+    /**
+     * Get usia saat ini
+     */
+    public function getUsiaAttribute()
+    {
+        return $this->calculateAge();
+    }
+
+    /**
+     * Cek apakah usia minimal 17 tahun untuk program Takhassus Al-Quran
+     */
+    public function isEligibleForTakhassus()
+    {
+        if ($this->program_pendidikan !== 'Takhassus Al-Quran') {
+            return true;
+        }
+
+        return $this->calculateAge() >= 17;
+    }
+
+    /**
+     * Get status kelayakan untuk Takhassus Al-Quran
+     */
+    public function getIsEligibleForTakhassusAttribute()
+    {
+        return $this->isEligibleForTakhassus();
+    }
+
+    /**
+     * Get label program pendidikan
+     */
+    public function getProgramPendidikanLabelAttribute()
+    {
+        $labels = [
+            'MTS Bani Syahid' => 'MTS Bani Syahid',
+            'MA Bani Syahid' => 'MA Bani Syahid',
+            'Takhassus Al-Quran' => 'Takhassus Al-Quran'
+        ];
+
+        return $labels[$this->program_pendidikan] ?? $this->program_pendidikan;
+    }
+
+    /**
+     * Get pesan validasi untuk program Takhassus Al-Quran
+     */
+    public function getTakhassusValidationMessageAttribute()
+    {
+        if ($this->program_pendidikan !== 'Takhassus Al-Quran') {
+            return null;
+        }
+
+        $usia = $this->calculateAge();
+        if ($usia < 17) {
+            return "Usia calon santri atas nama {$this->nama_lengkap} belum memenuhi untuk program Pendidikan Takhassus Al-Quran. Usia saat ini: {$usia} tahun (minimal 17 tahun).";
+        }
+
+        return "Usia calon santri atas nama {$this->nama_lengkap} memenuhi syarat untuk program Takhassus Al-Quran. Usia saat ini: {$usia} tahun.";
+    }
+
+    /**
+     * Validasi usia untuk Takhassus Al-Quran
+     * @throws \Exception jika usia tidak memenuhi syarat
+     */
+    public function validateTakhassusAge()
+    {
+        if ($this->program_pendidikan === 'Takhassus Al-Quran') {
+            $usia = $this->calculateAge();
+            if ($usia < 17) {
+                throw new \Exception("Usia calon santri atas nama {$this->nama_lengkap} belum memenuhi untuk program Pendidikan Takhassus Al-Quran. Usia saat ini: {$usia} tahun (minimal 17 tahun).");
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Scope untuk mencari registrasi berdasarkan program pendidikan
+     */
+    public function scopeByProgramPendidikan($query, $program)
+    {
+        return $query->where('program_pendidikan', $program);
+    }
+
+    /**
+     * Scope untuk mencari registrasi yang tidak memenuhi syarat Takhassus
+     */
+    public function scopeNotEligibleForTakhassus($query)
+    {
+        return $query->where('program_pendidikan', 'Takhassus Al-Quran')
+                     ->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) < 17');
+    }
+
+    /**
+     * Scope untuk mencari registrasi yang memenuhi syarat Takhassus
+     */
+    public function scopeEligibleForTakhassus($query)
+    {
+        return $query->where('program_pendidikan', 'Takhassus Al-Quran')
+                     ->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >= 17');
+    }
+
+    /**
+     * Get opsi program pendidikan untuk dropdown
+     */
+    public static function getProgramPendidikanOptions()
+    {
+        return [
+            'MTS Bani Syahid' => 'MTS Bani Syahid',
+            'MA Bani Syahid' => 'MA Bani Syahid',
+            'Takhassus Al-Quran' => 'Takhassus Al-Quran'
+        ];
     }
 
     /**
@@ -738,7 +874,7 @@ class Registration extends Model
     }
 
     /**
-     * Get registration statistics
+     * Get registration statistics termasuk statistik program pendidikan
      */
     public static function getStatistics()
     {
@@ -750,6 +886,19 @@ class Registration extends Model
         $sudah_seleksi = self::where('status_seleksi', 'sudah_mengikuti_seleksi')->count();
         $belum_seleksi = self::where('status_seleksi', 'belum_mengikuti_seleksi')->count();
 
+        // Statistik program pendidikan
+        $mts = self::where('program_pendidikan', 'MTS Bani Syahid')->count();
+        $ma = self::where('program_pendidikan', 'MA Bani Syahid')->count();
+        $takhassus = self::where('program_pendidikan', 'Takhassus Al-Quran')->count();
+
+        // Statistik kelayakan Takhassus
+        $takhassus_eligible = self::where('program_pendidikan', 'Takhassus Al-Quran')
+            ->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >= 17')
+            ->count();
+        $takhassus_not_eligible = self::where('program_pendidikan', 'Takhassus Al-Quran')
+            ->whereRaw('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) < 17')
+            ->count();
+
         return [
             'total' => $total,
             'menunggu' => $menunggu,
@@ -757,7 +906,80 @@ class Registration extends Model
             'ditolak' => $ditolak,
             'perlu_review' => $perlu_review,
             'sudah_seleksi' => $sudah_seleksi,
-            'belum_seleksi' => $belum_seleksi
+            'belum_seleksi' => $belum_seleksi,
+            'program_pendidikan' => [
+                'mts' => $mts,
+                'ma' => $ma,
+                'takhassus' => $takhassus,
+                'takhassus_eligible' => $takhassus_eligible,
+                'takhassus_not_eligible' => $takhassus_not_eligible
+            ]
         ];
+    }
+
+    /**
+     * Get detail informasi program pendidikan
+     */
+    public function getProgramPendidikanInfoAttribute()
+    {
+        $info = [
+            'MTS Bani Syahid' => [
+                'nama' => 'MTS Bani Syahid',
+                'deskripsi' => 'Madrasah Tsanawiyah untuk pendidikan menengah pertama',
+                'usia_minimal' => 12,
+                'usia_maksimal' => 15,
+                'jenjang' => 'SMP/MTs'
+            ],
+            'MA Bani Syahid' => [
+                'nama' => 'MA Bani Syahid',
+                'deskripsi' => 'Madrasah Aliyah untuk pendidikan menengah atas',
+                'usia_minimal' => 15,
+                'usia_maksimal' => 18,
+                'jenjang' => 'SMA/MA'
+            ],
+            'Takhassus Al-Quran' => [
+                'nama' => 'Takhassus Al-Quran',
+                'deskripsi' => 'Program khusus tahfizh dan pendalaman Al-Quran',
+                'usia_minimal' => 17,
+                'usia_maksimal' => null,
+                'jenjang' => 'Khusus'
+            ]
+        ];
+
+        return $info[$this->program_pendidikan] ?? null;
+    }
+
+    /**
+     * Validasi kelayakan berdasarkan program pendidikan
+     */
+    public function validateProgramPendidikan()
+    {
+        if (!$this->program_pendidikan || !$this->tanggal_lahir) {
+            return true; // Tidak validasi jika data tidak lengkap
+        }
+
+        $usia = $this->calculateAge();
+
+        switch ($this->program_pendidikan) {
+            case 'MTS Bani Syahid':
+                if ($usia < 12 || $usia > 15) {
+                    throw new \Exception("Usia {$usia} tahun tidak sesuai untuk program MTS Bani Syahid (12-15 tahun).");
+                }
+                break;
+
+            case 'MA Bani Syahid':
+                if ($usia < 15 || $usia > 18) {
+                    throw new \Exception("Usia {$usia} tahun tidak sesuai untuk program MA Bani Syahid (15-18 tahun).");
+                }
+                break;
+
+            case 'Takhassus Al-Quran':
+                if ($usia < 17) {
+                    throw new \Exception("Usia calon santri atas nama {$this->nama_lengkap} belum memenuhi untuk program Pendidikan Takhassus Al-Quran. Usia saat ini: {$usia} tahun (minimal 17 tahun).");
+                }
+                break;
+        }
+
+        return true;
     }
 }

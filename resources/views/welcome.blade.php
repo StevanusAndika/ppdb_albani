@@ -33,7 +33,7 @@
     <meta property="twitter:title" content="{{ $contentSettings->judul_twitter ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025' }}">
     <meta property="twitter:description" content="{{ $contentSettings->twitter_deskripsi ?? 'Pendaftaran Santri Baru Pesantren AI-Our\'an Bani Syahid. Program Unggulan Tahfidz dan Qiraat.' }}">
     <meta property="twitter:image" content="{{ $contentSettings->twitter_image ?? '/images/ppdb-twitter-image.jpg' }}">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -339,6 +339,106 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
             </div>
         </div>
     </section>
+
+<!-- Program Pendidikan Section -->
+<section id="program-pendidikan" class="py-16 px-4 bg-gradient-to-b from-white to-blue-50">
+    <div class="container mx-auto">
+        <h2 class="text-3xl font-bold text-center text-primary mb-4">Program Pendidikan</h2>
+        <p class="text-center text-secondary mb-12 max-w-3xl mx-auto">
+            Pilih program pendidikan yang sesuai dengan usia dan jenjang pendidikan Anda. Setiap program memiliki keunggulan dan spesialisasi tersendiri.
+        </p>
+
+        <!-- Program Pendidikan Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            @foreach($programPendidikan as $program => $data)
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl border border-gray-100">
+                <!-- Card Header -->
+                <div class="{{ $data['color'] }} text-white p-6 text-center relative overflow-hidden">
+                    <!-- Decorative Element -->
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-white/30"></div>
+                    <div class="absolute -top-10 -right-10 w-20 h-20 bg-white/10 rounded-full"></div>
+                    <div class="absolute -bottom-10 -left-10 w-20 h-20 bg-white/10 rounded-full"></div>
+
+                    <!-- Icon -->
+                    <div class="relative z-10 flex justify-center mb-4">
+                        <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="{{ $data['icon'] }} text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Program Name -->
+                    <h3 class="text-xl font-bold mb-2 relative z-10">{{ $program }}</h3>
+                    <p class="text-sm opacity-90 relative z-10">{{ $data['description'] }}</p>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-6">
+                    <!-- Quick Info -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="text-center bg-gray-50 rounded-lg p-3">
+                            <div class="text-sm text-gray-500 mb-1">
+                                <i class="fas fa-user-clock mr-1"></i> Usia
+                            </div>
+                            <div class="font-bold text-primary text-lg">{{ $data['usia'] }}</div>
+                        </div>
+                        <div class="text-center bg-gray-50 rounded-lg p-3">
+                            <div class="text-sm text-gray-500 mb-1">
+                                <i class="fas fa-calendar-alt mr-1"></i> Durasi
+                            </div>
+                            <div class="font-bold text-primary text-lg">{{ $data['duration'] }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-2"></i>
+                            Keunggulan Program
+                        </h4>
+                        <ul class="space-y-3">
+                            @foreach($data['features'] as $feature)
+                            <li class="flex items-start group">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-gray-600">{{ $feature }}</span>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <!-- Additional Info for Takhassus -->
+                    @if($program == 'Takhassus Al-Quran')
+                    <div class="mt-4 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-amber-500 text-xl mt-1 mr-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-amber-800 mb-1">Persyaratan Khusus</h5>
+                                <p class="text-sm text-amber-700">
+                                    <strong>Usia Minimal:</strong> 17 tahun<br>
+                                    <strong>Komitmen:</strong> Program intensif tahfizh<br>
+                                    <strong>Evaluasi:</strong> Tes masuk khusus
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Card Footer -->
+
+            </div>
+            @endforeach
+        </div>
+
+        <!-- Statistics Section -->
+      
+
+        <!-- Info Box -->
+
+    </div>
+</section>
+
 
     <!-- Program Unggulan Section -->
     <section id="program" class="py-16 px-4">
@@ -747,7 +847,7 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                     <h3 class="text-xl font-bold mb-4">Tentang Kami</h3>
                     <ul class="space-y-2">
                         <li><a href="#visi-misi" class="hover:text-accent transition duration-300">Visi & Misi</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Galeri</a></li>
+                        <li><a href="{{ route('beasiswa') }}" class="hover:text-accent transition duration-300">info Beasiswa</a></li>
 
                     </ul>
                 </div>
@@ -783,8 +883,10 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
                            Alamat
                         </a>
                         <li><a href="https://wa.me/6287748115931" class="hover:text-accent transition duration-300">WhatsApp Developers</a></li>
-                        <li><a href="https://wa.me/6287748115931" target="_blank" class="hover:text-accent transition duration-300">WhatsApp Admin PPDB</a></li>
-                        <li><a href="#" class="hover:text-accent transition duration-300">Sosial Media</a></li>
+                        <li><a href="https://wa.me/6289510279293" target="_blank" class="hover:text-accent transition duration-300">WhatsApp Admin PPDB Putra</a></li>
+                        <li><a href="https://wa.me/6282183953533" target="_blank" class="hover:text-accent transition duration-300">WhatsApp Admin PPDB Putri</a></li>
+
+                        <li><a href="https://banisyahid.bio.link/" class="hover:text-accent transition duration-300">Sosial Media</a></li>
                     </ul>
                 </div>
             </div>
@@ -792,7 +894,7 @@ Menjaga dan melestarikan sanad kelimuan dalam pembelajaran Al-Qur\'an dan ilmu-i
            <div class="border-t border-white/20 mt-8 pt-8 text-center">
             <p>&copy; <?php echo date('Y'); ?>
                 <a
-                    href="https://www.instagram.com/unip_rpl/?igsh=MTFnbGF0ZzltcnNqNw%3D%3D"
+                    href="https://www.instagram.com/ponpesalquranbanisyahid_/"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-white hover:text-yellow-300 underline transition-colors duration-200"

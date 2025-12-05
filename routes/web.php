@@ -24,9 +24,11 @@ use App\Http\Controllers\Quota\QuotaController;
 use App\Http\Controllers\Announcement\SeleksiAnnoucementController;
 use App\Http\Controllers\CameraTestController;
 use App\Http\Controllers\Admin\QRcodeScannerController;
+use App\Http\Controllers\BeasiswaController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+Route::get('/beasiswa', [BeasiswaController::class, 'index'])->name('beasiswa');
 
 Route::get('/camera-test', [CameraTestController::class, 'index'])->name('camera-test.index');
 Route::post('/camera-test', [CameraTestController::class, 'store'])->name('camera-test.store');

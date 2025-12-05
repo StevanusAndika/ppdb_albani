@@ -93,7 +93,11 @@
                         'requirements' => [
                             'Foto jelas seluruh halaman',
                             'Terlihat nilai dan stempel',
-                            'Ijazah SD/SMP/SMA sesuai jenjang'
+                            'SKL atau ijazah SD/Sederajat(SMP)',
+                           'SKL atau ijazah SMP /Sederajat (SMA)',
+                           'Rapor terakhir bagi yang belum lulus ',
+                        
+
                         ]
                     ],
                     'akta_kelahiran' => [
@@ -104,7 +108,7 @@
                         'requirements' => [
                             'Foto jelas seluruh halaman',
                             'Terlihat nomor akta dan data lengkap',
-                            'Diterbitkan oleh dinas catatan sipil'
+                            'Dinas Kependudukan dan Pencatatan Sipil'
                         ]
                     ],
                     'pas_foto' => [
@@ -113,9 +117,10 @@
                         'icon' => 'fa-camera',
                         'color' => 'orange',
                         'requirements' => [
-                            'Ukuran 3x4 atau 4x6',
-                            'Latar belakang warna merah',
-                            'Pakaian sopan dan rapi',
+                            'Ukuran 3x4',
+
+                            'Kemeja atau koko putih untuk laki-laki',
+                            'Gamis atau kemeja putih dan hijab ',
                             'Wajah terlihat jelas'
                         ]
                     ]

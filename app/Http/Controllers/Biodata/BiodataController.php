@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 class BiodataController extends Controller
 {
@@ -32,8 +34,6 @@ class BiodataController extends Controller
             ->active()
             ->get()
             ->map(function($package) {
-                // Jika total_amount ada di database, gunakan itu
-                // Jika tidak, hitung dari activePrices
                 if ($package->total_amount && $package->total_amount > 0) {
                     $package->totalAmount = $package->total_amount;
                 } else {
@@ -46,7 +46,7 @@ class BiodataController extends Controller
         $contentSettings = ContentSetting::first();
         $programUnggulan = $contentSettings ? $contentSettings->program_unggulan : [];
 
-        // Data jenjang pendidikan untuk dropdown (hanya TK, SD, SMP, SMA)
+        // Data jenjang pendidikan untuk dropdown
         $jenjangPendidikan = [
             'TK/RA',
             'SD/MI',
@@ -54,11 +54,19 @@ class BiodataController extends Controller
             'SMA/MA'
         ];
 
+        // Data program pendidikan untuk dropdown
+        $programPendidikan = [
+            'MTS Bani Syahid',
+            'MA Bani Syahid',
+            'Takhassus Al-Quran'
+        ];
+
         return view('dashboard.calon_santri.biodata.biodata', compact(
             'registration',
             'packages',
             'programUnggulan',
-            'jenjangPendidikan'
+            'jenjangPendidikan',
+            'programPendidikan'
         ));
     }
 
@@ -99,7 +107,7 @@ class BiodataController extends Controller
                 'prices' => $formattedPrices,
                 'total' => $total,
                 'formatted_total' => 'Rp ' . number_format($total, 0, ',', '.'),
-                'package_total_amount' => $package->total_amount // Untuk debugging
+                'package_total_amount' => $package->total_amount
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching package prices: ' . $e->getMessage());
@@ -129,7 +137,7 @@ class BiodataController extends Controller
             if ($existingRegistration) {
                 $existingRegistration->update(array_merge($validated, [
                     'status_pendaftaran' => 'telah_mengisi',
-                    'status_seleksi' => 'belum_mengikuti_seleksi' // SET DEFAULT
+                    'status_seleksi' => 'belum_mengikuti_seleksi'
                 ]));
                 $registration = $existingRegistration;
                 $message = 'Biodata berhasil diperbarui';
@@ -137,9 +145,17 @@ class BiodataController extends Controller
                 $registration = Registration::create(array_merge($validated, [
                     'user_id' => $user->id,
                     'status_pendaftaran' => 'telah_mengisi',
-                    'status_seleksi' => 'belum_mengikuti_seleksi' // SET DEFAULT
+                    'status_seleksi' => 'belum_mengikuti_seleksi'
                 ]));
                 $message = 'Biodata berhasil disimpan';
+            }
+
+            // Validasi usia untuk Takhassus Al-Quran
+            if ($registration->program_pendidikan === 'Takhassus Al-Quran') {
+                $usia = $registration->calculateAge();
+                if ($usia < 17) {
+                    throw new \Exception("Usia calon santri atas nama {$registration->nama_lengkap} belum memenuhi untuk program Pendidikan Takhassus Al-Quran. Usia saat ini: {$usia} tahun (minimal 17 tahun).");
+                }
             }
 
             // Generate barcode setelah registrasi berhasil
@@ -156,6 +172,12 @@ class BiodataController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
+            if (str_contains($e->getMessage(), 'Usia calon santri')) {
+                return redirect()->back()
+                    ->with('error', $e->getMessage())
+                    ->withInput();
+            }
+
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
                 ->withInput();
@@ -167,6 +189,7 @@ class BiodataController extends Controller
         $rules = [
             'package_id' => 'required|exists:packages,id',
             'program_unggulan_id' => 'required|string|max:255',
+            'program_pendidikan' => 'required|in:MTS Bani Syahid,MA Bani Syahid,Takhassus Al-Quran',
             'nama_lengkap' => 'required|string|max:255',
             'nik' => ['required', 'digits:16', Rule::unique('registrations')->ignore($existingRegistration?->id)],
             'tempat_lahir' => 'required|string|max:255',
@@ -208,7 +231,21 @@ class BiodataController extends Controller
             'nomor_telpon_wali' => 'required|string|max:15',
         ];
 
-        return $request->validate($rules);
+        $validated = $request->validate($rules);
+
+        // Validasi usia untuk Takhassus Al-Quran
+        if ($request->program_pendidikan === 'Takhassus Al-Quran' && $request->tanggal_lahir) {
+            $tanggalLahir = Carbon::parse($request->tanggal_lahir);
+            $usia = $tanggalLahir->diffInYears(Carbon::now());
+
+            if ($usia < 17) {
+                throw ValidationException::withMessages([
+                    'program_pendidikan' => 'Usia calon santri atas nama ' . $request->nama_lengkap . ' belum memenuhi untuk program Pendidikan Takhassus Al-Quran (minimal 17 tahun). Usia saat ini: ' . $usia . ' tahun.'
+                ]);
+            }
+        }
+
+        return $validated;
     }
 
     /**
@@ -263,7 +300,7 @@ class BiodataController extends Controller
         $contentSettings = ContentSetting::first();
         $programUnggulan = $contentSettings ? $contentSettings->program_unggulan : [];
 
-        // Data jenjang pendidikan untuk dropdown (hanya TK, SD, SMP, SMA)
+        // Data jenjang pendidikan untuk dropdown
         $jenjangPendidikan = [
             'TK/RA',
             'SD/MI',
@@ -271,11 +308,19 @@ class BiodataController extends Controller
             'SMA/MA'
         ];
 
+        // Data program pendidikan untuk dropdown
+        $programPendidikan = [
+            'MTS Bani Syahid',
+            'MA Bani Syahid',
+            'Takhassus Al-Quran'
+        ];
+
         return view('dashboard.calon_santri.biodata.edit', compact(
             'registration',
             'packages',
             'programUnggulan',
-            'jenjangPendidikan'
+            'jenjangPendidikan',
+            'programPendidikan'
         ));
     }
 
@@ -299,8 +344,16 @@ class BiodataController extends Controller
         try {
             $registration->update(array_merge($validated, [
                 'status_pendaftaran' => 'telah_mengisi',
-                'status_seleksi' => 'belum_mengikuti_seleksi' // SET DEFAULT
+                'status_seleksi' => 'belum_mengikuti_seleksi'
             ]));
+
+            // Validasi usia untuk Takhassus Al-Quran
+            if ($registration->program_pendidikan === 'Takhassus Al-Quran') {
+                $usia = $registration->calculateAge();
+                if ($usia < 17) {
+                    throw new \Exception("Usia calon santri atas nama {$registration->nama_lengkap} belum memenuhi untuk program Pendidikan Takhassus Al-Quran. Usia saat ini: {$usia} tahun (minimal 17 tahun).");
+                }
+            }
 
             DB::commit();
 
@@ -309,6 +362,12 @@ class BiodataController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
+            if (str_contains($e->getMessage(), 'Usia calon santri')) {
+                return redirect()->back()
+                    ->with('error', $e->getMessage())
+                    ->withInput();
+            }
 
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())

@@ -134,7 +134,7 @@
                 </div>
             </div>
 
-            <!-- Section 2: Data Pribadi -->
+            <!-- Section 2: Data Pribadi Santri -->
             <div class="bg-white rounded-xl shadow-md p-6">
                 <h2 class="text-xl font-bold text-primary mb-4 border-b pb-2">
                     <i class="fas fa-user mr-2"></i>Data Pribadi Santri
@@ -177,6 +177,7 @@
                     </div>
 
                     <!-- Tanggal Lahir -->
+                      <!-- Tanggal Lahir -->
                     <div>
                         <label for="tanggal_lahir" class="block text-sm font-medium text-gray-700 mb-2">
                             Tanggal Lahir <span class="text-red-500">*</span>
@@ -196,6 +197,19 @@
                             <option value="">Pilih Jenis Kelamin</option>
                             <option value="laki-laki" {{ old('jenis_kelamin', $registration->jenis_kelamin ?? '') == 'laki-laki' ? 'selected' : '' }}>Laki-laki</option>
                             <option value="perempuan" {{ old('jenis_kelamin', $registration->jenis_kelamin ?? '') == 'perempuan' ? 'selected' : '' }}>Perempuan</option>
+                        </select>
+                    </div>
+
+                    <!-- Agama (DIPINDAHKAN ke Data Pribadi Santri) -->
+                    <div>
+                        <label for="agama" class="block text-sm font-medium text-gray-700 mb-2">
+                            Agama <span class="text-red-500">*</span>
+                        </label>
+                        <select name="agama" id="agama" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
+                            <option value="">Pilih Agama</option>
+                            <option value="islam" {{ old('agama', $registration->agama ?? '') == 'islam' ? 'selected' : '' }}>Islam</option>
+
                         </select>
                     </div>
                 </div>
@@ -327,7 +341,7 @@
                             <input type="text" name="penghasilan_ibu" id="penghasilan_ibu"
                                 value="{{ old('penghasilan_ibu', $registration->penghasilan_ibu ?? '') }}"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 penghasilan-input"
-                                placeholder="Contoh: 1.000.000"
+                                placeholder="Contoh: 1.000.000,Jika Tidak bekerja tulis 0"
                                 title="Penghasilan dalam rupiah (boleh menggunakan titik pemisah ribuan)">
                         </div>
                     </div>
@@ -363,14 +377,15 @@
                             <input type="text" name="penghasilan_ayah" id="penghasilan_ayah"
                                 value="{{ old('penghasilan_ayah', $registration->penghasilan_ayah ?? '') }}"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300 penghasilan-input"
-                                placeholder="Contoh: 5.000.000"
+                                placeholder="Contoh: 5.000.000,Jika Tidak bekerja tulis 0"
                                 title="Penghasilan dalam rupiah (boleh menggunakan titik pemisah ribuan)">
                         </div>
                     </div>
                 </div>
 
-                <!-- Informasi Tambahan Orang Tua -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <!-- Informasi Tambahan Orang Tua - DUA KOLOM SEJAJAR -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Kolom 1: Nomor Telepon Orang Tua -->
                     <div>
                         <label for="nomor_telpon_orang_tua" class="block text-sm font-medium text-gray-700 mb-2">
                             Nomor Telepon Orang Tua <span class="text-red-500">*</span>
@@ -381,19 +396,10 @@
                             placeholder="08xxxxxxxxxx"
                             pattern="[0-9]{10,15}"
                             title="Nomor telepon harus 10-15 digit angka">
+                        <p class="text-xs text-gray-500 mt-1">Nomor aktif yang bisa dihubungi</p>
                     </div>
 
-                    <div>
-                        <label for="agama" class="block text-sm font-medium text-gray-700 mb-2">
-                            Agama Calon Santri <span class="text-red-500">*</span>
-                        </label>
-                        <select name="agama" id="agama" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
-                            <option value="">Pilih Agama</option>
-                            <option value="islam" {{ old('agama', $registration->agama ?? '') == 'islam' ? 'selected' : '' }}>Islam</option>
-                        </select>
-                    </div>
-
+                    <!-- Kolom 2: Status Orang Tua -->
                     <div>
                         <label for="status_orang_tua" class="block text-sm font-medium text-gray-700 mb-2">
                             Status Orang Tua <span class="text-red-500">*</span>
@@ -405,6 +411,7 @@
                             <option value="cerai_hidup" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'cerai_hidup' ? 'selected' : '' }}>Cerai Hidup</option>
                             <option value="cerai_mati" {{ old('status_orang_tua', $registration->status_orang_tua ?? '') == 'cerai_mati' ? 'selected' : '' }}>Cerai Mati</option>
                         </select>
+                        <p class="text-xs text-gray-500 mt-1">Status pernikahan orang tua</p>
                     </div>
                 </div>
             </div>
@@ -431,6 +438,27 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <!-- Program Pendidikan -->
+                    <div>
+                        <label for="program_pendidikan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Program Pendidikan Yang Dipilih <span class="text-red-500">*</span>
+                        </label>
+                        <select name="program_pendidikan" id="program_pendidikan" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
+                            <option value="">Pilih Program</option>
+                            @foreach($programPendidikan as $program)
+                                <option value="{{ $program }}"
+                                    {{ old('program_pendidikan', $registration->program_pendidikan ?? '') == $program ? 'selected' : '' }}
+                                    data-min-age="{{ $program === 'Takhassus Al-Quran' ? 17 : 0 }}">
+                                    {{ $program }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div id="age-warning" class="text-sm mt-2 hidden">
+                            <!-- Pesan peringatan akan muncul di sini -->
+                        </div>
                     </div>
 
                     <!-- NIS/NISN/NSP -->
@@ -667,7 +695,9 @@
                             <li>RT/RW: maksimal 3 digit angka</li>
                             <li>Kode Pos: 5 digit angka</li>
                             <li>Nomor Telepon: 10-15 digit angka</li>
-
+                            <li>Program Takhassus Al-Quran: minimal usia 17 tahun</li>
+                            <li>Agama: Pilih agama sesuai KTP</li>
+                            <li>Status Orang Tua: Pilih sesuai kondisi orang tua</li>
                             <li>NIS/NISN/NSP: angka tanpa karakter khusus</li>
                         </ul>
                     </div>
@@ -1048,6 +1078,66 @@
         }
     }
 
+    // FUNGSI VALIDASI PROGRAM PENDIDIKAN TAKHASSUS
+    function validateTakhassusAge() {
+        const programSelect = document.getElementById('program_pendidikan');
+        const tanggalLahirInput = document.getElementById('tanggal_lahir');
+        const namaLengkapInput = document.getElementById('nama_lengkap');
+        const warningDiv = document.getElementById('age-warning');
+
+        // Reset warning
+        warningDiv.classList.add('hidden');
+        warningDiv.classList.remove('text-red-600', 'text-green-600', 'bg-red-50', 'bg-green-50', 'border-red-200', 'border-green-200');
+
+        if (programSelect.value === 'Takhassus Al-Quran' && tanggalLahirInput.value) {
+            const tanggalLahir = new Date(tanggalLahirInput.value);
+            const today = new Date();
+
+            let usia = today.getFullYear() - tanggalLahir.getFullYear();
+            const monthDiff = today.getMonth() - tanggalLahir.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < tanggalLahir.getDate())) {
+                usia--;
+            }
+
+            const namaLengkap = namaLengkapInput.value || 'calon santri';
+
+            if (usia < 17) {
+                warningDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-2"></i>
+                        <div>
+                            <strong class="text-red-600">Usia tidak memenuhi syarat:</strong><br>
+                            Usia calon santri atas nama <strong>${namaLengkap}</strong> belum memenuhi untuk program Pendidikan Takhassus Al-Quran.<br>
+                            <span class="text-sm">Usia saat ini: <strong>${usia} tahun</strong> | Minimal: <strong>17 tahun</strong></span>
+                        </div>
+                    </div>
+                `;
+                warningDiv.classList.remove('hidden');
+                warningDiv.classList.add('text-red-600', 'bg-red-50', 'p-3', 'rounded-lg', 'border', 'border-red-200');
+
+                return false;
+            } else {
+                warningDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
+                        <div>
+                            <strong class="text-green-600">Usia memenuhi syarat:</strong><br>
+                            Usia calon santri atas nama <strong>${namaLengkap}</strong> memenuhi syarat untuk program Takhassus Al-Quran.<br>
+                            <span class="text-sm">Usia saat ini: <strong>${usia} tahun</strong></span>
+                        </div>
+                    </div>
+                `;
+                warningDiv.classList.remove('hidden');
+                warningDiv.classList.add('text-green-600', 'bg-green-50', 'p-3', 'rounded-lg', 'border', 'border-green-200');
+
+                return true;
+            }
+        }
+
+        return true;
+    }
+
     // Setup semua input saat DOM siap
     document.addEventListener('DOMContentLoaded', function() {
         // Field yang hanya menerima angka (tanpa titik)
@@ -1072,6 +1162,11 @@
         // Setup field penghasilan (boleh pakai titik)
         setupPenghasilanInput('penghasilan_ayah');
         setupPenghasilanInput('penghasilan_ibu');
+
+        // Event listeners untuk validasi program pendidikan
+        document.getElementById('program_pendidikan')?.addEventListener('change', validateTakhassusAge);
+        document.getElementById('tanggal_lahir')?.addEventListener('change', validateTakhassusAge);
+        document.getElementById('nama_lengkap')?.addEventListener('input', validateTakhassusAge);
 
         // Validasi form submission
         document.getElementById('biodataForm')?.addEventListener('submit', function(e) {
@@ -1162,6 +1257,41 @@
                 }
             });
 
+            // Validasi Program Pendidikan Takhassus
+            const programSelect = document.getElementById('program_pendidikan');
+            const tanggalLahirInput = document.getElementById('tanggal_lahir');
+
+            if (programSelect && programSelect.value === 'Takhassus Al-Quran' && tanggalLahirInput && tanggalLahirInput.value) {
+                const tanggalLahir = new Date(tanggalLahirInput.value);
+                const today = new Date();
+
+                let usia = today.getFullYear() - tanggalLahir.getFullYear();
+                const monthDiff = today.getMonth() - tanggalLahir.getMonth();
+
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < tanggalLahir.getDate())) {
+                    usia--;
+                }
+
+                if (usia < 17) {
+                    isValid = false;
+                    programSelect.classList.add('border-red-500');
+                    tanggalLahirInput.classList.add('border-red-500');
+
+                    const namaLengkap = document.getElementById('nama_lengkap')?.value || 'calon santri';
+                    errorMessages.push(`Program Takhassus Al-Quran: Usia ${namaLengkap} (${usia} tahun) belum memenuhi syarat (minimal 17 tahun)`);
+                    errorFields.push(programSelect);
+                }
+            }
+
+            // Validasi Agama
+            const agamaSelect = document.getElementById('agama');
+            if (agamaSelect && !agamaSelect.value) {
+                isValid = false;
+                agamaSelect.classList.add('border-red-500');
+                errorMessages.push('Agama harus dipilih');
+                errorFields.push(agamaSelect);
+            }
+
             if (!isValid) {
                 e.preventDefault();
                 let errorMessage = 'Terdapat kesalahan dalam pengisian form:<br><br>';
@@ -1189,12 +1319,58 @@
                         input.value = input.value.replace(/\./g, '');
                     }
                 });
+
+                // Tampilkan konfirmasi untuk Takhassus
+                if (programSelect && programSelect.value === 'Takhassus Al-Quran') {
+                    const tanggalLahir = new Date(tanggalLahirInput.value);
+                    const today = new Date();
+
+                    let usia = today.getFullYear() - tanggalLahir.getFullYear();
+                    const monthDiff = today.getMonth() - tanggalLahir.getMonth();
+
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < tanggalLahir.getDate())) {
+                        usia--;
+                    }
+
+                    const namaLengkap = document.getElementById('nama_lengkap')?.value || 'calon santri';
+
+                    e.preventDefault(); // Mencegah submit langsung
+
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Konfirmasi Program Takhassus',
+                        html: `
+                            <div class="text-left">
+                                <p>Anda memilih program <strong>Takhassus Al-Quran</strong>.</p>
+                                <p class="mt-2">Nama: <strong>${namaLengkap}</strong></p>
+                                <p>Usia: <strong>${usia} tahun</strong> (memenuhi syarat minimal 17 tahun)</p>
+                                <p class="mt-2 text-sm text-gray-600">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Program ini khusus untuk tahfizh dan pendalaman Al-Quran
+                                </p>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Lanjutkan',
+                        cancelButtonText: 'Periksa Kembali',
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Submit form setelah konfirmasi
+                            document.getElementById('biodataForm').submit();
+                        }
+                    });
+                }
             }
         });
 
         // Hapus error styling saat user mulai mengetik
-        document.querySelectorAll('.numeric-input, .penghasilan-input').forEach(input => {
+        document.querySelectorAll('.numeric-input, .penghasilan-input, select').forEach(input => {
             input.addEventListener('input', function() {
+                this.classList.remove('border-red-500');
+            });
+            input.addEventListener('change', function() {
                 this.classList.remove('border-red-500');
             });
         });
@@ -1208,6 +1384,9 @@
                 }
             }
         });
+
+        // Jalankan validasi awal
+        validateTakhassusAge();
     });
 
     // Initialize package details if already selected
@@ -1227,6 +1406,50 @@
         if (!this.value) {
             this.type = 'text';
             this.placeholder = 'dd/mm/yyyy';
+        }
+    });
+
+    // Informasi program pendidikan saat hover
+    const programInfo = {
+        'MTS Bani Syahid': 'Madrasah Tsanawiyah untuk pendidikan menengah pertama (usia 12-15 tahun)',
+        'MA Bani Syahid': 'Madrasah Aliyah untuk pendidikan menengah atas (usia 15-18 tahun)',
+        'Takhassus Al-Quran': 'Program khusus tahfizh dan pendalaman Al-Quran (minimal usia 17 tahun)'
+    };
+
+    // Tooltip untuk program pendidikan
+    document.getElementById('program_pendidikan')?.addEventListener('mouseenter', function(e) {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.value && programInfo[selectedOption.value]) {
+            // Hapus tooltip lama jika ada
+            const oldTooltip = document.getElementById('program-tooltip');
+            if (oldTooltip) oldTooltip.remove();
+
+            // Buat tooltip baru
+            const tooltip = document.createElement('div');
+            tooltip.id = 'program-tooltip';
+            tooltip.className = 'absolute z-50 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg shadow-lg max-w-xs';
+            tooltip.textContent = programInfo[selectedOption.value];
+
+            // Posisi tooltip
+            const rect = this.getBoundingClientRect();
+            tooltip.style.top = (rect.top + rect.height + 5) + 'px';
+            tooltip.style.left = rect.left + 'px';
+
+            document.body.appendChild(tooltip);
+        }
+    });
+
+    document.getElementById('program_pendidikan')?.addEventListener('mouseleave', function() {
+        const tooltip = document.getElementById('program-tooltip');
+        if (tooltip) {
+            tooltip.remove();
+        }
+    });
+
+    document.getElementById('program_pendidikan')?.addEventListener('change', function() {
+        const tooltip = document.getElementById('program-tooltip');
+        if (tooltip) {
+            tooltip.remove();
         }
     });
 </script>
@@ -1288,7 +1511,8 @@
 
     /* Tooltip untuk error messages */
     .numeric-input:invalid:focus,
-    .penghasilan-input:invalid:focus {
+    .penghasilan-input:invalid:focus,
+    select:invalid:focus {
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
     }
 
@@ -1301,6 +1525,106 @@
     .penghasilan-input:focus {
         background-color: #dcfce7;
         border-color: #4ade80;
+    }
+
+    /* Style untuk warning message */
+    #age-warning {
+        transition: all 0.3s ease;
+    }
+
+    /* Style untuk select option dengan warna berbeda */
+    select option[value="Takhassus Al-Quran"] {
+        background-color: #fef3c7;
+        font-weight: 600;
+    }
+
+    select option[value="MTS Bani Syahid"] {
+        background-color: #dbeafe;
+    }
+
+    select option[value="MA Bani Syahid"] {
+        background-color: #e0e7ff;
+    }
+
+    /* Highlight untuk program Takhassus */
+    .takhassus-highlight {
+        border-left: 4px solid #f59e0b;
+        background-color: #fffbeb;
+    }
+
+    /* Grid layout untuk kolom sejajar */
+    .grid-cols-2 > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .grid-cols-1 {
+            grid-template-columns: 1fr;
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: 1fr;
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: 1fr;
+        }
+
+        .md\\:col-span-2 {
+            grid-column: span 1;
+        }
+
+        .lg\\:col-span-3 {
+            grid-column: span 1;
+        }
+
+        .lg\\:col-span-4 {
+            grid-column: span 1;
+        }
+
+        /* Untuk kolom sejajar di mobile */
+        .sejajar-container {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+
+    /* Style untuk keterangan kecil */
+    .text-xs.text-gray-500 {
+        font-size: 0.75rem;
+        line-height: 1rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Tooltip styling */
+    #program-tooltip {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        pointer-events: none;
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Style untuk section border */
+    .border-b.pb-2 {
+        border-bottom-width: 2px;
+        border-bottom-color: #3b82f6;
+    }
+
+    /* Style untuk required asterisk */
+    .text-red-500 {
+        color: #ef4444;
+        font-weight: bold;
     }
 </style>
 @endsection

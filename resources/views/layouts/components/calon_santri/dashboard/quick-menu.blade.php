@@ -11,7 +11,7 @@
         </a>
 
         <!-- Dokumen Card -->
-        <a href="{{ route('santri.documents.index') }}" class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-4 text-center hover:from-green-600 hover:to-green-700 transition duration-300 transform hover:scale-105">
+        <a href="{{ route('santri.documents.index') }}" class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-lg p-4 text-center hover:from-emerald-600 hover:to-emerald-700 transition duration-300 transform hover:scale-105">
             <div class="flex flex-col items-center">
                 <i class="fas fa-file-upload text-2xl mb-2"></i>
                 <span class="font-semibold text-sm">Dokumen</span>
@@ -52,7 +52,7 @@
         </a>
 
         <!-- FAQ Card -->
-        <a href="{{ route('santri.faq.index') }}" class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-lg p-4 text-center hover:from-indigo-600 hover:to-indigo-700 transition duration-300 transform hover:scale-105">
+        <a href="{{ route('santri.faq.index') }}" class="bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-lg p-4 text-center hover:from-amber-600 hover:to-amber-700 transition duration-300 transform hover:scale-105">
             <div class="flex flex-col items-center">
                 <i class="fas fa-question-circle text-2xl mb-2"></i>
                 <span class="font-semibold text-sm">FAQ</span>
@@ -67,11 +67,21 @@
             </div>
         </a>
 
-        <a href="https://api.whatsapp.com/send?phone=6287748115931&text=Halo%20Admin%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid%2C%20saya%20memiliki%20kendala%20atau%20ingin%20konsultasi%20seputar%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid"
-        class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-4 text-center hover:from-green-600 hover:to-green-700 transition duration-300 transform hover:scale-105">
+        <!-- Support PPDB Putra -->
+        <a href="https://api.whatsapp.com/send?phone=6289510279293&text=Halo%20Admin%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid%2C%20saya%20memiliki%20kendala%20atau%20ingin%20konsultasi%20seputar%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid"
+        class="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg p-4 text-center hover:from-blue-700 hover:to-blue-800 transition duration-300 transform hover:scale-105">
             <div class="flex flex-col items-center">
                 <i class="fas fa-headset text-2xl mb-2"></i>
-                <span class="font-semibold text-sm">Bantuan</span>
+                <span class="font-semibold text-sm">Support PPDB Putra</span>
+            </div>
+        </a>
+
+        <!-- Support PPDB Putri -->
+        <a href="https://api.whatsapp.com/send?phone=6282183953533&text=Halo%20Admin%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid%2C%20saya%20memiliki%20kendala%20atau%20ingin%20konsultasi%20seputar%20Pondok%20Pesantren%20Al%20Quran%20Bani%20Syahid"
+        class="bg-gradient-to-br from-pink-600 to-pink-700 text-white rounded-lg p-4 text-center hover:from-pink-700 hover:to-pink-800 transition duration-300 transform hover:scale-105">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-headset text-2xl mb-2"></i>
+                <span class="font-semibold text-sm">Support PPDB Putri</span>
             </div>
         </a>
     </div>
