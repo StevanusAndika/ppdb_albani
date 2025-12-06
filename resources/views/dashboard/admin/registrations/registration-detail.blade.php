@@ -351,7 +351,7 @@
                     <div class="current-status">
                         <div class="flex items-center justify-center space-x-2 mb-2">
                             <i class="fas fa-flag text-white"></i>
-                            <span class="font-medium">Status Pendaftaran</span>
+                            <span class="font-medium">Status Dokumen</span>
                         </div>
                         <div class="font-bold text-lg">{{ $registration->status_label }}</div>
                     </div>

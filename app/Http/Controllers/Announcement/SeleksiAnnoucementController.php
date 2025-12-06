@@ -387,7 +387,7 @@ class SeleksiAnnoucementController extends Controller
                "Jl. Kp. Tipar Tengah, RT.5/RW.10, Mekarsari, Kec. Cimanggis, Kota Depok, Jawa Barat 16452\n\n" .
                "📝 *Yang perlu dipersiapkan:*\n" .
                "• Alat tulis (pensil, pulpen, penghapus)\n" .
-               "• Barcode Pendaftaran\n" .
+               "• Barcode Pendaftaran(Ada di menu QR Code)\n" .
                "• Berpakaian Rapi Dan Sopan(Bagi calon santri/santriwati dan orang tua/wali santri/santriwati )\n\n" .
 
                "Harap hadir 30 menit sebelum waktu tes dimulai.\n\n" .

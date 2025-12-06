@@ -78,11 +78,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/qrcode-scanner', [QRcodeScannerController::class, 'index'])->name('qrcode-scanner.index');
     Route::post('/qrcode-scanner', [QRcodeScannerController::class, 'store'])->name('qrcode-scanner.store');
 
+
+ 
+
     // Announcement Routes (Pengumuman Kelulusan)
     Route::prefix('announcements')->name('announcements.')->group(function () {
         Route::get('/', [AnnouncementController::class, 'index'])->name('index');
         Route::post('/send-individual/{registrationId}', [AnnouncementController::class, 'sendIndividualMessage'])->name('send-individual');
         Route::post('/send-bulk', [AnnouncementController::class, 'sendBulkMessage'])->name('send-bulk');
+        Route::post('/send-all-santri', [AnnouncementController::class, 'sendToAllSantri'])->name('send-all-santri'); // TAMBAHKAN INI
         Route::post('/update-status-seleksi/{registrationId}', [AnnouncementController::class, 'updateStatusSeleksi'])->name('update-status-seleksi');
     });
 

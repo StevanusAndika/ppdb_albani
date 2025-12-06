@@ -594,7 +594,13 @@ class Registration extends Model
               ->orWhereNotNull('pas_foto_path');
         });
     }
-
+    /**
+ * Cek apakah perlu review (accessor untuk needs_review)
+ */
+    public function getNeedsReviewAttribute()
+    {
+        return $this->status_pendaftaran === 'perlu_review';
+    }
     /**
      * Hapus semua dokumen yang terkait
      */

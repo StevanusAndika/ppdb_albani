@@ -4,7 +4,7 @@ perbaiki responsive di halaman login,register dan lupa password
 disetiap  yang ada tabel tambahin buat sort data secara ascending dan descending
 
 dashboard calon santri:
-fix halaman upload dokumen  di halaman uppload dokumen(hilangkan refresh setiap detik,cukup periksa refresh ketika dokumen diupload/diupdated)[done]
+fix halaman upload dokumen  di halaman uppload dokumen(hilangkan refresh setiap detik,cukup periksa refresh ketika dokumen diupload/diupdated)[Done]
 untuk halaman welcome.blade.php implementasi per konten dari admin/konten dan untuk visi misi buat per point
 ketika accordion terbuka di faq,buat agar footer full
 
@@ -27,9 +27,13 @@ buat footernya full di halaman admin/prices/index.blade.php(cek dashboard kompon
 
 tambahin alert ketika mau hapus data di  halaman admin/billing/prices/index.blade.php dan admin/billing/packages/index.blade.php
 
-buat untuk di admin/billing/packages/index.blade.php untuk nama paket ambil value langsung  dari tipe paket[done]
+buat untuk di admin/billing/packages/index.blade.php untuk nama paket ambil value langsung  dari tipe paket[Done]
 
 tambahin alert ketika mau hapus data di  halaman admin/billing/index.blade.php dan admin/billing/packages/index.blade.php dengan sweetalert(baru billing yg udah)
+buat untuk  notif di Aksi Massal pada halaman admin/pengumuman ketika mau kirim data sengan sweetalert
+perbaiki responsive untuk web scanner
+perbaiki dashboard admin dan calon santri kadang gak bisa pas tampilan mobile di beberapa menu
+
 
 untuk kelola konten buat 1 layout aja
 pecah file js dan modal  disetiap file jadi file yang beda (yang ada )
@@ -38,17 +42,18 @@ backend:
 
 perbaiki tombol sinkronisasi  di halaman views/dashboard/calon_santri/payments/index.blade.php(error 403 di hosting)[Done]
 
-ketika registrasi buat agar email yg sudah didaftarkan tidak bisa digunakan lagi[done]
+ketika registrasi buat agar email yg sudah didaftarkan tidak bisa digunakan lagi[Done]
 
-perbaiki untuk annoucement kelulusan dan tes seleksi tidak bentrok
+perbaiki untuk annoucement kelulusan dan tes seleksi tidak bentrok[Done]
 
-tambahin di  admin/paymentcontroller biar admin bisa lihat invoice dalam pembayaran cash dan xendit[done]
+tambahin di  admin/paymentcontroller biar admin bisa lihat invoice dalam pembayaran cash dan xendit PDF[Done]
 
 tambahin status pembayaran di halaman qr code[done]
 
 tambahin total biaya di admin/paket  dan ambil tipe paketnya di http://localhost:8000/admin/billing/packages dan http://localhost:8000/admin/billing/packages/1/prices[Done]
 
 tambahin authentifikasi recaptcha v3 google[Done]
-tambahin cooldown otp send[done]
-tambahin masa berlaku kode otp 5 menit[done]
+tambahin cooldown otp send[Done]
+tambahin masa berlaku kode otp 5 menit[Done]
+
 
