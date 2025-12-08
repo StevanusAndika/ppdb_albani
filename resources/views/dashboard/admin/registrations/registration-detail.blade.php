@@ -149,12 +149,22 @@
     <!-- Navbar -->
       @include('layouts.components.admin.navbar')
 
+              <!-- Header Hero -->
+    <header class="py-8 px-4 text-center">
+        <div class="flex space-x-2">
+                <a href="{{ route('admin.registrations.index') }}"
+                   class="action-btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="hidden md:inline">Kembali</span>
+                </a>
+            </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Detail Pendaftaran Santri</h1>
+        <p class="text-secondary">Kelola dan tinjau detail pendaftaran calon santri di sini.</p>
+    </header>
     <main class="max-w-7xl mx-auto py-6 px-3 md:px-4">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-3 md:space-y-0">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-primary mb-2">Detail Pendaftaran Santri</h1>
-                <div class="flex flex-wrap items-center gap-2 md:gap-4">
+        <div class="bg-white rounded-xl shadow-md p-6 mx-auto text-center">
+                <h2 class="text-2xl font-bold text-primary">{{$registration->nama_lengkap }}</h2>
+                <div class="flex flex-wrap items-center gap-2 md:gap-4 justify-center mt-3">
                     <span class="status-badge {{ $registration->status_pendaftaran }} text-xs md:text-sm">
                         {{ $registration->status_label }}
                     </span>
@@ -179,21 +189,22 @@
                     </span>
                     @endif
                 </div>
-            </div>
-            <div class="flex space-x-2">
-                <a href="{{ route('admin.registrations.index') }}"
-                   class="action-btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    <span class="hidden md:inline">Kembali</span>
-                </a>
-            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Content  -->
+             
+        </div>
+
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-3 md:space-y-0">
+            
         </div>
 
         <!-- Status & Actions & Requirements -->
-        <div class="detail-section">
+        <div class="detail-section mb-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 <!-- Kolom 1: Persyaratan Pendaftaran -->
-                <div class="space-y-4">
+                <div class="space-y-4 bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-3">Persyaratan Pendaftaran</h3>
 
                     <!-- Card Persyaratan -->
@@ -293,7 +304,7 @@
                                           a 15.9155 15.9155 0 0 1 0 31.831
                                           a 15.9155 15.9155 0 0 1 0 -31.831"
                                     />
-                                    <text x="18" y="20.5" class="text-2xl font-bold text-gray-800 text-center" dominant-baseline="middle" text-anchor="middle">
+                                    <text x="18" y="20.5" class=" font-bold text-gray-800 text-center" dominant-baseline="middle" text-anchor="middle">
                                         {{ $registration->uploaded_documents_count }}/4
                                     </text>
                                 </svg>
@@ -303,7 +314,7 @@
                 </div>
 
                 <!-- Kolom 2: Status Seleksi -->
-                <div class="space-y-4">
+                <div class="space-y-4 bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-3">Kelola Status Seleksi</h3>
 
                     <!-- Card Status Seleksi -->
@@ -344,16 +355,16 @@
                 </div>
 
                 <!-- Kolom 3: Action Buttons -->
-                <div class="space-y-4">
+                <div class="space-y-4 bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-3">Aksi Admin</h3>
 
                     <!-- Status Saat Ini -->
                     <div class="current-status">
                         <div class="flex items-center justify-center space-x-2 mb-2">
                             <i class="fas fa-flag text-white"></i>
-                            <span class="font-medium">Status Dokumen</span>
+                            <span class="font-medium">Status Pendaftaran :</span>
+                            <span class="font-bold text-gray-500">{{ $registration->status_label }}</span>
                         </div>
-                        <div class="font-bold text-lg">{{ $registration->status_label }}</div>
                     </div>
 
                     <!-- Tombol Aksi Utama -->
@@ -367,9 +378,9 @@
 
                         <button onclick="showRejectModal()"
                                 class="action-btn btn-danger"
-                                title="Tolak pendaftaran ini">
+                                title="Revisi pendaftaran ini">
                             <i class="fas fa-times-circle"></i>
-                            <span>Tolak</span>
+                            <span>Revisi</span>
                         </button>
                     </div>
 
@@ -434,161 +445,161 @@
         <!-- Konten Utama -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-4 md:space-y-6">
+            <div class="lg:col-span-2 space-y-4 md:space-y-6 bg-white rounded-xl shadow-md p-6 mb-6">
                 <!-- Data Pribadi Santri -->
                 <div class="detail-section">
                     <h2 class="detail-section-title">Data Pribadi Santri</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Nama Lengkap</span>
-                            <span class="info-value">{{ $registration->nama_lengkap }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">NIK</span>
-                            <span class="info-value font-mono">{{ $registration->nik }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Program Unggulan</span>
-                            <span class="info-value bg-yellow-50 border-yellow-200">
-                                <strong>{{ $registration->program_unggulan_name }}</strong>
+                    <table>
+                        <tr>
+                            <td>Nama Lengkap </td><td>: {{ $registration->nama_lengkap }}</td>
+                        </tr>
+                        <tr>
+                            <td>NIK</td><td>: {{ $registration->nik }}</td>
+                        </tr>
+                        <tr>
+                            <td>Program Unggulan</td><td>: {{ $registration->program_unggulan_name }}
                                 @if($registration->program_unggulan_description)
                                 <br><span class="text-xs text-gray-600">{{ $registration->program_unggulan_description }}</span>
                                 @endif
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Tempat, Tanggal Lahir</span>
-                            <span class="info-value">{{ $registration->tempat_lahir }}, {{ $registration->tanggal_lahir->translatedFormat('d F Y') }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Jenis Kelamin</span>
-                            <span class="info-value">{{ ucfirst($registration->jenis_kelamin) }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Agama</span>
-                            <span class="info-value">{{ ucfirst($registration->agama) }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kebangsaan</span>
-                            <span class="info-value">{{ $registration->kebangsaan }}</span>
-                        </div>
-                        <div class="info-item md:col-span-2 lg:col-span-3">
-                            <span class="info-label">Alamat Tinggal</span>
-                            <span class="info-value">{{ $registration->alamat_tinggal }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">RT/RW</span>
-                            <span class="info-value">{{ $registration->rt ?: '-' }}/{{ $registration->rw ?: '-' }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelurahan</span>
-                            <span class="info-value">{{ $registration->kelurahan }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kecamatan</span>
-                            <span class="info-value">{{ $registration->kecamatan }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kota</span>
-                            <span class="info-value">{{ $registration->kota }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kode Pos</span>
-                            <span class="info-value">{{ $registration->kode_pos }}</span>
-                        </div>
+                            </td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Tempat, Tanggal Lahir</td>
+                            <td class="info-value">: {{ $registration->tempat_lahir }}, : {{ $registration->tanggal_lahir->translatedFormat('d F Y') }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Jenis Kelamin</td>
+                            <td class="info-value">: {{ ucfirst($registration->jenis_kelamin) }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Agama</td>
+                            <td class="info-value">: {{ ucfirst($registration->agama) }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kebangsaan</td>
+                            <td class="info-value">: {{ $registration->kebangsaan }}</td>
+                        </tr>
+                        <tr class="info-item md:col-td-2 lg:col-td-3">
+                            <td class="info-label">Alamat Tinggal</td>
+                            <td class="info-value">: {{ $registration->alamat_tinggal }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">RT/RW</td>
+                            <td class="info-value">: {{ $registration->rt ?: '-' }}/: {{ $registration->rw ?: '-' }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kelurahan</td>
+                            <td class="info-value">: {{ $registration->kelurahan }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kecamatan</td>
+                            <td class="info-value">: {{ $registration->kecamatan }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kota</td>
+                            <td class="info-value">: {{ $registration->kota }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kode Pos</td>
+                            <td class="info-value">: {{ $registration->kode_pos }}</td>
+                        </tr>
+
+                    </table>
+                    <div class="info-grid">
+                        
                     </div>
                 </div>
 
                 <!-- Data Orang Tua -->
                 <div class="detail-section">
                     <h2 class="detail-section-title">Data Orang Tua</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Nama Ibu Kandung</span>
-                            <span class="info-value">{{ $registration->nama_ibu_kandung }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Nama Ayah Kandung</span>
-                            <span class="info-value">{{ $registration->nama_ayah_kandung }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Pekerjaan Ibu</span>
-                            <span class="info-value">{{ $registration->pekerjaan_ibu }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Pekerjaan Ayah</span>
-                            <span class="info-value">{{ $registration->pekerjaan_ayah }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Penghasilan Ibu</span>
-                            <span class="info-value">
+                    <table>
+                        <tr>
+                            <td>Nama Ibu Kandung </td><td>: {{ $registration->nama_ibu_kandung }}</td>
+                        </tr>
+                        <tr>
+                            <td>Nama Ayah Kandung</td><td>: {{ $registration->nama_ayah_kandung }}</td>
+                        </tr>
+                        <tr>
+                            <td>Pekerjaan Ibu</td><td>: {{ $registration->pekerjaan_ibu }}</td>
+                        </tr>
+                        <tr>
+                            <td>Pekerjaan Ayah</td><td>: {{ $registration->pekerjaan_ayah }}</td>
+                        </tr>
+                        <tr>
+                            <td>Penghasilan Ibu</td><td>: 
                                 @if($registration->penghasilan_ibu)
                                     Rp {{ number_format($registration->penghasilan_ibu, 0, ',', '.') }}
                                 @else
                                     -
                                 @endif
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Penghasilan Ayah</span>
-                            <span class="info-value">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Penghasilan Ayah</td><td>: 
                                 @if($registration->penghasilan_ayah)
                                     Rp {{ number_format($registration->penghasilan_ayah, 0, ',', '.') }}
                                 @else
                                     -
                                 @endif
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Status Orang Tua</span>
-                            <span class="info-value">{{ ucfirst(str_replace('_', ' ', $registration->status_orang_tua)) }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Nomor Telepon Orang Tua</span>
-                            <span class="info-value">{{ $registration->nomor_telpon_orang_tua }}</span>
-                        </div>
-                    </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Status Orang Tua</td><td>: {{ ucfirst(str_replace('_', ' ', $registration->status_orang_tua)) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Nomor Telepon Orang Tua</td><td>: {{ $registration->nomor_telpon_orang_tua }}</td>
+                        </tr>
+                    </table>
                 </div>
 
                 <!-- Data Pendidikan -->
                 <div class="detail-section">
                     <h2 class="detail-section-title">Data Pendidikan</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Jenjang Pendidikan Terakhir</span>
-                            <span class="info-value">{{ $registration->jenjang_pendidikan_terakhir }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Nama Sekolah/Pondok Terakhir</span>
-                            <span class="info-value">{{ $registration->nama_sekolah_terakhir }}</span>
-                        </div>
-                        <div class="info-item md:col-span-2 lg:col-span-3">
-                            <span class="info-label">Alamat Sekolah/Pondok Terakhir</span>
-                            <span class="info-value">{{ $registration->alamat_sekolah_terakhir }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">NIS/NISN/NSP</span>
-                            <span class="info-value">{{ $registration->nis_nisn_nsp ?: '-' }}</span>
-                        </div>
-                    </div>
+                    <table>
+                        <tr>
+                            <td>Jenjang Pendidikan Terakhir </td><td>: {{ $registration->jenjang_pendidikan_terakhir }}</td>
+                        </tr>
+                        <tr>
+                            <td>Nama Sekolah/Pondok Terakhir</td><td>: {{ $registration->nama_sekolah_terakhir }}</td>
+                        </tr>
+                        <tr>
+                            <td>Alamat Sekolah/Pondok Terakhir</td><td>: {{ $registration->alamat_sekolah_terakhir }}</td>
+                        </tr>
+                        <tr>
+                            <td>NIS/NISN/NSP</td><td>: {{ $registration->nis_nisn_nsp ?: '-' }}</td>
+                        </tr>
+                    </table>
                 </div>
 
                 <!-- Data Kesehatan -->
                 <div class="detail-section">
                     <h2 class="detail-section-title">Data Kesehatan</h2>
+                    <table>
+                        <tr>
+                            <td>Tinggi Badan </td><td>: {{ $registration->tinggi_badan ? $registration->tinggi_badan . ' cm' : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Berat Badan</td><td>: {{ $registration->berat_badan ? $registration->berat_badan . ' kg' : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Riwayat Penyakit Serius</td><td>: {{ $registration->riwayat_penyakit_serius ?: 'Tidak ada' }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Golongan Darah</td>
+                            <td class="info-value">: {{ $registration->golongan_darah ?: '-' }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Alergi Obat</td>
+                            <td class="info-value">: {{ $registration->alergi_obat ?: 'Tidak ada' }}</td>
+                        </tr>
+                        <tr class="info-item md:col-td-2 lg:col-td-3">
+                            <td class="info-label">Penyakit Kronis</td>
+                            <td class="info-value">: {{ $registration->penyakit_kronis ?: 'Tidak ada' }}</td>
+                        </tr>
+                    </table>
                     <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Golongan Darah</span>
-                            <span class="info-value">{{ $registration->golongan_darah ?: '-' }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Alergi Obat</span>
-                            <span class="info-value">{{ $registration->alergi_obat ?: 'Tidak ada' }}</span>
-                        </div>
-                        <div class="info-item md:col-span-2 lg:col-span-3">
-                            <span class="info-label">Penyakit Kronis</span>
-                            <span class="info-value">{{ $registration->penyakit_kronis ?: 'Tidak ada' }}</span>
-                        </div>
+                        
                     </div>
                 </div>
 
@@ -596,175 +607,184 @@
                 @if($registration->nama_wali)
                 <div class="detail-section">
                     <h2 class="detail-section-title">Data Wali</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Nama Wali</span>
-                            <span class="info-value">{{ $registration->nama_wali }}</span>
-                        </div>
-                        <div class="info-item md:col-span-2 lg:col-span-3">
-                            <span class="info-label">Alamat Wali</span>
-                            <span class="info-value">{{ $registration->alamat_wali }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">RT/RW Wali</span>
-                            <span class="info-value">{{ $registration->rt_wali ?: '-' }}/{{ $registration->rw_wali ?: '-' }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kelurahan Wali</span>
-                            <span class="info-value">{{ $registration->kelurahan_wali }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kecamatan Wali</span>
-                            <span class="info-value">{{ $registration->kecamatan_wali }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kota Wali</span>
-                            <span class="info-value">{{ $registration->kota_wali }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Kode Pos Wali</span>
-                            <span class="info-value">{{ $registration->kode_pos_wali }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Nomor Telepon Wali</span>
-                            <span class="info-value">{{ $registration->nomor_telpon_wali }}</span>
-                        </div>
-                    </div>
+                    <table class="info-grid">
+                        <tr class="info-item">
+                            <td class="info-label">Nama Wali</td>
+                            <td class="info-value">:    {{ $registration->nama_wali }}</td>
+                        </tr>
+                        <tr class="info-item md:col-td-2 lg:col-td-3">
+                            <td class="info-label">Alamat Wali</td>
+                            <td class="info-value">:    {{ $registration->alamat_wali }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">RT/RW Wali</td>
+                            <td class="info-value">:    {{ $registration->rt_wali ?: '-' }}/:  {{ $registration->rw_wali ?: '-' }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kelurahan Wali</td>
+                            <td class="info-value">:    {{ $registration->kelurahan_wali }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kecamatan Wali</td>
+                            <td class="info-value">:    {{ $registration->kecamatan_wali }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kota Wali</td>
+                            <td class="info-value">:    {{ $registration->kota_wali }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Kode Pos Wali</td>
+                            <td class="info-value">:    {{ $registration->kode_pos_wali }}</td>
+                        </tr>
+                        <tr class="info-item">
+                            <td class="info-label">Nomor Telepon Wali</td>
+                            <td class="info-value">:    {{ $registration->nomor_telpon_wali }}</td>
+                        </tr>
+                    </table>
                 </div>
                 @endif
             </div>
 
             <!-- Right Column -->
-            <div class="space-y-4 md:space-y-6">
-                <!-- Paket & Biaya -->
-                <div class="detail-section">
-                    <h2 class="detail-section-title">Paket & Biaya</h2>
-                    <div class="mb-4">
-                        <span class="info-label">Paket Dipilih</span>
-                        <span class="info-value bg-blue-50 border-blue-200">{{ $registration->package->name }}</span>
+            <div class="">
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <!-- Paket & Biaya -->
+                    <div class="detail-section">
+                        <h2 class="detail-section-title">Paket & Biaya</h2>
+                        <div class="mb-4">
+                            <table>
+                                <tr>
+                                    <td class="info-label">Paket</td>
+                                    <td class="info-value border-blue-200">: {{ $registration->package->name }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="info-label">Program</td>
+                                    <td class="info-value border-blue-200">: {{ $registration->program_pendidikan }}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="info-label">Detail Biaya</span>
+                            <div class="space-y-2 mt-2 max-h-40 overflow-y-auto">
+                                @foreach($registration->package->prices as $price)
+                                <div class="flex justify-between text-sm p-2 hover:bg-gray-50 rounded">
+                                    <span>{{ $price->item_name }}</span>
+                                    <span class="font-medium">Rp {{ number_format($price->amount, 0, ',', '.') }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-3">
+                            <div class="flex justify-between font-semibold text-lg">
+                                <span>Total Biaya</span>
+                                <span class="text-primary">{{ $registration->formatted_total_biaya }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Status Pembayaran -->
+                        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium">Status Pembayaran:</span>
+                                <span class="text-sm font-semibold {{ $registration->has_successful_payment ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ $registration->has_successful_payment ? 'LUNAS' : 'BELUM LUNAS' }}
+                                </span>
+                            </div>
+                            @if($registration->has_successful_payment && $registration->successful_payment)
+                            <div class="text-xs text-gray-500 mt-1">
+                                Payment Code: {{ $registration->successful_payment->payment_code }}
+                            </div>
+                            @endif
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <span class="info-label">Detail Biaya</span>
-                        <div class="space-y-2 mt-2 max-h-40 overflow-y-auto">
-                            @foreach($registration->package->prices as $price)
-                            <div class="flex justify-between text-sm p-2 hover:bg-gray-50 rounded">
-                                <span>{{ $price->item_name }}</span>
-                                <span class="font-medium">Rp {{ number_format($price->amount, 0, ',', '.') }}</span>
+                    <!-- Dokumen -->
+                    <div class="detail-section">
+                        <h2 class="detail-section-title">Dokumen</h2>
+                        <div class="space-y-3">
+                            @php
+                                $documents = [
+                                    'kartu_keluarga' => [
+                                        'name' => 'Kartu Keluarga',
+                                        'path' => $registration->kartu_keluaga_path,
+                                        'icon' => 'fas fa-id-card',
+                                        'field' => 'kartu_keluaga_path'
+                                    ],
+                                    'ijazah' => [
+                                        'name' => 'Ijazah',
+                                        'path' => $registration->ijazah_path,
+                                        'icon' => 'fas fa-graduation-cap',
+                                        'field' => 'ijazah_path'
+                                    ],
+                                    'akta_kelahiran' => [
+                                        'name' => 'Akta Kelahiran',
+                                        'path' => $registration->akta_kelahiran_path,
+                                        'icon' => 'fas fa-birthday-cake',
+                                        'field' => 'akta_kelahiran_path'
+                                    ],
+                                    'pas_foto' => [
+                                        'name' => 'Pas Foto',
+                                        'path' => $registration->pas_foto_path,
+                                        'icon' => 'fas fa-camera',
+                                        'field' => 'pas_foto_path'
+                                    ]
+                                ];
+                            @endphp
+
+                            @foreach($documents as $type => $doc)
+                            <div class="document-item">
+                                <div class="flex items-center gap-3">
+                                    <i class="{{ $doc['icon'] }} document-icon {{ $type }}"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800 text-sm">{{ $doc['name'] }}</p>
+                                        <p class="text-xs text-gray-500 truncate max-w-xs">
+                                            @if($doc['path'])
+                                                {{ basename($doc['path']) }}
+                                            @else
+                                                Belum diunggah
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        @if($doc['path'])
+                                        <button onclick="showDocumentModal('{{ $type }}', '{{ $doc['name'] }}')"
+                                                class="text-blue-500 hover:text-blue-700"
+                                                title="Lihat Dokumen">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="{{ route('admin.registrations.download-document', [$registration->id, $type]) }}"
+                                        class="text-green-500 hover:text-green-700"
+                                        title="Download Dokumen">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <span class="document-status uploaded text-xs">
+                                            <i class="fas fa-check mr-1"></i> Terunggah
+                                        </span>
+                                        @else
+                                        <span class="document-status missing text-xs">
+                                            <i class="fas fa-times mr-1"></i> Belum Diunggah
+                                        </span>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                             @endforeach
                         </div>
-                    </div>
-
-                    <div class="border-t pt-3">
-                        <div class="flex justify-between font-semibold text-lg">
-                            <span>Total Biaya</span>
-                            <span class="text-primary">{{ $registration->formatted_total_biaya }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Status Pembayaran -->
-                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium">Status Pembayaran:</span>
-                            <span class="text-sm font-semibold {{ $registration->has_successful_payment ? 'text-green-600' : 'text-red-600' }}">
-                                {{ $registration->has_successful_payment ? 'LUNAS' : 'BELUM LUNAS' }}
-                            </span>
-                        </div>
-                        @if($registration->has_successful_payment && $registration->successful_payment)
-                        <div class="text-xs text-gray-500 mt-1">
-                            Payment Code: {{ $registration->successful_payment->payment_code }}
-                        </div>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Dokumen -->
-                <div class="detail-section">
-                    <h2 class="detail-section-title">Dokumen</h2>
-                    <div class="space-y-3">
-                        @php
-                            $documents = [
-                                'kartu_keluarga' => [
-                                    'name' => 'Kartu Keluarga',
-                                    'path' => $registration->kartu_keluaga_path,
-                                    'icon' => 'fas fa-id-card',
-                                    'field' => 'kartu_keluaga_path'
-                                ],
-                                'ijazah' => [
-                                    'name' => 'Ijazah',
-                                    'path' => $registration->ijazah_path,
-                                    'icon' => 'fas fa-graduation-cap',
-                                    'field' => 'ijazah_path'
-                                ],
-                                'akta_kelahiran' => [
-                                    'name' => 'Akta Kelahiran',
-                                    'path' => $registration->akta_kelahiran_path,
-                                    'icon' => 'fas fa-birthday-cake',
-                                    'field' => 'akta_kelahiran_path'
-                                ],
-                                'pas_foto' => [
-                                    'name' => 'Pas Foto',
-                                    'path' => $registration->pas_foto_path,
-                                    'icon' => 'fas fa-camera',
-                                    'field' => 'pas_foto_path'
-                                ]
-                            ];
-                        @endphp
-
-                        @foreach($documents as $type => $doc)
-                        <div class="document-item">
-                            <div class="flex items-center">
-                                <i class="{{ $doc['icon'] }} document-icon {{ $type }}"></i>
-                                <div class="flex-1">
-                                    <p class="font-medium text-gray-800 text-sm">{{ $doc['name'] }}</p>
-                                    <p class="text-xs text-gray-500 truncate max-w-xs">
-                                        @if($doc['path'])
-                                            {{ basename($doc['path']) }}
-                                        @else
-                                            Belum diunggah
-                                        @endif
-                                    </p>
-                                </div>
+                        <!-- Progress Dokumen -->
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Kelengkapan Dokumen</span>
+                                <span>{{ $registration->uploaded_documents_count }}/4 ({{ number_format(($registration->uploaded_documents_count / 4) * 100, 0) }}%)</span>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                @if($doc['path'])
-                                <button onclick="showDocumentModal('{{ $type }}', '{{ $doc['name'] }}')"
-                                        class="text-blue-500 hover:text-blue-700"
-                                        title="Lihat Dokumen">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <a href="{{ route('admin.registrations.download-document', [$registration->id, $type]) }}"
-                                   class="text-green-500 hover:text-green-700"
-                                   title="Download Dokumen">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                                <span class="document-status uploaded text-xs">
-                                    <i class="fas fa-check mr-1"></i> Terunggah
-                                </span>
-                                @else
-                                <span class="document-status missing text-xs">
-                                    <i class="fas fa-times mr-1"></i> Belum Diunggah
-                                </span>
-                                @endif
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full transition-all duration-300"
+                                    style="width: {{ ($registration->uploaded_documents_count / 4) * 100 }}%"></div>
                             </div>
-                        </div>
-                        @endforeach
-                    </div>
-
-                    <!-- Progress Dokumen -->
-                    <div class="mt-4">
-                        <div class="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Kelengkapan Dokumen</span>
-                            <span>{{ $registration->uploaded_documents_count }}/4 ({{ number_format(($registration->uploaded_documents_count / 4) * 100, 0) }}%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-primary h-2 rounded-full transition-all duration-300"
-                                 style="width: {{ ($registration->uploaded_documents_count / 4) * 100 }}%"></div>
                         </div>
                     </div>
                 </div>
-
+                <div class="bg-white rounded-xl shadow-md p-6">
                 <!-- Informasi Akun -->
                 <div class="detail-section">
                     <h2 class="detail-section-title">Informasi Akun</h2>
@@ -791,15 +811,14 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Catatan Admin -->
                 <div class="detail-section">
                     <h2 class="detail-section-title">Catatan Admin</h2>
                     <form id="adminNotesForm">
                         @csrf
-                        <textarea name="catatan_admin" rows="4"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                                  placeholder="Tambah catatan untuk pendaftaran ini...">{{ old('catatan_admin', $registration->catatan_admin) }}</textarea>
+                        <textarea id="adminNotes" name="catatan_admin" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                              placeholder="Tambah catatan untuk pendaftaran ini...">{{ old('catatan_admin', $registration->catatan_admin) }}</textarea>
                         <button type="submit"
                                 class="mt-2 w-full action-btn btn-primary text-sm">
                             <i class="fas fa-save"></i>
@@ -808,6 +827,8 @@
                     </form>
                 </div>
             </div>
+            </div>
+            
         </div>
 
     </main>
@@ -816,9 +837,9 @@
 
 <!-- Reject Modal dengan Form Dokumen -->
 <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="text-lg font-bold text-gray-800">Tolak Pendaftaran & Kelola Dokumen</h3>
+    <div class="modal-content bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
+        <div class="modal-header mb-4 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-gray-800">Revisi Pendaftaran & Kelola Dokumen</h3>
             <button onclick="closeRejectModal()" class="text-gray-500 hover:text-gray-700">
                 <i class="fas fa-times text-xl"></i>
             </button>
@@ -828,72 +849,71 @@
             <div class="modal-body">
                 <!-- Pilihan Dokumen yang Akan Dihapus -->
                <div class="mb-4">
-                <h4 class="font-medium text-white mb-3">Pilih dokumen yang akan dihapus:</h4>
-
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="keep_kartu_keluarga" name="keep_kartu_keluarga" value="1" checked>
-                        <label for="keep_kartu_keluarga" class="flex items-center">
-                            <i class="fas fa-id-card text-blue-500 mr-2"></i>
-                            <span class="text-white">Kartu Keluarga</span>
+                <h4 class="font-medium mb-3">Pilih dokumen yang harus direvisi:</h4>
+                    <div class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" id="keep_kartu_keluarga" name="keep_kartu_keluarga">
+                        <label for="keep_kartu_keluarga" class="select-none ms-2 text-sm font-medium text-heading">
+                            <span class="">Kartu Keluarga</span>
                             @if($registration->kartu_keluaga_path)
-                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            <span class="text-xs ml-2">(Sudah diunggah)</span>
                             @else
                             <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
                             @endif
                         </label>
+                            </input>
                     </div>
 
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="keep_ijazah" name="keep_ijazah" value="1" checked>
-                        <label for="keep_ijazah" class="flex items-center">
-                            <i class="fas fa-graduation-cap text-white mr-2"></i>
-                            <span class="text-white">Ijazah</span>
+                    <div class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" id="keep_ijazah" name="keep_ijazah">
+                        <label for="keep_ijazah" class="select-none ms-2 text-sm font-medium text-heading">
+                            <span class="">Ijazah</span>
                             @if($registration->ijazah_path)
-                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            <span class="text-xs ml-2">(Sudah diunggah)</span>
                             @else
                             <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
                             @endif
                         </label>
                     </div>
 
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="keep_akta_kelahiran" name="keep_akta_kelahiran" value="1" checked>
-                        <label for="keep_akta_kelahiran" class="flex items-center">
-                            <i class="fas fa-birthday-cake text-purple-500 mr-2"></i>
-                            <span class="text-white">Akta Kelahiran</span>
+                    <div class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" id="keep_akta_kelahiran" name="keep_akta_kelahiran">
+                        <label for="keep_akta_kelahiran" class="select-none ms-2 text-sm font-medium text-heading">
+                            <span class="">Akta Kelahiran</span>
                             @if($registration->akta_kelahiran_path)
-                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            <span class="text-xs ml-2">(Sudah diunggah)</span>
                             @else
                             <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
                             @endif
                         </label>
                     </div>
 
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="keep_pas_foto" name="keep_pas_foto" value="1" checked>
-                        <label for="keep_pas_foto" class="flex items-center">
-                            <i class="fas fa-camera text-orange-500 mr-2"></i>
-                            <span class="text-white">Pas Foto</span>
+                    <div class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft" id="keep_pas_foto" name="keep_pas_foto">
+                        <label for="keep_pas_foto" class="select-none ms-2 text-sm font-medium text-heading">
+                            <span class="">Pas Foto</span>
                             @if($registration->pas_foto_path)
-                            <span class="text-xs text-white ml-2">(Sudah diunggah)</span>
+                            <span class="text-xs ml-2">(Sudah diunggah)</span>
                             @else
                             <span class="text-xs text-red-600 ml-2">(Belum diunggah)</span>
                             @endif
                         </label>
                     </div>
 
-                    <p class="text-xs text-white mt-2">
+                    <p class="text-xs mt-2 text-white">
                         <i class="fas fa-info-circle mr-1"></i>
                         Centang dokumen yang ingin dipertahankan. Dokumen yang tidak dicentang akan dihapus dari sistem.
                     </p>
                 </div>
 
                 <!-- Alasan Penolakan -->
-                <div class="mb-4">
+                <div class="mb-4 mx-auto max-w-lg w-full">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Penolakan</label>
                     <textarea id="rejectReason" name="reject_reason" rows="4" required
-                              class="rejection-reason"
-                              placeholder="Berikan alasan penolakan yang jelas dan informatif...">{{ old('reject_reason', $registration->catatan_admin) }}</textarea>
+                              class="rejection-reason w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                              placeholder="Berikan alasan penolakan yang jelas dan informatif...">
+                               
+                              {{ old('reject_reason', $registration->catatan_admin) }}
+                            </textarea>
                 </div>
 
                 <!-- Catatan Admin Sebelumnya -->
@@ -904,14 +924,14 @@
                 </div>
                 @endif
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer flex justify-end gap-3">
                 <button type="button" onclick="closeRejectModal()"
                         class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
                     Batal
                 </button>
                 <button type="submit"
-                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200">
-                    Tolak Pendaftaran
+                        class="px-4 py-2 bg-yellow-500 rounded-lg hover:bg-red-600 transition duration-200">
+                    Revisi Pendaftaran
                 </button>
             </div>
         </form>
@@ -977,10 +997,7 @@
             </button>
         </div>
     </div>
-
 </div>
-
-
 @endsection
 
 @section('scripts')
@@ -1155,6 +1172,66 @@
     function closeRejectModal() {
         document.getElementById('rejectModal').classList.add('hidden');
     }
+
+    // Sync checked document names into rejectReason and admin notes
+    function getCheckedDocNames() {
+        const checkboxes = document.querySelectorAll('#rejectModal input[type="checkbox"]');
+        const names = [];
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                const label = document.querySelector(`label[for="${cb.id}"]`);
+                if (label) {
+                    const span = label.querySelector('span');
+                    let text = span ? span.textContent.trim() : label.textContent.trim();
+                    text = text.split('(')[0].trim();
+                    if (text) names.push(text);
+                }
+            }
+        });
+        return names;
+    }
+
+    function updateNotesFromCheckboxes() {
+        const names = getCheckedDocNames();
+        const rejectEl = document.getElementById('rejectReason');
+        const adminEl = document.getElementById('adminNotes') || document.querySelector('textarea[name="catatan_admin"]');
+
+        // Build the document list string
+        const docListText = names.length ? 'Dokumen yang perlu diperbaiki: ' + names.join(', ') : '';
+
+        // Update reject reason textarea
+        if (rejectEl) {
+            let currentValue = rejectEl.value.trim();
+            // Remove any existing "Dokumen yang perlu diperbaiki:" line
+            let lines = currentValue ? currentValue.split('\n') : [];
+            lines = lines.filter(l => !l.trim().startsWith('Dokumen yang perlu diperbaiki:'));
+            
+            // Add the new document list at the beginning if there are checked items
+            if (docListText) {
+                lines.unshift(docListText);
+            }
+            
+            rejectEl.value = lines.join('\n').trim();
+        }
+
+        // Update admin notes textarea
+        if (adminEl) {
+            let currentValue = adminEl.value.trim();
+            // Remove any existing "Dokumen yang perlu diperbaiki:" line
+            let lines = currentValue ? currentValue.split('\n') : [];
+            lines = lines.filter(l => !l.trim().startsWith('Dokumen yang perlu diperbaiki:'));
+            
+            // Add the new document list at the end if there are checked items
+            if (docListText) {
+                lines.push(docListText);
+            }
+            
+            adminEl.value = lines.join('\n').trim();
+        }
+    }
+
+    // Attach listeners to checkboxes inside reject modal
+    document.querySelectorAll('#rejectModal input[type="checkbox"]').forEach(cb => cb.addEventListener('change', updateNotesFromCheckboxes));
 
     document.getElementById('rejectForm').addEventListener('submit', function(e) {
         e.preventDefault();
