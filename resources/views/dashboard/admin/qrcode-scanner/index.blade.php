@@ -2,7 +2,7 @@
 @section('title', 'Camera QR Scan')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 font-sans full-width-page">
+<div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
     @include('layouts.components.admin.navbar')
     <main class="max-w-7xl mx-auto py-6 px-4">
