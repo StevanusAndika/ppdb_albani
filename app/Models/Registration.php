@@ -461,7 +461,7 @@ class Registration extends Model
             return 0;
         }
 
-        return now()->diffInYears($this->tanggal_lahir);
+        return now()->diffInYears($this->tanggal_lahir) * -1;
     }
 
     /**
