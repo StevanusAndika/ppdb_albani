@@ -19,7 +19,7 @@
                     <div id="camera-wrapper"
                         style="background:#9e9e9e; border-radius:8px; padding:8px; margin-bottom:20px;">
                         <div id="qr-reader"
-                            style="width:100%; height:260px; border-radius:6px; overflow:hidden;"></div>
+                            style="width:100%; height:260px; border-radius:6px; overflow:hidden; transform: scaleX(-1);"></div>
                     </div>
 
                     {{-- Form --}}
