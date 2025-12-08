@@ -11,19 +11,19 @@ ketika accordion terbuka di faq,buat agar footer full
 dashboard admin:
 buat footer dashboard di views/dashboard/admin/index.blade.php full(cek dashboard komponen di layouts/components/admin/footer.blade.php)
 
-buat footernya full di halaman admin/registrations/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+buat footernya full di halaman admin/registrations/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
 
-rapihkan halaman admin/registrations/registration-detail.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+rapihkan halaman admin/registrations/registration-detail.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
 
-buat footernya full di halaman admin/quota/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+buat footernya full di halaman admin/quota/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
 
-buat footernya full di halaman admin/billing/packages/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+buat footernya full di halaman admin/billing/packages/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
 
-buat footernya full di halaman admin/billing/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+buat footernya full di halaman admin/billing/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
 
 tambahkan footer navbar di halaman admin/konten/index.blade.php (cek dashboard komponen di layouts/components/admin/footer.blade.php dan layouts/components/admin/navbar.blade.php )
 
-buat footernya full di halaman admin/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) di tab google aja
+buat footernya full di halaman admin/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) di tab google aja -----done
 
 tambahin alert ketika mau hapus data di  halaman admin/billing/prices/index.blade.php dan admin/billing/packages/index.blade.php
 
