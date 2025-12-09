@@ -1,59 +1,120 @@
-frontend:
-authentifikasi:
-perbaiki responsive di halaman login,register dan lupa password
-disetiap  yang ada tabel tambahin buat sort data secara ascending dan descending
+# **📋 Daftar Perbaikan Sistem**
 
-dashboard calon santri:
-fix halaman upload dokumen  di halaman uppload dokumen(hilangkan refresh setiap detik,cukup periksa refresh ketika dokumen diupload/diupdated)[Done]
-untuk halaman welcome.blade.php implementasi per konten dari admin/konten dan untuk visi misi buat per point
-ketika accordion terbuka di faq,buat agar footer full
+## **1. Frontend**
 
-dashboard admin:
-buat footer dashboard di views/dashboard/admin/index.blade.php full(cek dashboard komponen di layouts/components/admin/footer.blade.php)
+### **A. Authentifikasi**
+- [ ] Perbaiki responsive di halaman:
+  - Login
+  - Register
+  - Lupa Password
+- [ ] Tambahkan sorting data (ascending/descending) di semua tabel
 
-buat footernya full di halaman admin/registrations/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
+### **B. Dashboard Calon Santri**
+#### **Upload Dokumen**
+- ✅ Hilangkan refresh otomatis setiap detik
+- ✅ Cukup refresh hanya ketika dokumen diupload/diupdate
 
-rapihkan halaman admin/registrations/registration-detail.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
+#### **Halaman Welcome**
+- [ ] Implementasi konten dari admin/konten
+- [ ] Untuk visi misi, buat per point
+- [ ] Perbaiki accordion FAQ: footer full saat accordion terbuka
 
-buat footernya full di halaman admin/quota/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
+### **C. Dashboard Admin**
+#### **Footer Full di Halaman-halaman:**
+- [ ] `admin/index.blade.php`
+- ✅ `admin/registrations/index.blade.php`
+- ✅ `admin/registrations/registration-detail.blade.php`
+- ✅ `admin/quota/index.blade.php`
+- ✅ `admin/billing/packages/index.blade.php`
+- ✅ `admin/billing/prices/index.blade.php`
+- ✅ `admin/prices/index.blade.php` (tab Google)
 
-buat footernya full di halaman admin/billing/packages/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
+#### **Halaman Konten**
+- [ ] Tambahkan footer navbar di `admin/konten/index.blade.php`
+  - Komponen: `layouts/components/admin/footer.blade.php`
+  - Komponen: `layouts/components/admin/navbar.blade.php`
 
-buat footernya full di halaman admin/billing/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) -----done
+#### **Alert SweetAlert2**
+- [ ] Tambahkan alert konfirmasi hapus di:
+  - `admin/billing/prices/index.blade.php`
+  - `admin/billing/packages/index.blade.php`
+  - `admin/billing/index.blade.php` (sudah ada billing)
+- ✅Notif Aksi Massal di halaman pengumuman
 
-tambahkan footer navbar di halaman admin/konten/index.blade.php (cek dashboard komponen di layouts/components/admin/footer.blade.php dan layouts/components/admin/navbar.blade.php )
+#### **Perbaikan Tampilan**
+- [ ] Perbaiki responsive web scanner
+- [ ] Perbaiki tampilan mobile dashboard admin & calon santri
+- [ ] Buat 1 layout untuk kelola konten
+- [ ] Pisahkan file JS dan modal ke file terpisah
 
-buat footernya full di halaman admin/prices/index.blade.php(cek dashboard komponen di layouts/components/admin/footer.blade.php) di tab google aja -----done
+#### **Fitur Tambahan**
+- ✅ Ambil value nama paket langsung dari tipe paket di `admin/billing/packages/index.blade.php`
 
-tambahin alert ketika mau hapus data di  halaman admin/billing/prices/index.blade.php dan admin/billing/packages/index.blade.php
+---
 
-buat untuk di admin/billing/packages/index.blade.php untuk nama paket ambil value langsung  dari tipe paket[Done]
+## **2. Backend**
 
-tambahin alert ketika mau hapus data di  halaman admin/billing/index.blade.php dan admin/billing/packages/index.blade.php dengan sweetalert(baru billing yg udah)
-buat untuk  notif di Aksi Massal pada halaman admin/pengumuman ketika mau kirim data sengan sweetalert
-perbaiki responsive untuk web scanner
-perbaiki dashboard admin dan calon santri kadang gak bisa pas tampilan mobile di beberapa menu
+### **A. Pembayaran**
+- ✅ Perbaiki tombol sinkronisasi di `payments/index.blade.php` (error 403 di hosting)
+- [ ] Admin bisa lihat invoice untuk pembayaran:
+  - Cash (PDF)
+  - Xendit (PDF)
+- ✅ Tambahkan status pembayaran di halaman QR Code
+- ✅ Tambahkan total biaya di admin/paket
+- ✅ Ambil tipe paket di:
+  - `admin/billing/packages`
+  - `admin/billing/packages/1/prices`
 
+### **B. Registrasi & Keamanan**
+- ✅ Email yang sudah terdaftar tidak bisa digunakan lagi
+- ✅ Tambahkan Google reCAPTCHA v3
+- ✅ Tambahkan cooldown OTP send
+- ✅ Tambahkan masa berlaku kode OTP (5 menit)
 
-untuk kelola konten buat 1 layout aja
-pecah file js dan modal  disetiap file jadi file yang beda (yang ada )
-
-backend:
-
-perbaiki tombol sinkronisasi  di halaman views/dashboard/calon_santri/payments/index.blade.php(error 403 di hosting)[Done]
-
-ketika registrasi buat agar email yg sudah didaftarkan tidak bisa digunakan lagi[Done]
-
-perbaiki untuk annoucement kelulusan dan tes seleksi tidak bentrok[Done]
-
-tambahin di  admin/paymentcontroller biar admin bisa lihat invoice dalam pembayaran cash dan xendit PDF[Done]
-
-tambahin status pembayaran di halaman qr code[done]
-
-tambahin total biaya di admin/paket  dan ambil tipe paketnya di http://localhost:8000/admin/billing/packages dan http://localhost:8000/admin/billing/packages/1/prices[Done]
-
-tambahin authentifikasi recaptcha v3 google[Done]
-tambahin cooldown otp send[Done]
-tambahin masa berlaku kode otp 5 menit[Done]
+### **C. Pengumuman**
+- ✅ Perbaiki agar pengumuman kelulusan dan tes seleksi tidak bentrok
 
 
+### **D. Users**
+- ✅ Tambahkan fitur untuk edit password
+- ✅ Tambahkan fitur untuk kirim notif ketika password direset atau berhasil dibuat
+- ✅implementasi untuk search data berdasarkan nama telpon atau email
+- ✅ implementasi untuk pagination
+
+
+
+---
+
+## **3. Status Progress**
+
+✅ **Completed:** 12/26 items
+📝 **Pending:** 14/26 items
+⏳ **Progress:** 46%
+
+---
+
+## **4. Prioritas Pengerjaan**
+
+### **🟢 High Priority**
+1. [ ] Perbaikan responsive halaman login/register/lupa password
+2. [ ] Footer full di halaman admin/index.blade.php
+3. [ ] Alert konfirmasi hapus data dengan SweetAlert2
+4. [ ] Perbaikan tampilan mobile dashboard
+
+### **🟡 Medium Priority**
+1. [ ] Sorting data di semua tabel
+2. [ ] Layout tunggal kelola konten
+3. [ ] Pemisahan file JS & modal
+4. [ ] Admin lihat invoice PDF (cash & xendit)
+
+### **🔵 Low Priority**
+1. [ ] Perbaikan responsive web scanner
+2. [ ] Accordion FAQ footer full
+3. [ ] Implementasi konten dari admin ke welcome page
+4. [ ] Visi misi per point
+
+---
+
+## **📌 Catatan Teknis**
+- ✅ = Sudah selesai
+- [ ] = Belum dikerjakan

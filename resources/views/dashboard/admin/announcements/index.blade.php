@@ -262,11 +262,27 @@
      @include('layouts.components.admin.footer')
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 // Fungsi-fungsi untuk pengiriman pesan
 function sendIndividualMessage(registrationId) {
-    if (!confirm('Kirim pesan kelulusan kepada calon santri ini?')) return;
+    Swal.fire({
+        title: 'Konfirmasi Pengiriman',
+        text: 'Kirim pesan kelulusan kepada calon santri ini?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Kirim Sekarang',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            sendIndividualMessageProcess(registrationId);
+        }
+    });
+}
 
+function sendIndividualMessageProcess(registrationId) {
     const button = document.getElementById(`send-btn-${registrationId}`);
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim...';
@@ -321,12 +337,32 @@ function sendIndividualMessage(registrationId) {
 function sendBulkMessage() {
     const eligibleCount = {{ $eligibleRegistrations->count() }};
     if (eligibleCount === 0) {
-        showAlert('warning', 'Tidak ada calon santri yang memenuhi syarat');
+        Swal.fire({
+            title: 'Tidak Ada Data',
+            text: 'Tidak ada calon santri yang memenuhi syarat',
+            icon: 'warning',
+            confirmButtonColor: '#3085d6'
+        });
         return;
     }
 
-    if (!confirm(`Kirim pesan kelulusan ke ${eligibleCount} calon santri yang memenuhi syarat?`)) return;
+    Swal.fire({
+        title: 'Konfirmasi Pengiriman Massal',
+        text: `Kirim pesan kelulusan ke ${eligibleCount} calon santri yang memenuhi syarat?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Kirim Sekarang',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            sendBulkMessageProcess();
+        }
+    });
+}
 
+function sendBulkMessageProcess() {
     const button = document.getElementById('bulk-send-btn');
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
@@ -362,29 +398,60 @@ function sendBulkMessage() {
                 successMessage += `, ${data.data.already_sent} sudah pernah dikirim sebelumnya`;
             }
 
-            showAlert('success', successMessage);
+            Swal.fire({
+                title: 'Sukses!',
+                text: successMessage,
+                icon: 'success',
+                confirmButtonColor: '#3085d6'
+            });
 
             // Refresh page after 2 seconds to update lists
             setTimeout(() => {
                 location.reload();
             }, 2000);
         } else {
-            showAlert('error', 'Gagal mengirim pesan massal: ' + data.message);
+            Swal.fire({
+                title: 'Gagal!',
+                text: 'Gagal mengirim pesan massal: ' + data.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
             button.innerHTML = originalText;
             button.disabled = false;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showAlert('error', 'Terjadi kesalahan: ' + error.message);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Terjadi kesalahan: ' + error.message,
+            icon: 'error',
+            confirmButtonColor: '#3085d6'
+        });
         button.innerHTML = originalText;
         button.disabled = false;
     });
 }
 
 function sendToAllSantri() {
-    if (!confirm('Kirim pesan kelulusan ke SEMUA santri yang sudah mengikuti seleksi dan diterima? Pastikan ini adalah pengumuman resmi.')) return;
+    Swal.fire({
+        title: 'Konfirmasi Pengiriman Resmi',
+        text: 'Kirim pesan kelulusan ke SEMUA santri yang sudah mengikuti seleksi dan diterima? Pastikan ini adalah pengumuman resmi.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Kirim Pengumuman Resmi',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            sendToAllSantriProcess();
+        }
+    });
+}
 
+function sendToAllSantriProcess() {
     const button = document.getElementById('send-all-btn');
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim...';
@@ -422,19 +489,34 @@ function sendToAllSantri() {
                 successMessage += `, ${data.data.already_sent} sudah pernah dikirim sebelumnya`;
             }
 
-            showAlert('success', successMessage);
+            Swal.fire({
+                title: 'Pengumuman Terkirim!',
+                text: successMessage,
+                icon: 'success',
+                confirmButtonColor: '#3085d6'
+            });
             setTimeout(() => {
                 location.reload();
             }, 2000);
         } else {
-            showAlert('error', 'Gagal mengirim pesan: ' + data.message);
+            Swal.fire({
+                title: 'Gagal!',
+                text: 'Gagal mengirim pesan: ' + data.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
             button.innerHTML = originalText;
             button.disabled = false;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showAlert('error', 'Terjadi kesalahan: ' + error.message);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Terjadi kesalahan: ' + error.message,
+            icon: 'error',
+            confirmButtonColor: '#3085d6'
+        });
         button.innerHTML = originalText;
         button.disabled = false;
     });
