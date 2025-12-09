@@ -80,6 +80,106 @@ class LandingContentController extends Controller
 
         LandingContent::updateOrCreate(['key' => 'programs'], ['payload' => $programsData]);
 
+        // 4. Update Program Unggulan
+        $programUnggulanInput = $request->input('program_unggulan', []);
+        $programUnggulanData = [];
+        foreach($programUnggulanInput as $p) {
+            $programUnggulanData[] = [
+                'nama' => $p['nama'] ?? ($p['title'] ?? null),
+                'deskripsi' => $p['deskripsi'] ?? ($p['description'] ?? null),
+                'target' => $p['target'] ?? null,
+                'metode' => $p['metode'] ?? null,
+                'evaluasi' => $p['evaluasi'] ?? null,
+            ];
+        }
+        if(!empty($programUnggulanData)) {
+            LandingContent::updateOrCreate(['key' => 'program_unggulan'], ['payload' => $programUnggulanData]);
+        }
+
+        // 5. Update Kegiatan Pesantren
+        $kegiatanInput = $request->input('kegiatan', []);
+        $kegiatanData = [];
+        foreach($kegiatanInput as $item) {
+            $kegiatanList = [];
+            if (!empty($item['kegiatan'])) {
+                // accept either comma separated string or array
+                if (is_array($item['kegiatan'])) {
+                    $kegiatanList = array_filter(array_map('trim', $item['kegiatan']));
+                } else {
+                    $kegiatanList = array_filter(array_map('trim', explode(',', $item['kegiatan'])));
+                }
+            }
+            $kegiatanData[] = [
+                'waktu' => $item['waktu'] ?? null,
+                'kegiatan' => $kegiatanList,
+            ];
+        }
+        if(!empty($kegiatanData)) {
+            LandingContent::updateOrCreate(['key' => 'kegiatan_pesantren'], ['payload' => $kegiatanData]);
+        }
+
+        // 6. Update FAQ
+        $faqInput = $request->input('faq', []);
+        $faqData = [];
+        foreach($faqInput as $f) {
+            if (!empty($f['pertanyaan']) || !empty($f['jawaban'])) {
+                $faqData[] = [
+                    'pertanyaan' => $f['pertanyaan'] ?? null,
+                    'jawaban' => $f['jawaban'] ?? null,
+                ];
+            }
+        }
+        if(!empty($faqData)) {
+            LandingContent::updateOrCreate(['key' => 'faq'], ['payload' => $faqData]);
+        }
+
+        // 7. Update Alur Pendaftaran
+        $alurInput = $request->input('alur', []);
+        $alurData = [];
+        foreach($alurInput as $a) {
+            if (!empty($a['judul']) || !empty($a['deskripsi'])) {
+                $alurData[] = [
+                    'judul' => $a['judul'] ?? null,
+                    'deskripsi' => $a['deskripsi'] ?? null,
+                ];
+            }
+        }
+        if(!empty($alurData)) {
+            LandingContent::updateOrCreate(['key' => 'alur_pendaftaran'], ['payload' => $alurData]);
+        }
+
+        // 8. Update Biaya (simple text or structured if provided)
+        $biayaText = $request->input('biaya_text');
+        if (!is_null($biayaText)) {
+            LandingContent::updateOrCreate(['key' => 'biaya'], ['payload' => ['text' => $biayaText]]);
+        }
+
+        // 9. Update Persyaratan Dokumen (with optional images)
+        $persyaratanInput = $request->input('persyaratan', []);
+        $oldPersyaratan = LandingContent::where('key', 'persyaratan_dokumen')->first();
+        $oldPersyaratanData = $oldPersyaratan ? $oldPersyaratan->payload : [];
+        $persyaratanData = [];
+        foreach($persyaratanInput as $idx => $item) {
+            $imgUrl = null;
+            if ($request->hasFile("persyaratan.$idx.image")) {
+                $path = $request->file("persyaratan.$idx.image")->store('public/persyaratan');
+                $imgUrl = str_replace('public/', 'storage/', $path);
+            } else {
+                // preserve old image if exists at same index
+                if (isset($oldPersyaratanData[$idx]['img'])) {
+                    $imgUrl = $oldPersyaratanData[$idx]['img'];
+                }
+            }
+            $persyaratanData[] = [
+                'title' => $item['title'] ?? null,
+                'img' => $imgUrl,
+                'note' => $item['note'] ?? null,
+            ];
+        }
+        if(!empty($persyaratanData)) {
+            LandingContent::updateOrCreate(['key' => 'persyaratan_dokumen'], ['payload' => $persyaratanData]);
+        }
+
         return redirect()->back()->with('success', 'Konten berhasil diperbarui!');
     }
 }

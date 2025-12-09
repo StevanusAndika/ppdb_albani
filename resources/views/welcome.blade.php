@@ -27,13 +27,6 @@
     <meta property="og:image:alt" content="PPDB Pesantren AI-Our'an Bani Syahid 2025">
     <meta property="og:site_name" content="Pesantren AI-Our'an Bani Syahid">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ url()->current() }}">
-    <meta property="twitter:title" content="{{ $contentSettings->judul_twitter ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025' }}">
-    <meta property="twitter:description" content="{{ $contentSettings->twitter_deskripsi ?? 'Pendaftaran Santri Baru Pesantren AI-Our\'an Bani Syahid. Program Unggulan Tahfidz dan Qiraat.' }}">
-    <meta property="twitter:image" content="{{ $contentSettings->twitter_image ?? '/images/ppdb-twitter-image.jpg' }}">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -72,12 +65,8 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-        .faq-item {
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .faq-item:last-child {
-            border-bottom: none;
-        }
+        .faq-item { border-bottom: 1px solid #e5e7eb; }
+        .faq-item:last-child { border-bottom: none; }
         .faq-question {
             padding: 1.5rem;
             cursor: pointer;
@@ -86,13 +75,8 @@
             align-items: center;
             transition: all 0.3s ease;
         }
-        .faq-question:hover {
-            background-color: #f8fafc;
-        }
-        .faq-question.active {
-            background-color: #f0f9ff;
-            border-left: 4px solid #057572;
-        }
+        .faq-question:hover { background-color: #f8fafc; }
+        .faq-question.active { background-color: #f0f9ff; border-left: 4px solid #057572; }
         .faq-number {
             background: #057572;
             color: white;
@@ -107,67 +91,21 @@
             margin-right: 1rem;
             flex-shrink: 0;
         }
-        .faq-text {
-            flex: 1;
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 1rem;
-        }
-        .faq-icon {
-            transition: transform 0.3s ease;
-            color: #057572;
-        }
-        .faq-question.active .faq-icon {
-            transform: rotate(180deg);
-        }
-        .faq-answer {
-            padding: 0 1.5rem;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            background-color: #fafafa;
-        }
-        .faq-answer.active {
-            padding: 1.5rem;
-            max-height: 500px;
-        }
-        .faq-answer-content {
-            color: #4b5563;
-            line-height: 1.6;
-            border-left: 3px solid #d1d5db;
-            padding-left: 1rem;
-        }
-        /* Perbaikan untuk navbar mobile */
+        .faq-text { flex: 1; font-weight: 600; color: #1f2937; font-size: 1rem; }
+        .faq-icon { transition: transform 0.3s ease; color: #057572; }
+        .faq-question.active .faq-icon { transform: rotate(180deg); }
+        .faq-answer { padding: 0 1.5rem; max-height: 0; overflow: hidden; transition: all 0.3s ease; background-color: #fafafa; }
+        .faq-answer.active { padding: 1.5rem; max-height: 500px; }
+        .faq-answer-content { color: #4b5563; line-height: 1.6; border-left: 3px solid #d1d5db; padding-left: 1rem; }
         @media (max-width: 767px) {
-            .nav-container {
-                padding: 0.75rem 1rem;
-            }
-            .nav-logo {
-                font-size: 1.1rem;
-            }
-            .mobile-menu-button {
-                padding: 0.5rem;
-            }
-            .mobile-menu {
-                border-radius: 1rem;
-                margin-top: 0.75rem;
-                padding: 1rem;
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            }
-            .mobile-menu-item {
-                padding: 0.75rem 1rem;
-                border-radius: 0.75rem;
-                margin-bottom: 0.25rem;
-            }
-            .faq-question {
-                padding: 1rem;
-            }
-            .faq-text {
-                font-size: 0.9rem;
-            }
-            .faq-answer.active {
-                padding: 1rem;
-            }
+            .nav-container { padding: 0.75rem 1rem; }
+            .nav-logo { font-size: 1.1rem; }
+            .mobile-menu-button { padding: 0.5rem; }
+            .mobile-menu { border-radius: 1rem; margin-top: 0.75rem; padding: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+            .mobile-menu-item { padding: 0.75rem 1rem; border-radius: 0.75rem; margin-bottom: 0.25rem; }
+            .faq-question { padding: 1rem; }
+            .faq-text { font-size: 0.9rem; }
+            .faq-answer.active { padding: 1rem; }
         }
     </style>
 </head>
@@ -251,15 +189,15 @@
     <!-- Header Section -->
     <header class="py-12 px-4 text-center">
         <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
-            {{ $contentSettings->judul ?? 'PPDB' }}
+            {{ $hero['title'] ?? $contentSettings->judul ?? 'PPDB' }}
         </h1>
         <h2 class="text-2xl md:text-3xl font-semibold text-primary mb-8">
-            {{ $contentSettings->tagline ?? 'Pesantren AI-Our\'an Bani Syahid 2025' }}
+            {{ $hero['tagline'] ?? $contentSettings->tagline ?? 'Pesantren AI-Our\'an Bani Syahid 2025' }}
         </h2>
 
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
             <p class="text-secondary text-lg mb-4">
-                {{ $contentSettings->deskripsi ?? 'Sistem Penerimaan Peserta Didik Baru yang modern, mudah, dan terpercaya. Untuk Masa Depan Yang Lebih Baik' }}
+                {{ $hero['description'] ?? $contentSettings->deskripsi ?? 'Sistem Penerimaan Peserta Didik Baru yang modern, mudah, dan terpercaya. Untuk Masa Depan Yang Lebih Baik' }}
             </p>
 
             @auth
@@ -303,403 +241,23 @@
     @include('layouts.components.program-pendidikan-section', ['programs' => $programs ?? $programPendidikan ?? []])
 
 
-    <!-- Program Unggulan Section -->
-    <section id="program" class="py-16 px-4">
-        <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-4">Program Unggulan</h2>
-            <p class="text-center text-secondary mb-12">
-                {{ $contentSettings->program_unggulan_deskripsi ?? 'Program-program unggulan yang ditawarkan oleh Pesantren AI-Our\'an Bani Syahid' }}
-            </p>
+    {{-- Program Unggulan (komponen terpisah) --}}
+    @include('layouts.components.program-unggulan-section', ['programs' => $programUnggulan ?? []])
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                @php
-                    $programs = $contentSettings->program_unggulan ?? [];
-                    $defaultPrograms = [
-                        [
-                            'nama' => 'Tahfıdzul Qur\'an',
-                            'target' => 'Hafal 30 Juz dalam waktu 3-5 tahun',
-                            'metode' => 'Talaqqi dan muraja\'ah harian bersama mu\'allim/ah',
-                            'evaluasi' => 'Setoran harian, tasmî\' mingguan, dan ujian tahunan'
-                        ],
-                        [
-                            'nama' => 'Qiraat Sab\'ah',
-                            'target' => 'Menguasai tujuh qira\'at mutawatir sesuai riwayat yang sahih',
-                            'metode' => 'Teori dan praktik qira\'at berdasarkan matan "Al-Syatibiyyah"',
-                            'evaluasi' => 'Santri memahami perbedaan qiraat dan mampu membacanya dengan tepat'
-                        ],
-                        [
-                            'nama' => 'Nagham',
-                            'target' => 'Meningkatkan kualitas bacaan santri dengan irama yang sesuai kaidah tajwid dan nagham',
-                            'metode' => 'Latihan rutin, lomba internal, dan pembinaan untuk Musabaqah Tilawatil Qur\'an (MTQ)',
-                            'evaluasi' => 'Penguasaan berbagai jenis nagham: Bayati, Shoba, Hijaz, Mahawan, Bast, Sika, Jiranka'
-                        ],
-                        [
-                            'nama' => 'Kajian Kitab Ulama Klasik (Turats)',
-                            'target' => 'Santri memahami dasar-dasar ilmu Islam dari sumber klasik',
-                            'metode' => 'Talaqqi (pengajian langsung) dan diskusi kitab kuning',
-                            'evaluasi' => 'Pemahaman kitab turats dan aplikasi dalam kehidupan sehari-hari'
-                        ]
-                    ];
+    {{-- Kegiatan Pesantren (komponen terpisah) --}}
+    @include('layouts.components.kegiatan-section', ['kegiatan' => $kegiatan ?? []])
 
-                    $displayPrograms = !empty($programs) ? $programs : $defaultPrograms;
-                    $icons = ['fas fa-quran', 'fas fa-book-open', 'fas fa-music', 'fas fa-graduation-cap'];
-                @endphp
+    {{-- FAQ (komponen terpisah) --}}
+    @include('layouts.components.faq-section', ['faqs' => $faqs ?? []])
 
-                @foreach($displayPrograms as $index => $program)
-                    <div class="bg-white rounded-xl shadow-lg p-6 transform transition duration-300 hover:scale-105">
-                        <div class="flex items-center mb-4">
-                            <div class="icon-bg w-16 h-16 rounded-full flex items-center justify-center mr-4">
-                                <i class="{{ $icons[$index % count($icons)] }} text-2xl text-primary"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-primary">{{ $program['nama'] ?? 'Program Unggulan' }}</h3>
-                        </div>
-                        @if(isset($program['deskripsi']))
-                            <p class="text-secondary mb-4">{{ $program['deskripsi'] }}</p>
-                        @endif
-                        <ul class="text-secondary space-y-2">
-                            @if(isset($program['target']))
-                                <li><span class="font-semibold">Target:</span> {{ $program['target'] }}</li>
-                            @endif
-                            @if(isset($program['metode']))
-                                <li><span class="font-semibold">Metode:</span> {{ $program['metode'] }}</li>
-                            @endif
-                            @if(isset($program['evaluasi']))
-                                <li><span class="font-semibold">Evaluasi:</span> {{ $program['evaluasi'] }}</li>
-                            @endif
-                        </ul>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
+    {{-- Alur Pendaftaran (komponen terpisah) --}}
+    @include('layouts.components.alur-pendaftaran-section', ['alur' => $alur ?? []])
 
-    <!-- Kegiatan Pesantren Section -->
-    <section id="kegiatan" class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
-        <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-4">Kegiatan Harian Pesantren</h2>
-            <p class="text-center text-secondary mb-12">
-                Jadwal rutin harian yang membentuk disiplin dan karakter Qur'ani santri
-            </p>
+    {{-- Informasi Biaya (komponen terpisah) --}}
+    @include('layouts.components.biaya-section', ['packages' => $packages ?? []])
 
-            <div class="max-w-4xl mx-auto">
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                    @php
-                        $kegiatan = $contentSettings->kegiatan_pesantren ?? [];
-                    @endphp
-
-                    @if(count($kegiatan) > 0)
-                        @foreach(array_slice($kegiatan, 0, 5) as $index => $item)
-                        <div class="border-b border-gray-200 last:border-b-0">
-                            <div class="p-6 hover:bg-gray-50 transition duration-300">
-                                <div class="flex items-start">
-                                    <div class="bg-primary text-white rounded-lg px-4 py-2 text-sm font-semibold mr-4 flex-shrink-0">
-                                        {{ $item['waktu'] }}
-                                    </div>
-                                    <div class="flex-1">
-                                        <ul class="space-y-2">
-                                            @foreach($item['kegiatan'] as $kegiatanItem)
-                                            <li class="flex items-start text-secondary">
-                                                <i class="fas fa-circle text-primary text-xs mt-2 mr-3"></i>
-                                                <span>{{ $kegiatanItem }}</span>
-                                            </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    @else
-                        <div class="text-center py-12">
-                            <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
-                            <h3 class="text-xl font-semibold text-gray-500">Belum Ada Jadwal Kegiatan</h3>
-                            <p class="text-gray-400 mt-2">Jadwal kegiatan sedang dalam proses persiapan</p>
-                        </div>
-                    @endif
-                </div>
-
-                <div class="mt-8 text-center">
-                    <p class="text-secondary mb-4">Ingin melihat jadwal lengkap kegiatan harian? Login Terlebih Dahulu </p>
-                    @auth
-                        @if(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
-                        <a href="{{ route('santri.kegiatan.index') }}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition duration-300 inline-flex items-center">
-                            <i class="fas fa-calendar-alt mr-2"></i> Lihat Jadwal Lengkap
-                        </a>
-                        @else
-                        <a href="{{ route('login') }}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition duration-300 inline-flex items-center">
-                            <i class="fas fa-sign-in-alt mr-2"></i> Login untuk Melihat Jadwal
-                        </a>
-                        @endif
-                    @else
-                        <a href="{{ route('login') }}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-secondary transition duration-300 inline-flex items-center">
-                            <i class="fas fa-sign-in-alt mr-2"></i> Login untuk Melihat Jadwal
-                        </a>
-                    @endauth
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" class="py-16 px-4 bg-white">
-        <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-4">Pertanyaan yang Sering Diajukan</h2>
-            <p class="text-center text-secondary mb-12">
-                Temukan jawaban untuk pertanyaan umum seputar pendaftaran dan kehidupan di pesantren
-            </p>
-
-            <div class="max-w-4xl mx-auto">
-                <div class="faq-accordion" id="faqAccordion">
-                    @php
-                        $faqs = $contentSettings->faq ?? [];
-                        $defaultFaqs = [
-                            [
-                                'pertanyaan' => 'Apa saja persyaratan pendaftaran santri baru?',
-                                'jawaban' => 'Persyaratan pendaftaran meliputi: fotokopi akta kelahiran, kartu keluarga, ijazah terakhir, pas foto, dan mengisi formulir pendaftaran.'
-                            ],
-                            [
-                                'pertanyaan' => 'Berapa biaya masuk pondok pesantren?',
-                                'jawaban' => 'Biaya masuk berbeda-beda sesuai program yang dipilih. Silakan hubungi admin untuk informasi detail mengenai biaya.'
-                            ],
-                            [
-                                'pertanyaan' => 'Apakah ada beasiswa untuk santri berprestasi?',
-                                'jawaban' => 'Ya, kami menyediakan beasiswa untuk santri yang berprestasi baik akademik maupun non-akademik.'
-                            ],
-                            [
-                                'pertanyaan' => 'Bagaimana sistem pembelajaran di pesantren?',
-                                'jawaban' => 'Sistem pembelajaran menggunakan metode talaqqi (pengajian langsung) dan diskusi kitab kuning, dengan fokus pada tahfidz Al-Qur\'an dan penguasaan ilmu agama.'
-                            ]
-                        ];
-                        $displayFaqs = !empty($faqs) ? $faqs : $defaultFaqs;
-                    @endphp
-
-                    @if(count($displayFaqs) > 0)
-                        @foreach($displayFaqs as $index => $faq)
-                        <div class="faq-item" data-faq-index="{{ $index }}">
-                            <div class="faq-question" onclick="toggleFAQ({{ $index }})">
-                                <div class="faq-number">{{ $index + 1 }}</div>
-                                <div class="faq-text">{{ $faq['pertanyaan'] ?? 'Pertanyaan tidak tersedia' }}</div>
-                                <div class="faq-icon">
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                            </div>
-                            <div class="faq-answer" id="answer-{{ $index }}">
-                                <div class="faq-answer-content">
-                                    {!! nl2br(e($faq['jawaban'] ?? 'Jawaban tidak tersedia')) !!}
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    @else
-                        <div class="text-center py-12">
-                            <i class="fas fa-inbox text-4xl text-gray-300 mb-4"></i>
-                            <h3 class="text-xl font-semibold text-gray-600 mb-2">Belum Ada FAQ</h3>
-                            <p class="text-gray-500">Belum ada pertanyaan yang tersedia saat ini.</p>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- FAQ Call to Action -->
-                <div class="mt-8 text-center">
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                        <div class="flex items-center justify-center mb-4">
-                            <i class="fas fa-question-circle text-blue-500 text-2xl mr-3"></i>
-                            <h3 class="text-lg font-semibold text-blue-800">Masih Punya Pertanyaan?</h3>
-                        </div>
-                        <p class="text-blue-700 mb-4">Jika pertanyaan Anda tidak terjawab di FAQ, jangan ragu untuk menghubungi kami.</p>
-                        <div class="flex flex-col sm:flex-row gap-3 justify-center">
-
-
-                            @auth
-                                @if(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
-                                <a href="{{ route('santri.faq.index') }}" class="bg-indigo-500 text-white px-6 py-2 rounded-lg hover:bg-indigo-600 transition duration-300 inline-flex items-center justify-center">
-                                    <i class="fas fa-list mr-2"></i> FAQ Lengkap
-                                </a>
-                                @endif
-                            @endauth
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Alur Pendaftaran Section -->
-    <section id="alur-pendaftaran" class="py-20 px-6 bg-gradient-to-b from-primary/10 via-white to-primary/5">
-        <div class="container mx-auto">
-            <h2 class="text-4xl font-extrabold text-center text-primary mb-4 tracking-wide">
-                {{ $contentSettings->alur_pendaftaran_judul ?? 'Alur Pendaftaran' }}
-            </h2>
-            <p class="text-center text-gray-600 mb-16">
-                {{ $contentSettings->alur_pendaftaran_deskripsi ?? 'Tahapan pendaftaran PPDB Pesantren Al-Qur\'an Bani Syahid' }}
-            </p>
-
-            <div class="relative max-w-5xl mx-auto">
-                <!-- Garis penghubung vertikal -->
-                <div class="absolute left-8 top-0 h-full w-1 bg-gradient-to-b from-primary/50 to-secondary/50 rounded-full"></div>
-
-                <!-- Step Template -->
-                <div class="space-y-12">
-                    @php
-                        $defaultSteps = [
-                            'Membuat Akun' => 'Membuat akun pada website PPDB Pondok Pesantren Al Bani Syahid.',
-                            'Isi Biodata' => 'Login kembali ke website PPDB Al Bani Syahid, lengkapi biodata dan kirim berkas.',
-                            'Pembayaran' => 'Lakukan pembayaran melalui metode yang disediakan atau langsung ke pesantren.',
-                            'Cetak Kartu Peserta' => 'Cetak kartu peserta yang berisi barcode dan informasi peserta.',
-                            'Tes dan Wawancara' => 'Calon santri akan dipanggil oleh pihak pesantren untuk tes dan wawancara.',
-                            'Pengumuman Kelulusan' => 'Calon santri dapat melihat hasil kelulusan di website PPDB Pondok Pesantren Al Bani Syahid.'
-                        ];
-                    @endphp
-
-                    @foreach($defaultSteps as $stepNumber => $stepDescription)
-                        <div class="relative flex items-start gap-6 group">
-                            <div class="z-10 flex items-center justify-center w-14 h-14 bg-primary text-white font-bold rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110">
-                                {{ $loop->iteration }}
-                            </div>
-                            <div class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 flex-1 border border-primary/10">
-                                <h3 class="text-2xl font-semibold text-primary mb-2 group-hover:text-primary/90">{{ $stepNumber }}</h3>
-                                <p class="text-gray-600 leading-relaxed">{{ $stepDescription }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Informasi Biaya Takhossus Pesantren Plus Sekolah Section -->
-    <section id="biaya"  class="py-16 px-4 bg-gradient-to-r from-primary/10 to-primary/20">
-        <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center text-primary mb-4">Informasi Biaya Pondok Pesantren Al Bani</h2>
-            <p class="text-center text-secondary mb-12">Informasi biaya lengkap untuk program Takhossus Pesantren dan Plus Sekolah</p>
-
-            @forelse($packages as $package)
-            <div class="mb-12">
-                <h3 class="text-2xl font-bold text-center text-primary mb-8">{{ $package->name }} - {{ $package->type_label }}</h3>
-
-                @if($package->description)
-                <p class="text-center text-secondary mb-6 max-w-2xl mx-auto">{{ $package->description }}</p>
-                @endif
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @php
-                        $colorClasses = [
-                            'bg-gradient-to-br from-primary to-primary/80',
-                            'bg-gradient-to-br from-secondary to-secondary/80',
-                            'bg-gradient-to-br from-accent to-accent/80',
-                            'bg-gradient-to-br from-primary to-accent',
-                            'bg-gradient-to-br from-green-500 to-green-400',
-                            'bg-gradient-to-br from-purple-500 to-purple-400',
-                            'bg-gradient-to-br from-blue-500 to-blue-400',
-                            'bg-gradient-to-br from-red-500 to-red-400',
-                            'bg-gradient-to-br from-yellow-500 to-yellow-400',
-                            'bg-gradient-to-br from-indigo-500 to-indigo-400'
-                        ];
-                    @endphp
-
-                    @foreach($package->prices as $index => $price)
-                    <div class="{{ $colorClasses[$index % count($colorClasses)] }} rounded-xl shadow-lg p-6 text-white transform transition duration-300 hover:scale-105">
-                        <div class="flex items-center mb-4">
-                            @php
-                                $icons = [
-                                    'fas fa-money-bill-wave',
-                                    'fas fa-graduation-cap',
-                                    'fas fa-percentage',
-                                    'fas fa-chart-line',
-                                    'fas fa-book',
-                                    'fas fa-tshirt',
-                                    'fas fa-home',
-                                    'fas fa-utensils',
-                                    'fas fa-bus',
-                                    'fas fa-user-graduate'
-                                ];
-                            @endphp
-                            <i class="{{ $icons[$index % count($icons)] }} text-2xl mr-3"></i>
-                            <div class="text-xl font-bold">{{ $price->item_name }}</div>
-                        </div>
-                        <div class="text-2xl font-bold mb-2">{{ $price->formatted_amount }}</div>
-                        @if($price->description)
-                        <div class="mt-4 pt-4 border-t border-white/30">
-                            <p class="text-sm opacity-90">{{ $price->description }}</p>
-                        </div>
-                        @endif
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-
-            @if(!$loop->last)
-            <div class="border-t border-gray-300 my-12"></div>
-            @endif
-
-            @empty
-            <div class="text-center py-12">
-                <i class="fas fa-info-circle text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-2xl font-bold text-gray-500 mb-2">Belum Ada Informasi Biaya</h3>
-                <p class="text-gray-400">Informasi biaya sedang dalam proses persiapan</p>
-            </div>
-            @endforelse
-        </div>
-    </section>
-
-    <!-- Persyaratan Dokumen Section -->
-    <section id="persyaratan" class="py-16 bg-gradient-to-b from-[#f7fafc] to-[#e6f0ea]">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl md:text-4xl font-bold text-center text-primary mb-4">
-                {{ $contentSettings->persyaratan_dokumen_judul ?? 'Persyaratan Dokumen' }}
-            </h2>
-            <p class="text-center text-secondary mb-8 md:mb-12">
-                {{ $contentSettings->persyaratan_dokumen_deskripsi ?? 'Dokumen-dokumen yang diperlukan untuk pendaftaran santri baru' }}
-            </p>
-
-            <div class="flex flex-wrap justify-center gap-4 md:gap-6 lg:gap-8">
-                <!-- Card 1 - Formulir -->
-                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
-                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                        <img src="{{ $contentSettings->getFilePath('formulir') }}" alt="Formulir" class="w-12 h-12 object-contain">
-                    </div>
-                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Formulir</h3>
-                    <p class="text-secondary text-sm text-center">Bisa melalui offline atau website.</p>
-                </div>
-
-                <!-- Card 2 - Pas Foto -->
-                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
-                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                        <img src="{{ $contentSettings->getFilePath('pasfoto') }}" alt="Pas Foto" class="w-12 h-12 object-contain">
-                    </div>
-                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Pas Foto 3x4</h3>
-                    <p class="text-secondary text-sm text-center">Sebanyak 4 lembar.</p>
-                </div>
-
-                <!-- Card 3 - Akte Kelahiran -->
-                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
-                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                        <img src="{{ $contentSettings->getFilePath('akte') }}" alt="Akte Kelahiran" class="w-12 h-12 object-contain">
-                    </div>
-                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Akte Kelahiran</h3>
-                    <p class="text-secondary text-sm text-center">Dalam bentuk fotokopi.</p>
-                </div>
-
-                <!-- Card 4 - Kartu Keluarga -->
-                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
-                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                        <img src="{{ $contentSettings->getFilePath('kk') }}" alt="Kartu Keluarga" class="w-12 h-12 object-contain">
-                    </div>
-                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">Kartu Keluarga</h3>
-                    <p class="text-secondary text-sm text-center">Fotokopi Kartu Keluarga.</p>
-                </div>
-
-                <!-- Card 5 - Ijazah -->
-                <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
-                    <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                        <img src="{{ $contentSettings->getFilePath('ijazah') }}" alt="Ijazah" class="w-12 h-12 object-contain">
-                    </div>
-                    <h3 class="text-lg font-semibold text-primary mb-2 text-center">SKL atau Ijazah</h3>
-                    <p class="text-secondary text-sm text-center">SKL/Ijazah SD,SMP dan SMA, atau rapor terakhir bagi yang belum lulus.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    {{-- Persyaratan Dokumen (komponen terpisah) --}}
+    @include('layouts.components.persyaratan-section', ['persyaratan' => $persyaratan ?? []])
 
     <!-- Footer -->
     <footer class="bg-primary text-white py-12 px-4">

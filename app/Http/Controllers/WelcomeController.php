@@ -59,13 +59,40 @@ class WelcomeController extends Controller
             ]
         ];
 
+        // Load landing content pieces (stored as LandingContent key => payload)
+        try {
+            $landingContent = LandingContent::all()->pluck('payload', 'key')->toArray();
+        } catch (\Exception $e) {
+            $landingContent = [];
+        }
+
+        // Map landing content to view variables with sensible defaults
+        $hero = $landingContent['hero'] ?? [];
+        $visiMisi = $landingContent['visi_misi'] ?? [];
+        $programs = $landingContent['programs'] ?? [];
+        $programUnggulan = $landingContent['program_unggulan'] ?? [];
+        $kegiatan = $landingContent['kegiatan_pesantren'] ?? [];
+        $faqs = $landingContent['faq'] ?? [];
+        $alur = $landingContent['alur_pendaftaran'] ?? [];
+        $biayaInfo = $landingContent['biaya'] ?? [];
+        $persyaratan = $landingContent['persyaratan_dokumen'] ?? [];
+
         return view('welcome', compact(
             'packages',
             'contentSettings',
             'isLoggedIn',
             'userRole',
             'educationStats',
-            'programPendidikan'
+            'programPendidikan',
+            'hero',
+            'visiMisi',
+            'programs',
+            'programUnggulan',
+            'kegiatan',
+            'faqs',
+            'alur',
+            'biayaInfo',
+            'persyaratan'
         ));
     }
 
