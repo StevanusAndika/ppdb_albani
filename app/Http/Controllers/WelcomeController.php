@@ -6,6 +6,7 @@ use App\Models\Package;
 use App\Models\ContentSetting;
 use App\Models\Registration;
 use Illuminate\Http\Request;
+use App\Models\LandingContent;
 use Illuminate\Support\Facades\Auth;
 
 class WelcomeController extends Controller

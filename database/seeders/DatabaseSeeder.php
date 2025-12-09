@@ -14,11 +14,13 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
+            LandingContentSeeder::class,
         ]);
 
         // Anda juga bisa menambahkan seeder lain di sini jika ada
         // $this->call([
         //     OtherSeeder::class,
         // ]);
+
     }
 }

@@ -25,6 +25,7 @@ use App\Http\Controllers\Announcement\SeleksiAnnoucementController;
 use App\Http\Controllers\CameraTestController;
 use App\Http\Controllers\Admin\QRcodeScannerController;
 use App\Http\Controllers\BeasiswaController;
+use App\Http\Controllers\Admin\LandingContentController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
@@ -77,7 +78,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // camera untuk scan barcode qrcode-scanner
     Route::get('/qrcode-scanner', [QRcodeScannerController::class, 'index'])->name('qrcode-scanner.index');
     Route::post('/qrcode-scanner', [QRcodeScannerController::class, 'store'])->name('qrcode-scanner.store');
-
+    
+    // Landing Content Management Routes
+    Route::prefix('/landing')->name('landing.')->group(function () {
+        Route::get('/', [LandingContentController::class, 'index'])->name('index');
+        Route::post('/update', [LandingContentController::class, 'update'])->name('update');
+    });
 
  
 
