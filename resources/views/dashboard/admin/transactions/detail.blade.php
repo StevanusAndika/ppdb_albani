@@ -29,7 +29,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Column -->
             <div class="lg:col-span-2 space-y-6">

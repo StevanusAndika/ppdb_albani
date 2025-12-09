@@ -80,7 +80,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-4xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <!-- Tabs Navigation -->
             <div class="border-b border-gray-200 tabs-container">

@@ -3,7 +3,7 @@
 @section('title', 'Kelola Paket Billing - Pondok Pesantren Bani Syahid')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
+<div class=" flex flex-col min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
     @include('layouts.components.admin.navbar')
 
@@ -23,7 +23,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -31,7 +31,6 @@
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Paket</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Harga</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -44,12 +43,6 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $loop->iteration }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $package->name }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                    {{ $package->type === 'takhossus' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                                    {{ $package->type_label }}
-                                </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{{ $package->description ?? '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
@@ -85,7 +78,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-8">
                                     <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
                                     <p class="text-gray-500">Belum ada paket yang dibuat.</p>

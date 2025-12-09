@@ -40,7 +40,7 @@
   @include('layouts.components.admin.navbar')
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="bg-white rounded-xl shadow-md p-6 mb-6">
             <h1 class="text-2xl font-bold text-primary mb-2">Kelola Konten Website</h1>
             <p class="text-gray-600">Kelola semua konten yang ditampilkan di halaman utama website</p>
@@ -435,7 +435,7 @@
             </div>
         </form>
 
-    </div>
+    </main>
      @include('layouts.components.admin.footer')
 
     <script>

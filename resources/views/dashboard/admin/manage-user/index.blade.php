@@ -14,7 +14,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="w-full mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="bg-white rounded-xl shadow-md p-6 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>

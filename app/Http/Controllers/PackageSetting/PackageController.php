@@ -24,7 +24,6 @@ class PackageController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|in:takhossus,plus_sekolah',
             'is_active' => 'boolean',
         ]);
 
@@ -49,7 +48,6 @@ class PackageController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|in:takhossus,plus_sekolah',
             'is_active' => 'boolean',
         ]);
 

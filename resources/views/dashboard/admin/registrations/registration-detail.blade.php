@@ -161,7 +161,7 @@
         <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Detail Pendaftaran Santri</h1>
         <p class="text-secondary">Kelola dan tinjau detail pendaftaran calon santri di sini.</p>
     </header>
-    <main class="max-w-7xl mx-auto py-6 px-3 md:px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="bg-white rounded-xl shadow-md p-6 mx-auto text-center">
                 <h2 class="text-2xl font-bold text-primary">{{$registration->nama_lengkap }}</h2>
                 <div class="flex flex-wrap items-center gap-2 md:gap-4 justify-center mt-3">

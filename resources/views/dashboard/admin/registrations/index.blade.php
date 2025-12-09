@@ -63,7 +63,7 @@
     <!-- Navbar -->
       @include('layouts.components.admin.navbar')
 
-    <main class="max-w-7xl mx-auto py-6 px-3 md:px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-14">
         <!-- Header -->
         <div class="mb-6">
             <h1 class="text-2xl md:text-3xl font-bold text-primary mb-2">Kelola Pendaftaran Santri</h1>

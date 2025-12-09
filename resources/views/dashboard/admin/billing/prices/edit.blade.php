@@ -21,7 +21,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-3xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="bg-white rounded-xl shadow-md p-6">
             <form action="{{ route('admin.billing.packages.prices.update', [$package, $price]) }}" method="POST" id="priceForm">
                 @csrf

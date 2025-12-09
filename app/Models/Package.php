@@ -12,7 +12,6 @@ class Package extends Model
     protected $fillable = [
         'name',
         'description',
-        'type',
         'is_active'
     ];
 
@@ -20,7 +19,7 @@ class Package extends Model
         'is_active' => 'boolean'
     ];
 
-    protected $appends = ['formatted_total_amount', 'type_label'];
+    protected $appends = ['formatted_total_amount'];
 
     /**
      * Get formatted total amount
@@ -37,18 +36,6 @@ class Package extends Model
     public function getTotalAmountAttribute()
     {
         return $this->activePrices->sum('amount');
-    }
-
-    /**
-     * Get type label
-     */
-    public function getTypeLabelAttribute()
-    {
-        return match($this->type) {
-            'takhossus' => 'Takhossus Pesantren',
-            'plus_sekolah' => 'Plus Sekolah',
-            default => $this->type
-        };
     }
 
     /**

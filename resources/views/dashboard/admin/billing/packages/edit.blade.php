@@ -14,16 +14,8 @@
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold text-primary">Edit Paket Billing</h1>
                     <p class="text-secondary mt-2">Edit paket pembayaran: {{ $package->name }}</p>
-                    <div class="mt-3 flex items-center space-x-4">
-                        <div class="bg-white px-3 py-1 rounded-full border border-gray-200">
-                            <span class="text-sm font-medium text-gray-700">
-                                <i class="fas fa-tag mr-1"></i> Tipe:
-                                <span class="{{ $package->type === 'takhossus' ? 'text-blue-600' : 'text-green-600' }}">
-                                    {{ $package->type_label }}
-                                </span>
-                            </span>
-                        </div>
-                        <div class="bg-white px-3 py-1 rounded-full border border-gray-200">
+                    <div class="mt-3">
+                        <div class="bg-white px-3 py-1 rounded-full border border-gray-200 inline-block">
                             <span class="text-sm font-medium text-gray-700">
                                 <i class="fas fa-money-bill-wave mr-1"></i> Total Harga:
                                 <span class="text-primary font-bold">{{ $package->formatted_total_amount }}</span>
@@ -44,45 +36,20 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-3xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="bg-white rounded-xl shadow-md p-6">
             <form action="{{ route('admin.billing.packages.update', $package) }}" method="POST" id="packageForm">
                 @csrf
                 @method('PUT')
 
                 <div class="space-y-6">
-                    <!-- Tipe Paket -->
-                    <div>
-                        <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Paket *</label>
-                        <select name="type" id="type" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
-                            onchange="updatePackageName()">
-                            <option value="">Pilih Tipe Paket</option>
-                            <option value="takhossus" {{ old('type', $package->type) == 'takhossus' ? 'selected' : '' }}>Takhossus Pesantren</option>
-                            <option value="plus_sekolah" {{ old('type', $package->type) == 'plus_sekolah' ? 'selected' : '' }}>Plus Sekolah</option>
-                        </select>
-                        <p class="text-sm text-gray-500 mt-1">Pilih tipe paket untuk menentukan nama paket</p>
-                        @error('type')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <!-- Nama Paket -->
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nama Paket *</label>
-                        <div class="relative">
-                            <input type="text" name="name" id="name" value="{{ old('name', $package->name) }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
-                                placeholder="Masukkan nama paket" required>
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                <button type="button" onclick="suggestPackageName()" class="text-sm text-primary hover:text-secondary">
-                                    <i class="fas fa-magic mr-1"></i> Saran Nama
-                                </button>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-500 mt-1">
-                            <i class="fas fa-lightbulb mr-1"></i> Klik "Saran Nama" untuk menghasilkan nama berdasarkan tipe paket
-                        </p>
+                        <input type="text" name="name" id="name" value="{{ old('name', $package->name) }}"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
+                            placeholder="Masukkan nama paket" required>
+                        <p class="text-sm text-gray-500 mt-1">Nama paket yang akan ditampilkan kepada pengguna</p>
                         @error('name')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -161,89 +128,9 @@
         if (mobileMenu) mobileMenu.classList.toggle('hidden');
     });
 
-    // Function to suggest package name based on type
-    function suggestPackageName() {
-        const typeSelect = document.getElementById('type');
-        const nameInput = document.getElementById('name');
-        const selectedType = typeSelect.value;
-
-        if (selectedType) {
-            const packageNames = {
-                'takhossus': 'Paket Takhossus Pesantren',
-                'plus_sekolah': 'Paket Plus Sekolah'
-            };
-
-            const suggestedName = packageNames[selectedType] || '';
-
-            Swal.fire({
-                title: 'Gunakan nama saran?',
-                text: suggestedName,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Gunakan',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#10B981',
-                cancelButtonColor: '#6B7280'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    nameInput.value = suggestedName;
-
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Nama paket telah diisi otomatis.',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                }
-            });
-        } else {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Silakan pilih tipe paket terlebih dahulu.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#ef4444'
-            });
-            typeSelect.focus();
-        }
-    }
-
-    // Function to update package name based on type (for onchange event)
-    function updatePackageName() {
-        const typeSelect = document.getElementById('type');
-        const nameInput = document.getElementById('name');
-        const selectedType = typeSelect.value;
-
-        // Only update if name is empty
-        if (selectedType && (!nameInput.value || nameInput.value.trim() === '')) {
-            const packageNames = {
-                'takhossus': 'Paket Takhossus Pesantren',
-                'plus_sekolah': 'Paket Plus Sekolah'
-            };
-
-            nameInput.value = packageNames[selectedType] || '';
-        }
-    }
-
     // Form validation
     document.getElementById('packageForm').addEventListener('submit', function(e) {
-        const typeSelect = document.getElementById('type');
         const nameInput = document.getElementById('name');
-
-        if (!typeSelect.value) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Silakan pilih tipe paket terlebih dahulu.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#ef4444'
-            });
-            typeSelect.focus();
-            return false;
-        }
 
         if (!nameInput.value.trim()) {
             e.preventDefault();
@@ -276,15 +163,6 @@
                 document.getElementById('packageForm').submit();
             }
         });
-    });
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Auto-focus on name field if it's empty
-        const nameInput = document.getElementById('name');
-        if (!nameInput.value.trim()) {
-            nameInput.focus();
-        }
     });
 </script>
 

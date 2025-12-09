@@ -30,7 +30,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-4xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <!-- Informasi Notifikasi -->
         <div class="mb-6">
             <div class="bg-blue-50 border border-blue-200 rounded-xl p-5">

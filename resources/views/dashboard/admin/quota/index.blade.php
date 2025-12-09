@@ -15,7 +15,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <!-- Add Quota Card -->
         <div class="bg-white rounded-xl shadow-md p-6 mb-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Tambah Kuota Baru</h2>

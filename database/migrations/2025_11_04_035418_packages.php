@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->enum('type', ['takhossus', 'plus_sekolah']);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

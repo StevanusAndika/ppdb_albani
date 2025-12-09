@@ -6,7 +6,7 @@
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
     <!-- Navbar -->
     @include('layouts.components.admin.navbar')
-    <main class="max-w-7xl mx-auto py-6 px-4">
+    <main class="max-w-7xl mx-auto py-6 px-4 flex-1">
         <div class="container mt-4">
             <header class="py-8 text-center">
                 <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1 text-center">Manajemen Konten Landing Page</h1>
@@ -14,7 +14,7 @@
             </header>
 
             @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                <div class="alert alert-success hidden">{{ session('success') }}</div>
             @endif
 
             <form action="{{ route('admin.landing.update') }}" method="POST" enctype="multipart/form-data">
