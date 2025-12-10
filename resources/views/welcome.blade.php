@@ -44,6 +44,14 @@
         }
     </script>
     <style>
+        /* Untuk membedakan antara "Pengumuman" dan "Pengumuman Seleksi" */
+        .desktop-menu a {
+            white-space: nowrap;
+        }
+
+        #mobile-menu a {
+            white-space: nowrap;
+        }
         .icon-bg {
             background-color: rgba(5, 117, 114, 0.1);
         }
@@ -111,12 +119,12 @@
 </head>
 <body class="bg-gray-50 font-sans">
 <!-- Navbar -->
-<nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
+<nav style="white-space: nowrap" class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container nowrap">
     <div class="container mx-auto flex justify-between items-center">
-        <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
+        <div class="text-lg font-bold text-primary nav-logo" style="white-space: nowrap"><img src="{{ asset('image/SantriFlow_logo.png') }}" alt="SantriFlow Logo" class="inline lg:hidden md:hidden h-8 w-auto"><div class="inline md:hidden lg:inline">|| Ponpes Bani Sahid</div></div>
 
         <!-- Desktop menu -->
-        <div class="hidden md:flex space-x-6 items-center">
+        <div class="hidden md:flex space-x-6 items-center desktop-menu">
             <a href="#" class="text-primary hover:text-secondary font-medium transition duration-300">Beranda</a>
             <a href="#visi-misi" class="text-primary hover:text-secondary font-medium transition duration-300">Visi & Misi</a>
             <a href="#program" class="text-primary hover:text-secondary font-medium transition duration-300">Program</a>
