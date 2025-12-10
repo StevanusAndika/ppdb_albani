@@ -1,6 +1,6 @@
-<nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container">
+<nav class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container ">
     <div class="container mx-auto flex justify-between items-center">
-        <div class="text-lg md:text-xl font-bold text-primary nav-logo">Ponpes Al Bani</div>
+        <div class="text-lg font-bold text-primary nav-logo"><img src="{{ asset('image/SantriFlow_logo.png') }}" alt="SantriFlow Logo" class="inline h-8 w-auto"><div class="inline md:hidden lg:inline">|| Ponpes Al Bani</div></div>
 
         <div class="hidden md:flex space-x-6 items-center desktop-menu">
             @php
@@ -40,7 +40,7 @@
 
 
             <!-- Ubah form logout menjadi button dengan onclick event -->
-            <button type="button" onclick="confirmLogout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full transition duration-300 cursor-pointer">
+            <button type="button" onclick="confirmLogout()" class="border border-red-500 hover:bg-red-600 hover:text-white text-red-500 px-4 py-1.5 rounded-full transition duration-300 cursor-pointer">
                 Logout
             </button>
         </div>
@@ -52,53 +52,53 @@
         </div>
     </div>
 
-    <!-- Mobile menu -->
-    <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white p-4 rounded-xl shadow-lg">
-        <div class="flex flex-col space-y-2">
-            @php
-                $currentRoute = Route::currentRouteName();
-            @endphp
-
-            <a href="{{ route('admin.dashboard') }}"
-               class="text-primary {{ $currentRoute == 'admin.dashboard' ? 'mobile-active-nav-link' : '' }}">
-                Beranda
-            </a>
-
-            <a href="{{ route('admin.settings.index') }}?tab=profile"
-               class="text-primary {{ str_starts_with($currentRoute, 'admin.settings') ? 'mobile-active-nav-link' : '' }}">
-                Profil
-            </a>
-
-            <a href="{{ route('admin.registrations.index') }}"
-               class="text-primary {{ str_starts_with($currentRoute, 'admin.registrations') ? 'mobile-active-nav-link' : '' }}">
-                Pendaftaran
-            </a>
-
-            <a href="{{ route('admin.transactions.index') }}"
-               class="text-primary {{ str_starts_with($currentRoute, 'admin.transactions') ? 'mobile-active-nav-link' : '' }}">
-                Pembayaran
-            </a>
-
-
-
-            <!-- LINK PENGUMUMAN SELEKSI BARU MOBILE -->
-            <a href="{{ route('admin.seleksi-announcements.index') }}"
-               class="text-primary {{ str_starts_with($currentRoute, 'admin.seleksi-announcements') ? 'mobile-active-nav-link' : '' }}">
-                Pengumuman Seleksi
-            </a>
-              <!-- LINK PENGUMUMAN MOBILE -->
-            <a href="{{ route('admin.announcements.index') }}"
-               class="text-primary {{ str_starts_with($currentRoute, 'admin.announcements') ? 'mobile-active-nav-link' : '' }}">
-                Pengumuman Kelulusan
-            </a>
-
-            <!-- Ubah form logout mobile menjadi button dengan onclick event -->
-            <button type="button" onclick="confirmLogout()" class="w-full bg-red-500 text-white py-2 rounded-full mt-2 cursor-pointer">
-                Logout
-            </button>
-        </div>
-    </div>
 </nav>
+<!-- Mobile menu -->
+<div id="mobile-menu" class="hidden md:hidden mt-5 mx-5 bg-white p-4 rounded-xl shadow-lg fixed top-20 left-5 right-5 z-40">
+    <div class="flex flex-col space-y-2">
+        @php
+            $currentRoute = Route::currentRouteName();
+        @endphp
+
+        <a href="{{ route('admin.dashboard') }}"
+           class="text-primary {{ $currentRoute == 'admin.dashboard' ? 'mobile-active-nav-link' : '' }}">
+            Beranda
+        </a>
+
+        <a href="{{ route('admin.settings.index') }}?tab=profile"
+           class="text-primary {{ str_starts_with($currentRoute, 'admin.settings') ? 'mobile-active-nav-link' : '' }}">
+            Profil
+        </a>
+
+        <a href="{{ route('admin.registrations.index') }}"
+           class="text-primary {{ str_starts_with($currentRoute, 'admin.registrations') ? 'mobile-active-nav-link' : '' }}">
+            Pendaftaran
+        </a>
+
+        <a href="{{ route('admin.transactions.index') }}"
+           class="text-primary {{ str_starts_with($currentRoute, 'admin.transactions') ? 'mobile-active-nav-link' : '' }}">
+            Pembayaran
+        </a>
+
+
+
+        <!-- LINK PENGUMUMAN SELEKSI BARU MOBILE -->
+        <a href="{{ route('admin.seleksi-announcements.index') }}"
+           class="text-primary {{ str_starts_with($currentRoute, 'admin.seleksi-announcements') ? 'mobile-active-nav-link' : '' }}">
+            Pengumuman Seleksi
+        </a>
+          <!-- LINK PENGUMUMAN MOBILE -->
+        <a href="{{ route('admin.announcements.index') }}"
+           class="text-primary {{ str_starts_with($currentRoute, 'admin.announcements') ? 'mobile-active-nav-link' : '' }}">
+            Pengumuman Kelulusan
+        </a>
+
+        <!-- Ubah form logout mobile menjadi button dengan onclick event -->
+        <button type="button" onclick="confirmLogout()" class="w-full border border-red-500 text-red-500 py-2 rounded-full mt-2 cursor-pointer hover:bg-red-600 hover:text-white transition duration-300">
+            Logout
+        </button>
+    </div>
+</div>
 
 <style>
     /* Style untuk garis hijau aktif di desktop */
