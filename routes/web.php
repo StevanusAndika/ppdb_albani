@@ -13,6 +13,7 @@ use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Biodata\BiodataController;
 use App\Http\Controllers\Document\DocumentController;
 use App\Http\Controllers\Admin\RegistrationController;
+use App\Http\Controllers\Admin\UserBiodataController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\FAQ\FAQController;
@@ -170,6 +171,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{user}', [ManageUserController::class, 'destroy'])->name('destroy');
         Route::post('/{user}/toggle-status', [ManageUserController::class, 'toggleStatus'])->name('toggle-status');
         Route::get('/generate-password', [ManageUserController::class, 'generatePassword'])->name('generate-password');
+
+        // Biodata Routes
+        Route::prefix('{user}/biodata')->name('biodata.')->group(function () {
+            Route::get('/', [UserBiodataController::class, 'show'])->name('show');
+            Route::get('/edit-documents', [UserBiodataController::class, 'editDocuments'])->name('edit-documents');
+            Route::get('/edit-registration', [UserBiodataController::class, 'editRegistration'])->name('edit-registration');
+            Route::post('/save-registration', [UserBiodataController::class, 'saveRegistration'])->name('save-registration');
+            Route::post('/upload-document', [UserBiodataController::class, 'uploadDocument'])->name('upload-document');
+            Route::delete('/document/{documentType}', [UserBiodataController::class, 'deleteDocument'])->name('delete-document');
+            Route::get('/document/{documentType}/download', [UserBiodataController::class, 'downloadDocument'])->name('download-document');
+        });
     });
 
     // Registration Management

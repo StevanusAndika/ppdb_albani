@@ -179,6 +179,11 @@ class User extends Authenticatable
         return $this->hasMany(Registration::class);
     }
 
+    public function userDocuments()
+    {
+        return $this->hasMany(UserDocument::class);
+    }
+
     // Method baru untuk mendapatkan nomor telepon yang diformat
     public function getFormattedPhoneNumber(): string
     {
