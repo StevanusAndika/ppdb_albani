@@ -112,7 +112,7 @@
 
             @if(($registration->total_biaya > 0) || (isset($manualTotal) && $manualTotal > 0))
                 @if($quota && $quota->isAvailable())
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Cash Payment -->
                     <div class="border-2 border-gray-300 rounded-xl p-6 hover:border-primary transition duration-300 payment-card">
                         <div class="text-center">
@@ -152,6 +152,48 @@
                                     <li class="flex items-center">
                                         <i class="fas fa-check text-green-500 mr-2"></i>
                                         Dapat konsultasi langsung
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Transfer Payment -->
+                    <div class="border-2 border-gray-300 rounded-xl p-6 hover:border-primary transition duration-300 payment-card">
+                        <div class="text-center">
+                            <i class="fas fa-university text-4xl text-purple-500 mb-4"></i>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Transfer Bank</h3>
+                            <p class="text-gray-600 mb-4">Bayar via transfer bank manual</p>
+                            <div class="text-2xl font-bold text-primary mb-4">
+                                @if($registration->total_biaya > 0)
+                                    {{ $registration->formatted_total_biaya }}
+                                @else
+                                    Rp {{ number_format($manualTotal, 0, ',', '.') }}
+                                @endif
+                            </div>
+
+                            <button type="button"
+                                    class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-semibold transition duration-300 flex items-center justify-center gap-2"
+                                    onclick="toggleBankTransferForm()"
+                                    id="bankTransferToggleBtn">
+                                <i class="fas fa-university"></i>
+                                Pilih Transfer Bank
+                            </button>
+
+                            <div class="mt-4 text-sm text-gray-600">
+                                <p class="font-semibold">Keuntungan Transfer Bank:</p>
+                                <ul class="mt-2 space-y-1">
+                                    <li class="flex items-center">
+                                        <i class="fas fa-check text-purple-500 mr-2"></i>
+                                        Verifikasi cepat dari admin
+                                    </li>
+                                    <li class="flex items-center">
+                                        <i class="fas fa-check text-purple-500 mr-2"></i>
+                                        Upload bukti transfer
+                                    </li>
+                                    <li class="flex items-center">
+                                        <i class="fas fa-check text-purple-500 mr-2"></i>
+                                        Konfirmasi otomatis
                                     </li>
                                 </ul>
                             </div>
@@ -358,6 +400,83 @@
     @include('layouts.components.admin.footer')
 </div>
 
+<!-- Bank Transfer Form Modal -->
+<div id="bankTransferModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Form Transfer Bank</h3>
+            <button type="button" onclick="closeBankTransferForm()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <form action="{{ route('santri.payments.store') }}" method="POST" id="bankTransferForm" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="payment_method" value="bank_transfer">
+
+            <!-- Sender Name -->
+            <div class="mb-4">
+                <label for="sender_name" class="block text-sm font-medium text-gray-700 mb-2">
+                    Atas Nama Pengirim *
+                </label>
+                <input type="text" 
+                       id="sender_name" 
+                       name="sender_name" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                       placeholder="Nama sesuai rekening bank"
+                       required>
+                @error('sender_name')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Payment Proof Upload -->
+            <div class="mb-4">
+                <label for="payment_proof" class="block text-sm font-medium text-gray-700 mb-2">
+                    Bukti Transfer *
+                </label>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-500 transition">
+                    <i class="fas fa-image text-3xl text-gray-400 mb-2"></i>
+                    <input type="file" 
+                           id="payment_proof" 
+                           name="payment_proof" 
+                           accept=".jpg,.jpeg,.png,.pdf"
+                           class="hidden"
+                           required>
+                    <label for="payment_proof" class="cursor-pointer">
+                        <p class="text-gray-600 font-medium">Pilih File Bukti Transfer</p>
+                        <p class="text-gray-500 text-sm">JPG, PNG, atau PDF (Max 5MB)</p>
+                    </label>
+                </div>
+                <p id="fileName" class="text-sm text-gray-600 mt-2"></p>
+                @error('payment_proof')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Info -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm text-blue-700">
+                <i class="fas fa-info-circle mr-2"></i>
+                <span>Pastikan bukti transfer jelas dan memuat informasi lengkap tentang transaksi</span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-2">
+                <button type="button" 
+                        onclick="closeBankTransferForm()"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition font-semibold flex items-center justify-center gap-2">
+                    <i class="fas fa-check"></i>
+                    Kirim Bukti
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Loading Modal -->
 <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white rounded-xl shadow-lg p-6 text-center">
@@ -533,6 +652,107 @@ function checkQuotaPeriodically() {
 @if($quota && $quota->isAvailable())
 document.addEventListener('DOMContentLoaded', checkQuotaPeriodically);
 @endif
+
+// Bank Transfer Form Functions
+function toggleBankTransferForm() {
+    const modal = document.getElementById('bankTransferModal');
+    modal.classList.remove('hidden');
+}
+
+function closeBankTransferForm() {
+    const modal = document.getElementById('bankTransferModal');
+    modal.classList.add('hidden');
+}
+
+// Check quota before submit bank transfer
+async function checkQuotaBeforeSubmitBankTransfer(form, originalText, submitBtn) {
+    const quotaCheckModal = document.getElementById('quotaCheckModal');
+    quotaCheckModal.classList.remove('hidden');
+
+    try {
+        const response = await fetch('/santri/payments/check-quota', {
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        quotaCheckModal.classList.add('hidden');
+
+        if (data.success && data.available) {
+            // Kuota tersedia, lanjutkan pembayaran dengan mengirim form secara tradisional
+            const loadingModal = document.getElementById('loadingModal');
+            loadingModal.classList.remove('hidden');
+            
+            // Submit form secara tradisional
+            setTimeout(() => {
+                form.submit();
+            }, 500);
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            alert('Kuota sudah penuh! Tidak dapat melanjutkan pembayaran.');
+        }
+    } catch (error) {
+        quotaCheckModal.classList.add('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        console.error('Error checking quota:', error);
+        alert('Terjadi kesalahan saat memeriksa kuota. Silakan coba lagi.');
+    }
+}
+
+// File input display name
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('payment_proof');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const fileName = document.getElementById('fileName');
+            if (this.files && this.files[0]) {
+                fileName.textContent = '✓ ' + this.files[0].name + ' (' + (this.files[0].size / 1024).toFixed(2) + ' KB)';
+            }
+        });
+    }
+
+    // Bank transfer form submission
+    const bankTransferForm = document.getElementById('bankTransferForm');
+    if (bankTransferForm) {
+        bankTransferForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!document.getElementById('sender_name').value.trim()) {
+                alert('Silakan isi nama pengirim');
+                return;
+            }
+            
+            if (!document.getElementById('payment_proof').files.length) {
+                alert('Silakan pilih file bukti transfer');
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengunggah...';
+
+            // Check quota then submit - update untuk handle redirect dengan form biasa
+            checkQuotaBeforeSubmitBankTransfer(this, originalText, submitBtn);
+        });
+    }
+
+    // Close modal when clicking outside
+    const modal = document.getElementById('bankTransferModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBankTransferForm();
+            }
+        });
+    }
+});
+
 </script>
 
 <style>

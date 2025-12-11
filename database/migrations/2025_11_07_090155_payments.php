@@ -14,12 +14,14 @@ return new class extends Migration
             $table->foreignId('registration_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->decimal('amount', 15, 2);
-            $table->enum('payment_method', ['cash', 'xendit']);
-            $table->enum('status', ['pending', 'waiting_payment', 'processing', 'success', 'failed', 'expired', 'lunas'])->default('pending');
+            $table->enum('payment_method', ['cash', 'xendit' , 'bank_transfer']);
+            $table->enum('status', ['pending', 'waiting_payment', 'waiting_verification', 'processing', 'success', 'failed', 'expired', 'lunas'])->default('pending');
             $table->string('xendit_id')->nullable();
             $table->string('xendit_external_id')->nullable();
             $table->text('xendit_response')->nullable();
             $table->text('admin_notes')->nullable();
+            $table->string('payment_proof')->nullable(); // For storing payment proof file path
+            $table->string('sender_name')->nullable(); // For bank transfer sender name
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->timestamps();

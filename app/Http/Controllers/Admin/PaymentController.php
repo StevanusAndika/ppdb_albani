@@ -90,6 +90,96 @@ class PaymentController extends Controller
     }
 
     /**
+     * Verify bank transfer payment
+     */
+    public function verifyBankTransfer(Request $request, Payment $payment)
+    {
+        // Check if payment is bank transfer and waiting verification
+        if ($payment->payment_method !== 'bank_transfer' || $payment->status !== 'waiting_verification') {
+            return back()->with('error', 'Pembayaran ini tidak dapat diverifikasi.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $oldStatus = $payment->status;
+            $payment->update([
+                'status' => 'lunas',
+                'paid_at' => now(),
+                'admin_notes' => ($payment->admin_notes ?? '') . ' | Diverifikasi oleh ' . auth()->user()->name . ' pada ' . now()->format('d-m-Y H:i')
+            ]);
+
+            // Update registration status
+            $payment->registration->update([
+                'status_pendaftaran' => 'diterima'
+            ]);
+
+            // Send WhatsApp notification
+            $fonnte = app('fonnte');
+            $fonnte->sendBankTransferVerified(
+                $payment->user->getFormattedPhoneNumber(),
+                $payment->user->name,
+                $payment->payment_code,
+                number_format($payment->amount, 0, ',', '.'),
+                auth()->user()->name
+            );
+
+            DB::commit();
+
+            return redirect()->route('admin.transactions.show', $payment)
+                ->with('success', 'Pembayaran transfer bank berhasil diverifikasi.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal memverifikasi pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject bank transfer payment
+     */
+    public function rejectBankTransfer(Request $request, Payment $payment)
+    {
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500'
+        ]);
+
+        // Check if payment is bank transfer and waiting verification
+        if ($payment->payment_method !== 'bank_transfer' || $payment->status !== 'waiting_verification') {
+            return back()->with('error', 'Pembayaran ini tidak dapat ditolak.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $payment->update([
+                'status' => 'failed',
+                'admin_notes' => 'Ditolak oleh ' . auth()->user()->name . ' | Alasan: ' . $request->rejection_reason . ' | ' . now()->format('d-m-Y H:i')
+            ]);
+
+            // Release quota
+            Quota::releaseQuota();
+
+            // Send WhatsApp notification
+            $fonnte = app('fonnte');
+            $fonnte->sendBankTransferRejected(
+                $payment->user->getFormattedPhoneNumber(),
+                $payment->user->name,
+                $payment->payment_code,
+                number_format($payment->amount, 0, ',', '.'),
+                $request->rejection_reason
+            );
+
+            DB::commit();
+
+            return redirect()->route('admin.transactions.show', $payment)
+                ->with('success', 'Pembayaran transfer bank berhasil ditolak.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menolak pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Search transactions by payment code or user name
      */
     public function search(Request $request)

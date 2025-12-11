@@ -153,7 +153,9 @@ class PaymentController extends Controller
         }
 
         $request->validate([
-            'payment_method' => 'required|in:cash,xendit'
+            'payment_method' => 'required|in:cash,xendit,bank_transfer',
+            'payment_proof' => 'required_if:payment_method,bank_transfer|nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'sender_name' => 'required_if:payment_method,bank_transfer|nullable|string|max:255'
         ]);
 
         DB::beginTransaction();
@@ -227,6 +229,68 @@ class PaymentController extends Controller
 
                 return redirect()->route('santri.payments.index')
                     ->with('success', 'Silahkan datang ke Pesantren Al-Qur\'an Bani Syahid untuk melakukan pembayaran kepada admin.');
+
+            } elseif ($request->payment_method === 'bank_transfer') {
+                // Handle bank transfer
+                $paymentProofPath = null;
+                
+                if ($request->hasFile('payment_proof')) {
+                    try {
+                        $file = $request->file('payment_proof');
+                        $filename = 'payment_proof_' . $payment->payment_code . '_' . time() . '.' . $file->getClientOriginalExtension();
+                        $paymentProofPath = $file->storeAs('payment_proofs', $filename, 'public');
+                        
+                        Log::info('Payment proof uploaded', [
+                            'payment_id' => $payment->id,
+                            'filename' => $paymentProofPath,
+                            'original_name' => $file->getClientOriginalName(),
+                            'size' => $file->getSize()
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to upload payment proof', [
+                            'payment_id' => $payment->id,
+                            'error' => $e->getMessage()
+                        ]);
+                        DB::rollBack();
+                        return back()->with('error', 'Gagal mengunggah bukti transfer: ' . $e->getMessage());
+                    }
+                }
+
+                $payment->update([
+                    'status' => 'waiting_verification',
+                    'payment_proof' => $paymentProofPath,
+                    'sender_name' => $request->sender_name,
+                    'admin_notes' => 'Menunggu verifikasi bukti transfer bank dari admin'
+                ]);
+
+                // Kirim notifikasi WhatsApp
+                try {
+                    $fonnte = app('fonnte');
+                    $fonnte->sendBankTransferInstruction(
+                        $user->getFormattedPhoneNumber(),
+                        $user->name,
+                        $payment->payment_code,
+                        number_format($totalAmount, 0, ',', '.'),
+                        $request->sender_name
+                    );
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send WhatsApp notification', [
+                        'payment_id' => $payment->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Don't fail the transaction if WhatsApp fails
+                }
+
+                DB::commit();
+
+                Log::info('Bank transfer payment created successfully', [
+                    'payment_id' => $payment->id,
+                    'payment_code' => $payment->payment_code,
+                    'sender_name' => $request->sender_name
+                ]);
+
+                return redirect()->route('santri.payments.index')
+                    ->with('success', 'Bukti transfer Anda telah diunggah. Silahkan tunggu verifikasi dari admin.');
 
             } else { // xendit
                 $xendit = app('xendit');

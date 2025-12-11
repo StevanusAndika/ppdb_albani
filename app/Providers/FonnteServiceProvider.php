@@ -492,6 +492,59 @@ class FonnteServiceProvider extends ServiceProvider
                 }
 
                 /**
+                 * Kirim instruksi transfer bank
+                 */
+                public function sendBankTransferInstruction(string $phone, string $namaSantri, string $paymentCode, string $amount, string $senderName): array
+                {
+                    $message = "Assalamualaikum {$namaSantri},\n\n";
+                    $message .= "Bukti transfer Anda telah kami terima dengan detail:\n";
+                    $message .= "• Kode Pembayaran: {$paymentCode}\n";
+                    $message .= "• Jumlah: Rp {$amount}\n";
+                    $message .= "• Atas Nama: {$senderName}\n\n";
+                    $message .= "Kami sedang memverifikasi bukti transfer Anda. Silakan tunggu konfirmasi dari admin dalam 1-2 jam kerja.\n\n";
+                    $message .= "Jika ada pertanyaan, hubungi kami di nomor ini.\n\n";
+                    $message .= "Terima kasih,\nAdmin Pesantren Al-Qur'an Bani Syahid";
+
+                    return $this->sendMessage($phone, $message);
+                }
+
+                /**
+                 * Kirim notifikasi verifikasi transfer bank berhasil
+                 */
+                public function sendBankTransferVerified(string $phone, string $namaSantri, string $paymentCode, string $amount, string $adminName): array
+                {
+                    $message = "Assalamualaikum {$namaSantri},\n\n";
+                    $message .= "Pembayaran transfer bank Anda telah berhasil diverifikasi! ✅\n\n";
+                    $message .= "Detail Pembayaran:\n";
+                    $message .= "• Kode Pembayaran: {$paymentCode}\n";
+                    $message .= "• Jumlah: Rp {$amount}\n";
+                    $message .= "• Status: Lunas\n";
+                    $message .= "• Diverifikasi oleh: {$adminName}\n\n";
+                    $message .= "Pendaftaran Anda telah diterima. Silakan cek dashboard untuk informasi lebih lanjut.\n\n";
+                    $message .= "Terima kasih,\nAdmin Pesantren Al-Qur'an Bani Syahid";
+
+                    return $this->sendMessage($phone, $message);
+                }
+
+                /**
+                 * Kirim notifikasi penolakan transfer bank
+                 */
+                public function sendBankTransferRejected(string $phone, string $namaSantri, string $paymentCode, string $amount, string $rejectionReason): array
+                {
+                    $message = "Assalamualaikum {$namaSantri},\n\n";
+                    $message .= "Maaf, bukti transfer Anda tidak dapat kami verifikasi. ❌\n\n";
+                    $message .= "Detail Pembayaran:\n";
+                    $message .= "• Kode Pembayaran: {$paymentCode}\n";
+                    $message .= "• Jumlah: Rp {$amount}\n";
+                    $message .= "• Status: Ditolak\n\n";
+                    $message .= "Alasan Penolakan:\n{$rejectionReason}\n\n";
+                    $message .= "Silakan upload kembali bukti transfer yang benar, atau hubungi admin untuk bantuan lebih lanjut.\n\n";
+                    $message .= "Terima kasih,\nAdmin Pesantren Al-Qur'an Bani Syahid";
+
+                    return $this->sendMessage($phone, $message);
+                }
+
+                /**
                  * Compile template dengan variables
                  */
                 private function compileTemplate(string $template, array $variables): string

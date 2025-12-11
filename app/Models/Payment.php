@@ -20,6 +20,8 @@ class Payment extends Model
         'xendit_external_id',
         'xendit_response',
         'admin_notes',
+        'payment_proof',
+        'sender_name',
         'paid_at',
         'expired_at'
     ];

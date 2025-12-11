@@ -215,6 +215,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/search', [AdminPaymentController::class, 'search'])->name('search');
         Route::get('/{payment}', [AdminPaymentController::class, 'show'])->name('show');
         Route::put('/{payment}/status', [AdminPaymentController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{payment}/verify-bank-transfer', [AdminPaymentController::class, 'verifyBankTransfer'])->name('verify-bank-transfer');
+        Route::post('/{payment}/reject-bank-transfer', [AdminPaymentController::class, 'rejectBankTransfer'])->name('reject-bank-transfer');
         Route::post('/bulk-update', [AdminPaymentController::class, 'bulkUpdate'])->name('bulk-update');
         Route::get('/export', [AdminPaymentController::class, 'export'])->name('export');
 
