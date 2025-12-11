@@ -422,10 +422,10 @@
 
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 mt-10 pt-8 border-t border-gray-200">
-                    <a href="{{ route('admin.manage-users.index') }}"
-                       class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3.5 px-6 rounded-lg text-center transition duration-200 font-medium flex items-center justify-center gap-2">
-                        <i class="fas fa-times"></i>
-                        Batal
+                    <a href="{{ route('admin.manage-users.biodata.show', $user) }}"
+                       class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-800 py-3.5 px-6 rounded-lg text-center transition duration-200 font-medium flex items-center justify-center gap-2">
+                        <i class="fas fa-id-card"></i>
+                        Lihat Biodata 
                     </a>
                     <button type="submit"
                             class="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white py-3.5 px-6 rounded-lg transition duration-200 font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2">
