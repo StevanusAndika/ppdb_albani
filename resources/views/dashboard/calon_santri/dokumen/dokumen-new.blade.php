@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 gap-6 mb-8 w-full max-w-3xl mx-auto">
             @forelse($requiredDocuments as $docType)
                 @php
                     $documentLabel = $documentLabels[$docType] ?? ucwords(str_replace('_', ' ', $docType));
@@ -187,26 +187,26 @@
             </div>
         @endif
 
-        <div class="max-w-4xl mx-auto flex gap-3 mb-8">
-            <a href="{{ route('santri.biodata.index') }}" 
-               class="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-semibold text-center">
-                Kembali ke Biodata
-            </a>
-            <button type="button" 
-                    id="downloadAllBtn"
-                    onclick="downloadAllDocuments()"
-                    class="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-semibold">
-                <i class="fas fa-download mr-2"></i>Download Semua
-            </button>
-            <button type="button" 
-                    id="completeBtn"
-                    onclick="completeRegistration()"
-                    class="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition font-semibold"
-                    disabled>
-                <i class="fas fa-check mr-2"></i>Selesaikan Pendaftaran
-            </button>
-        </div>
     </main>
+    <div class="max-w-4xl mx-auto flex gap-3 mb-8">
+        <a href="{{ route('santri.biodata.index') }}" 
+           class="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-semibold text-center">
+            Kembali ke Biodata
+        </a>
+        <button type="button" 
+                id="downloadAllBtn"
+                onclick="downloadAllDocuments()"
+                class="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-semibold">
+            <i class="fas fa-download mr-2"></i>Download Semua
+        </button>
+        <button type="button" 
+                id="completeBtn"
+                onclick="completeRegistration()"
+                class="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition font-semibold"
+                disabled>
+            <i class="fas fa-check mr-2"></i>Selesaikan Pendaftaran
+        </button>
+    </div>
 
     @include('layouts.components.calon_santri.footer')
 </div>
