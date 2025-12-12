@@ -137,12 +137,6 @@
                     <p class="text-lg font-semibold text-gray-900">{{ ucfirst(str_replace('_', ' ', $registration->program_pendidikan)) }}</p>
                 </div>
 
-                <!-- Program Unggulan -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <p class="text-sm text-gray-600 mb-1">Program Unggulan</p>
-                    <p class="text-lg font-semibold text-gray-900">{{ $registration->program_unggulan_id ?? '-' }}</p>
-                </div>
-
                 <!-- Nama Sekolah Terakhir -->
                 <div class="bg-gray-50 p-4 rounded-lg md:col-span-2">
                     <p class="text-sm text-gray-600 mb-1">Nama Sekolah Terakhir</p>

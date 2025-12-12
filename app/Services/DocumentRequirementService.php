@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\Registration;
 use App\Models\RegistrationDocument;
-use App\Models\ProgramUnggulan;
-
 class DocumentRequirementService
 {
     /**
@@ -13,19 +11,7 @@ class DocumentRequirementService
      */
     public function getRequiredDocuments(Registration $registration)
     {
-        $requiredDocs = [];
-
-        // Documents from package
-        if ($registration->package && $registration->package->required_documents) {
-            $requiredDocs = array_merge($requiredDocs, $registration->package->required_documents);
-        }
-
-        // Additional documents from program unggulan
-        if ($registration->programUnggulan && $registration->programUnggulan->dokumen_tambahan) {
-            $requiredDocs = array_merge($requiredDocs, $registration->programUnggulan->dokumen_tambahan);
-        }
-
-        return array_unique($requiredDocs);
+        return array_keys($this->getDocumentDefinitions($registration));
     }
 
     /**
@@ -43,6 +29,18 @@ class DocumentRequirementService
      */
     protected function normalizeDocumentType($docType)
     {
+        if (is_null($docType)) {
+            return null;
+        }
+
+        if (is_array($docType) || is_object($docType)) {
+            $docType = $this->extractDocumentTypeFromArray((array) $docType);
+        }
+
+        if (!$docType) {
+            return null;
+        }
+
         // Map labels to types
         $labelToTypeMap = [
             'Kartu Keluarga' => 'kartu_keluarga',
@@ -79,11 +77,106 @@ class DocumentRequirementService
     }
 
     /**
+     * Extract document type from a structured array/object definition
+     */
+    protected function extractDocumentTypeFromArray(array $definition)
+    {
+        $candidateKeys = ['type', 'document_type', 'tipe_dokumen', 'slug', 'key', 'kode', 'name', 'nama', 'label'];
+
+        foreach ($candidateKeys as $key) {
+            if (isset($definition[$key]) && $definition[$key]) {
+                return $definition[$key];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Build normalized document definition (type + label)
+     */
+    protected function normalizeDocumentEntry($entry)
+    {
+        if (is_null($entry)) {
+            return null;
+        }
+
+        // Convert object to array for consistent handling
+        if (is_object($entry)) {
+            $entry = (array) $entry;
+        }
+
+        $rawType = is_array($entry) ? $this->extractDocumentTypeFromArray($entry) : $entry;
+        // Fallback for arrays that are just value lists (e.g., ["raport"])
+        if (!$rawType && is_array($entry)) {
+            foreach ($entry as $value) {
+                if (is_string($value) && trim($value) !== '') {
+                    $rawType = $value;
+                    break;
+                }
+            }
+        }
+        $normalizedType = $this->normalizeDocumentType($rawType);
+
+        if (!$normalizedType) {
+            return null;
+        }
+
+        $rawLabel = is_array($entry)
+            ? ($entry['label'] ?? $entry['nama'] ?? $entry['name'] ?? $rawType)
+            : $rawType;
+
+        return [
+            'type' => $normalizedType,
+            'label' => $this->getDocumentLabel($normalizedType, $rawLabel),
+        ];
+    }
+
+    /**
+     * Return associative definitions keyed by normalized type
+     */
+    public function getDocumentDefinitions(Registration $registration): array
+    {
+        $definitions = [];
+
+        $collect = function ($items, string $source) use (&$definitions) {
+            if (empty($items)) {
+                return;
+            }
+
+            // Flatten nested arrays/objects so structures like {"dokumen":["raport"]} are parsed
+            $flatItems = [];
+            $itemsArray = (array) $items; // avoid passing temporary to array_walk_recursive
+            array_walk_recursive($itemsArray, function ($value) use (&$flatItems) {
+                $flatItems[] = $value;
+            });
+
+            foreach ($flatItems as $item) {
+                $normalized = $this->normalizeDocumentEntry($item);
+                if (!$normalized) {
+                    continue;
+                }
+
+                $definitions[$normalized['type']] = [
+                    'label' => $normalized['label'],
+                    'source' => $source,
+                ];
+            }
+        };
+
+        // Documents from package
+        $collect($registration->package?->required_documents, 'package');
+
+        return $definitions;
+    }
+
+    /**
      * Check if all required documents are uploaded
      */
     public function areAllDocumentsComplete(Registration $registration)
     {
-        $required = $this->getRequiredDocuments($registration);
+        $definitions = $this->getDocumentDefinitions($registration);
+        $required = array_keys($definitions);
         
         if (empty($required)) {
             return true;
@@ -98,7 +191,7 @@ class DocumentRequirementService
         $normalizedUploaded = array_map([$this, 'normalizeDocumentType'], $uploaded);
 
         foreach ($normalizedRequired as $docType) {
-            if (!in_array($docType, $normalizedUploaded)) {
+            if ($docType && !in_array($docType, $normalizedUploaded)) {
                 return false;
             }
         }
@@ -111,7 +204,8 @@ class DocumentRequirementService
      */
     public function getUploadedDocumentsCount(Registration $registration)
     {
-        $required = $this->getRequiredDocuments($registration);
+        $definitions = $this->getDocumentDefinitions($registration);
+        $required = array_keys($definitions);
         
         if (empty($required)) {
             return 0;
@@ -128,7 +222,7 @@ class DocumentRequirementService
         // Count how many required documents are uploaded
         $count = 0;
         foreach ($normalizedRequired as $docType) {
-            if (in_array($docType, $normalizedUploaded)) {
+            if ($docType && in_array($docType, $normalizedUploaded)) {
                 $count++;
             }
         }
@@ -141,7 +235,7 @@ class DocumentRequirementService
      */
     public function getRequiredDocumentsCount(Registration $registration)
     {
-        return count($this->getRequiredDocuments($registration));
+        return count($this->getDocumentDefinitions($registration));
     }
 
     /**
@@ -149,7 +243,8 @@ class DocumentRequirementService
      */
     public function getMissingDocuments(Registration $registration)
     {
-        $required = $this->getRequiredDocuments($registration);
+        $definitions = $this->getDocumentDefinitions($registration);
+        $required = array_keys($definitions);
         
         if (empty($required)) {
             return [];
@@ -164,10 +259,9 @@ class DocumentRequirementService
         $normalizedUploaded = array_map([$this, 'normalizeDocumentType'], $uploaded);
 
         $missing = [];
-        foreach ($required as $index => $docType) {
-            $normalizedType = $normalizedRequired[$index];
-            if (!in_array($normalizedType, $normalizedUploaded)) {
-                $missing[] = $docType; // Return original label for display
+        foreach ($normalizedRequired as $index => $docType) {
+            if ($docType && !in_array($docType, $normalizedUploaded)) {
+                $missing[] = $docType;
             }
         }
 
@@ -177,7 +271,7 @@ class DocumentRequirementService
     /**
      * Get document label in Indonesian
      */
-    public function getDocumentLabel($documentType)
+    public function getDocumentLabel($documentType, $fallbackLabel = null)
     {
         $labels = [
             'kartu_keluarga' => 'Kartu Keluarga',
@@ -190,7 +284,19 @@ class DocumentRequirementService
             'dokumen_kesehatan' => 'Dokumen Kesehatan'
         ];
 
-        return $labels[$documentType] ?? $documentType;
+        if (isset($labels[$documentType])) {
+            return $labels[$documentType];
+        }
+
+        if ($fallbackLabel) {
+            return $fallbackLabel;
+        }
+
+        if ($documentType) {
+            return ucwords(str_replace('_', ' ', $documentType));
+        }
+
+        return 'Dokumen';
     }
 
     /**

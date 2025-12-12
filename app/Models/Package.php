@@ -13,6 +13,7 @@ class Package extends Model
         'name',
         'description',
         'required_documents',
+        'perlu_verifikasi',
         'is_active'
     ];
 

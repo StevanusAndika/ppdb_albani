@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Registration;
 use App\Models\Price;
-use App\Models\ContentSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -276,8 +275,7 @@ class PaymentController extends Controller
                              ->with([
                                  'user',
                                  'registration',
-                                 'registration.package',
-                                 'registration.programUnggulan'
+                                 'registration.package'
                              ])
                              ->first();
 
@@ -298,19 +296,9 @@ class PaymentController extends Controller
                                  ->ordered()
                                  ->get();
 
-            // Ambil nama program unggulan
-            $programUnggulanName = 'Tidak ada program unggulan';
-            if ($payment->registration->program_unggulan_id) {
-                $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
-                if ($programUnggulan) {
-                    $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-                }
-            }
-
             $data = [
                 'payment' => $payment,
                 'packagePrices' => $packagePrices,
-                'programUnggulanName' => $programUnggulanName,
                 'isAdmin' => true // Flag untuk template admin
             ];
 
@@ -367,8 +355,7 @@ class PaymentController extends Controller
                          ->with([
                              'user',
                              'registration',
-                             'registration.package',
-                             'registration.programUnggulan'
+                             'registration.package'
                          ])
                          ->firstOrFail();
 
@@ -383,16 +370,7 @@ class PaymentController extends Controller
                              ->ordered()
                              ->get();
 
-        // Ambil nama program unggulan
-        $programUnggulanName = 'Tidak ada program unggulan';
-        if ($payment->registration->program_unggulan_id) {
-            $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
-            if ($programUnggulan) {
-                $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-            }
-        }
-
-        return view('dashboard.calon_santri.payments.invoice', compact('payment', 'packagePrices', 'programUnggulanName'));
+        return view('dashboard.calon_santri.payments.invoice', compact('payment', 'packagePrices'));
     }
 
     /**

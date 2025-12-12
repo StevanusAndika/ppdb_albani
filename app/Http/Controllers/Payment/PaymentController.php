@@ -7,7 +7,6 @@ use App\Models\Payment;
 use App\Models\Registration;
 use App\Models\Package;
 use App\Models\Price;
-use App\Models\ContentSetting;
 use App\Models\Quota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,12 +21,12 @@ class PaymentController extends Controller
     {
         $user = auth()->user();
         $payments = Payment::where('user_id', $user->id)
-                          ->with(['registration', 'registration.package', 'registration.programUnggulan'])
+                          ->with(['registration', 'registration.package'])
                           ->latest()
                           ->get();
 
         $registration = Registration::where('user_id', $user->id)
-                                   ->with(['package', 'programUnggulan'])
+                                   ->with(['package'])
                                    ->first();
 
         $hasSuccessfulPayment = $registration ? $registration->hasSuccessfulPayment() : false;
@@ -105,19 +104,9 @@ class PaymentController extends Controller
                             ->ordered()
                             ->get();
 
-        // Ambil nama program unggulan dengan benar
-        $programUnggulanName = 'Tidak ada program unggulan';
-        if ($registration->program_unggulan_id) {
-            $programUnggulan = ContentSetting::find($registration->program_unggulan_id);
-            if ($programUnggulan) {
-                $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-            }
-        }
-
         return view('dashboard.calon_santri.payments.create', compact(
             'registration',
             'packagePrices',
-            'programUnggulanName',
             'quota'
         ));
     }
@@ -129,7 +118,7 @@ class PaymentController extends Controller
     {
         $user = auth()->user();
         $registration = Registration::where('user_id', $user->id)
-                                   ->with(['package', 'programUnggulan'])
+                                   ->with(['package'])
                                    ->first();
 
         // Validasi
@@ -295,20 +284,11 @@ class PaymentController extends Controller
             } else { // xendit
                 $xendit = app('xendit');
 
-                // Ambil nama program unggulan untuk description
-                $programUnggulanName = 'Tidak ada program unggulan';
-                if ($registration->program_unggulan_id) {
-                    $programUnggulan = ContentSetting::find($registration->program_unggulan_id);
-                    if ($programUnggulan) {
-                        $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-                    }
-                }
-
                 // Data untuk Xendit
                 $xenditData = [
                     'external_id' => $payment->payment_code,
                     'amount' => $totalAmount,
-                    'description' => 'Pembayaran Pendaftaran Santri - ' . $registration->id_pendaftaran . ' - Program: ' . $programUnggulanName,
+                    'description' => 'Pembayaran Pendaftaran Santri - ' . $registration->id_pendaftaran,
                     'payer_email' => $user->email,
                     'customer' => [
                         'given_names' => $user->name,
@@ -677,15 +657,7 @@ class PaymentController extends Controller
 
         switch ($status) {
             case 'success':
-                // Ambil data program unggulan dengan benar
-                $programUnggulanName = 'Tidak ada program unggulan';
-                if ($payment->registration->program_unggulan_id) {
-                    $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
-                    if ($programUnggulan) {
-                        $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-                    }
-                }
-
+                $programUnggulanName = 'Paket Pendaftaran';
                 // Kirim bukti pembayaran sukses
                 $fonnte->sendPaymentSuccess(
                     $user->getFormattedPhoneNumber(),

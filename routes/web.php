@@ -26,7 +26,6 @@ use App\Http\Controllers\Announcement\SeleksiAnnoucementController;
 use App\Http\Controllers\CameraTestController;
 use App\Http\Controllers\Admin\QRcodeScannerController;
 use App\Http\Controllers\BeasiswaController;
-use App\Http\Controllers\Admin\ProgramUnggulanController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
@@ -162,15 +161,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Program Unggulan Management
-    Route::prefix('program-unggulan')->name('program-unggulan.')->group(function () {
-        Route::get('/', [ProgramUnggulanController::class, 'index'])->name('index');
-        Route::get('/create', [ProgramUnggulanController::class, 'create'])->name('create');
-        Route::post('/', [ProgramUnggulanController::class, 'store'])->name('store');
-        Route::get('/{program}/edit', [ProgramUnggulanController::class, 'edit'])->name('edit');
-        Route::put('/{program}', [ProgramUnggulanController::class, 'update'])->name('update');
-        Route::delete('/{program}', [ProgramUnggulanController::class, 'destroy'])->name('destroy');
-        Route::get('/json', [ProgramUnggulanController::class, 'getJson'])->name('json');
-    });
 
     // Manage Users
     Route::prefix('manage-users')->name('manage-users.')->group(function () {

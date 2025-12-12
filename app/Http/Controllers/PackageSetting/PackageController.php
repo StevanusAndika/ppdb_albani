@@ -26,6 +26,7 @@ class PackageController extends Controller
             'description' => 'nullable|string',
             'required_documents' => 'nullable|array',
             'required_documents.*' => 'nullable|string',
+            'perlu_verifikasi' => 'required|in:yes,no',
             'is_active' => 'boolean',
         ]);
 
@@ -58,6 +59,7 @@ class PackageController extends Controller
             'description' => 'nullable|string',
             'required_documents' => 'nullable|array',
             'required_documents.*' => 'nullable|string',
+            'perlu_verifikasi' => 'required|in:yes,no',
             'is_active' => 'boolean',
         ]);
 

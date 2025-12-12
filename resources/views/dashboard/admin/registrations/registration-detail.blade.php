@@ -463,13 +463,6 @@
                         <tr>
                             <td>NIK</td><td>: {{ $registration->nik }}</td>
                         </tr>
-                        <tr>
-                            <td>Program Unggulan</td><td>: {{ $registration->program_unggulan_name }}
-                                @if($registration->program_unggulan_description)
-                                <br><span class="text-xs text-gray-600">{{ $registration->program_unggulan_description }}</span>
-                                @endif
-                            </td>
-                        </tr>
                         <tr class="info-item">
                             <td class="info-label">Tempat, Tanggal Lahir</td>
                             <td class="info-value">: {{ $registration->tempat_lahir }}, : {{ $registration->tanggal_lahir->translatedFormat('d F Y') }}</td>

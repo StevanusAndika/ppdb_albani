@@ -18,7 +18,6 @@ class Registration extends Model
         'package_id',
         'nama_lengkap',
         'nik',
-        'program_unggulan_id',
         'program_pendidikan', // TAMBAHKAN INI
         'tempat_lahir',
         'tanggal_lahir',
@@ -85,7 +84,6 @@ class Registration extends Model
         'total_biaya',
         'formatted_total_biaya',
         'qr_code_url',
-        'program_unggulan_name',
         'is_biodata_complete',
         'is_documents_complete',
         'has_successful_payment',
@@ -180,11 +178,6 @@ class Registration extends Model
     public function package()
     {
         return $this->belongsTo(Package::class, 'package_id');
-    }
-
-    public function programUnggulan()
-    {
-        return $this->belongsTo(ProgramUnggulan::class, 'program_unggulan_id');
     }
 
     public function documents()
@@ -393,72 +386,6 @@ class Registration extends Model
     public function getIsBiodataCompleteAttribute()
     {
         return $this->isBiodataComplete();
-    }
-
-    /**
-     * Get program unggulan dari ContentSetting dengan perbaikan
-     */
-    public function getProgramUnggulanAttribute()
-    {
-        if (!$this->program_unggulan_id) {
-            return null;
-        }
-
-        try {
-            $contentSetting = ContentSetting::first();
-            if (!$contentSetting) {
-                return null;
-            }
-
-            $programs = $contentSetting->program_unggulan ?? [];
-
-            if (is_string($programs)) {
-                $programs = json_decode($programs, true) ?? [];
-            }
-
-            foreach ($programs as $program) {
-                if (isset($program['id']) && $program['id'] == $this->program_unggulan_id) {
-                    return $program;
-                }
-            }
-
-            return null;
-        } catch (\Exception $e) {
-            \Log::error('Error getting program unggulan: ' . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Get program unggulan name dengan fallback
-     */
-    public function getProgramUnggulanNameAttribute()
-    {
-        try {
-            $program = $this->program_unggulan;
-
-            if ($program && isset($program['nama_program'])) {
-                return $program['nama_program'];
-            }
-
-            if ($this->program_unggulan_id) {
-                return " " . $this->program_unggulan_id;
-            }
-
-            return 'Belum memilih program';
-        } catch (\Exception $e) {
-            \Log::error('Error getting program name: ' . $e->getMessage());
-            return 'Error loading program';
-        }
-    }
-
-    /**
-     * Get program unggulan description
-     */
-    public function getProgramUnggulanDescriptionAttribute()
-    {
-        $program = $this->program_unggulan;
-        return $program['deskripsi'] ?? '';
     }
 
     /**

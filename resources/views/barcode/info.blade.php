@@ -195,24 +195,6 @@
                 </div>
             </div>
 
-            <!-- Program Unggulan -->
-            <div class="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
-                <h3 class="text-lg font-semibold text-indigo-800 mb-2">
-                    <i class="fas fa-star mr-2"></i>Program Unggulan
-                </h3>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="font-medium text-indigo-900">{{ $registration->program_unggulan_name ?: 'Belum memilih program' }}</p>
-                        <p class="text-indigo-700 text-sm">Program pilihan calon santri</p>
-                    </div>
-                    @if($registration->program_unggulan_id)
-                    <span class="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
-                        {{ $registration->program_unggulan_id }}
-                    </span>
-                    @endif
-                </div>
-            </div>
-
             <!-- Package Information -->
             @if($registration->package)
             <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">

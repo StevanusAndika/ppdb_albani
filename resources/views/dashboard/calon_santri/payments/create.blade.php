@@ -57,7 +57,6 @@
                     </div>
                     {{-- <div>
                         <span class="text-blue-600 font-medium">Program Unggulan:</span>
-                        <p class="text-blue-800">{{ $programUnggulanName }}</p>
                     </div> --}}
                     <div>
                         <span class="text-blue-600 font-medium">Paket Dipilih:</span>
@@ -274,7 +273,7 @@
                                 </li>
                                 {{-- <li class="flex items-start">
                                     <i class="fas fa-check text-yellow-500 mt-1 mr-2 text-xs"></i>
-                                    <span>Program Unggulan: <strong>{{ $programUnggulanName }}</strong></span>
+                                    <span>Paket: <strong>{{ $registration->package->name }}</strong></span>
                                 </li> --}}
                                 <li class="flex items-start">
                                     <i class="fas fa-check text-yellow-500 mt-1 mr-2 text-xs"></i>

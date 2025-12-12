@@ -241,7 +241,6 @@ class UserBiodataController extends Controller
                 'kecamatan' => 'required|string|max:255',
                 'kota' => 'required|string|max:255',
                 'program_pendidikan' => 'required|in:tahfidz,umum,plus',
-                'program_unggulan_id' => 'nullable|exists:packages,id',
                 'nama_sekolah_terakhir' => 'required|string|max:255',
                 'status_pendaftaran' => 'required|in:proses,diterima,ditolak',
                 'package_id' => 'nullable|exists:packages,id',

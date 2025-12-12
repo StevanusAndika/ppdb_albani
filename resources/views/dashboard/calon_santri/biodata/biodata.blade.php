@@ -89,22 +89,6 @@
                         </select>
                     </div>
 
-                    <!-- Program Unggulan -->
-                    <div>
-                        <label for="program_unggulan_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            Program Unggulan <span class="text-red-500">*</span>
-                        </label>
-                        <select name="program_unggulan_id" id="program_unggulan_id" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
-                            <option value="">Pilih Program Unggulan</option>
-                            @foreach($programUnggulan as $program)
-                                <option value="{{ $program->id }}"
-                                    {{ old('program_unggulan_id', $registration->program_unggulan_id ?? '') == $program->id ? 'selected' : '' }}>
-                                    {{ $program->nama_program }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
                 </div>
 
                 <!-- Detail Harga Paket -->

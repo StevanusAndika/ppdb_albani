@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Traits\DocumentUploadTrait;
 use App\Models\Registration;
 use App\Models\Package;
-use App\Models\ProgramUnggulan;
 use App\Models\Quota;
 use App\Models\RegistrationDocument;
 use App\Services\DocumentRequirementService;
@@ -57,46 +56,36 @@ class DocumentController extends Controller
         }
 
         $totalBiaya = $registration->total_biaya;
-        $programUnggulanId = $registration->program_unggulan_id;
 
-        $programUnggulanName = 'Belum dipilih';
-        if ($registration->programUnggulan) {
-            $programUnggulanName = $registration->programUnggulan->nama_program ?? "Program #{$programUnggulanId}";
-        } elseif ($programUnggulanId) {
-            $programUnggulanName = "Program #{$programUnggulanId}";
-        }
-
-        // Get required documents based on package and program
-        $requiredDocuments = $this->documentRequirementService->getRequiredDocuments($registration);
+        // Get required documents based on package and program (normalized + labeled)
+        $documentDefinitions = $this->documentRequirementService->getDocumentDefinitions($registration);
+        $requiredDocuments = array_keys($documentDefinitions);
         $uploadedDocuments = $this->documentRequirementService->getUploadedDocuments($registration);
         $missingDocuments = $this->documentRequirementService->getMissingDocuments($registration);
         $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
         $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
 
         // Get document labels for all required documents
-        $documentLabels = [];
-        foreach ($requiredDocuments as $docType) {
-            $documentLabels[$docType] = $this->documentRequirementService->getDocumentLabel($docType);
-        }
+        $documentLabels = array_map(fn ($definition) => $definition['label'], $documentDefinitions);
 
         // Get labels for missing documents
         $missingDocumentLabels = [];
         foreach ($missingDocuments as $docType) {
-            $missingDocumentLabels[$docType] = $this->documentRequirementService->getDocumentLabel($docType);
+            $missingDocumentLabels[$docType] = $documentDefinitions[$docType]['label']
+                ?? $this->documentRequirementService->getDocumentLabel($docType);
         }
 
         return view('dashboard.calon_santri.dokumen.dokumen-new', compact(
             'registration',
             'totalBiaya',
-            'programUnggulanId',
-            'programUnggulanName',
             'requiredDocuments',
             'uploadedDocuments',
             'missingDocuments',
             'uploadedCount',
             'requiredCount',
             'documentLabels',
-            'missingDocumentLabels'
+            'missingDocumentLabels',
+            'documentDefinitions'
         ));
     }
 

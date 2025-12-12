@@ -521,7 +521,7 @@
                         </div>
                         {{-- <div class="info-row">
                             <span class="info-label">Program Unggulan</span>
-                            <span class="info-value">{{ $programUnggulanName ?? 'Tidak ada program unggulan' }}</span>
+                            <span class="info-value">{{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}</span>
                         </div> --}}
                     </div>
                 </div>
@@ -545,9 +545,7 @@
                                     <div class="item-name">Biaya Pendaftaran Santri</div>
                                     <div class="item-description">
                                         Paket: {{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}
-                                        @if(isset($programUnggulanName) && $programUnggulanName != 'Tidak ada program unggulan')
-                                        | Program: {{ $programUnggulanName }}
-                                        @endif
+                                        | Paket: {{ $payment->registration->package->name ?? 'Paket Pendaftaran' }}
                                     </div>
                                 </td>
                                 <td class="text-center">1</td>

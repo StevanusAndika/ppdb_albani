@@ -37,23 +37,6 @@
     </header>
 
     <main class="max-w-7xl mx-auto py-6 px-4">
-        {{-- Program Info --}}
-        @if($registration)
-            <div class="max-w-4xl mx-auto bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 class="font-bold text-blue-900 mb-2">Informasi Program</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <span class="text-blue-700">Program Pendidikan:</span>
-                        <p class="font-semibold text-blue-900">{{ $registration->program_pendidikan ?? 'Tidak dipilih' }}</p>
-                    </div>
-                    <div>
-                        <span class="text-blue-700">Program Unggulan:</span>
-                        <p class="font-semibold text-blue-900">{{ $programUnggulanName }}</p>
-                    </div>
-                </div>
-            </div>
-        @endif
-
         <div id="autoRefreshNotice" class="hidden mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center">
             <div class="flex items-center justify-center space-x-2">
                 <i class="fas fa-sync-alt animate-spin"></i>
@@ -88,84 +71,34 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            @forelse($requiredDocuments as $docTypeRaw)
-            @php
-                // Convert label to document type for consistent class names
-                // Map common labels to document types
-                $labelToTypeMap = [
-                    'Kartu Keluarga' => 'kartu_keluarga',
-                    'Ijazah' => 'ijazah',
-                    'Ijazah SMP' => 'ijazah',
-                    'Ijazah SMA' => 'ijazah',
-                    'Akta Kelahiran' => 'akta_kelahiran',
-                    'Pas Foto' => 'pas_foto',
-                    'SKU' => 'sku',
-                    'Sertifikat Hafiz' => 'sertifikat_hafiz',
-                    'Surat Rekomendasi' => 'surat_rekomendasi',
-                    'Dokumen Kesehatan' => 'dokumen_kesehatan',
-                ];
-                
-                // Normalize: check if it's already a type (has underscore) or convert from label
-                $docType = $docTypeRaw;
-                if (strpos($docTypeRaw, '_') === false && isset($labelToTypeMap[$docTypeRaw])) {
-                    $docType = $labelToTypeMap[$docTypeRaw];
-                } elseif (strpos($docTypeRaw, '_') === false) {
-                    // Fallback: try to find partial match
-                    foreach ($labelToTypeMap as $label => $type) {
-                        if (stripos($docTypeRaw, $label) !== false || stripos($label, $docTypeRaw) !== false) {
-                            $docType = $type;
-                            break;
-                        }
-                    }
-                    // If still not found, convert to snake_case
-                    if ($docType === $docTypeRaw) {
-                        $docType = strtolower(str_replace(' ', '_', $docTypeRaw));
-                    }
-                }
-                
-                // Get label from controller data (or use original if label not found)
-                $documentLabels = $documentLabels ?? []; // Prevent undefined variable
-                $documentLabel = $documentLabels[$docTypeRaw] ?? $docTypeRaw;
-                
-                // Configuration for icons and colors
-                $docConfig = [
-                    'kartu_keluarga' => ['icon' => 'fa-id-card', 'color' => 'blue'],
-                    'ijazah' => ['icon' => 'fa-graduation-cap', 'color' => 'green'],
-                    'akta_kelahiran' => ['icon' => 'fa-file-contract', 'color' => 'purple'],
-                    'pas_foto' => ['icon' => 'fa-camera', 'color' => 'orange'],
-                    'sku' => ['icon' => 'fa-file-alt', 'color' => 'red'],
-                    'sertifikat_hafiz' => ['icon' => 'fa-certificate', 'color' => 'yellow'],
-                    'surat_rekomendasi' => ['icon' => 'fa-envelope', 'color' => 'indigo'],
-                    'dokumen_kesehatan' => ['icon' => 'fa-heartbeat', 'color' => 'pink'],
-                ];
-                $config = $docConfig[$docType] ?? ['icon' => 'fa-file', 'color' => 'gray'];
-                
-                // Check uploaded documents using the normalized type
-                $uploaded = isset($uploadedDocuments[$docType]) || isset($uploadedDocuments[$docTypeRaw]);
-            @endphp
-            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                <div class="h-2 bg-{{ $config['color'] }}-500"></div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-{{ $config['color'] }}-100 rounded-lg flex items-center justify-center">
-                                <i class="fas {{ $config['icon'] }} text-{{ $config['color'] }}-600 text-lg"></i>
+            @forelse($requiredDocuments as $docType)
+                @php
+                    $documentLabel = $documentLabels[$docType] ?? ucwords(str_replace('_', ' ', $docType));
+                    $uploaded = isset($uploadedDocuments[$docType]);
+                @endphp
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                    <div class="h-2 bg-primary"></div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file text-primary-600 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">{{ $documentLabel }}</h3>
+                                    <p class="text-xs text-gray-500">Format: PDF, JPG, PNG (Max 5MB)</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-gray-800">{{ $documentLabel }}</h3>
-                                <p class="text-xs text-gray-500">Format: PDF, JPG, PNG (Max 5MB)</p>
-                            </div>
+                            @if($uploaded)
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-check mr-1"></i>Selesai
+                                </span>
+                            @else
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                                    Belum
+                                </span>
+                            @endif
                         </div>
-                        @if($uploaded)
-                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                                <i class="fas fa-check mr-1"></i>Selesai
-                            </span>
-                        @else
-                            <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
-                                Belum
-                            </span>
-                        @endif
-                    </div>
 
                     <div class="relative">
                         {{-- FIX: Input diletakkan DI LUAR div dropzone untuk menghindari conflict event --}}
@@ -181,7 +114,7 @@
                             
                             @if($uploaded)
                                 @php
-                                    $uploadedDoc = $uploadedDocuments[$docType] ?? ($uploadedDocuments[$docTypeRaw] ?? null);
+                                    $uploadedDoc = $uploadedDocuments[$docType] ?? null;
                                 @endphp
                                 <div class="space-y-2" style="pointer-events: none; user-select: none;">
                                     <i class="fas fa-check-circle text-green-500 text-3xl"></i>
@@ -231,7 +164,6 @@
                         @endif
                     </div>
                 </div>
-            </div>
             @empty
                 <div class="col-span-2 bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                     <i class="fas fa-info-circle text-yellow-600 text-3xl mb-2"></i>
@@ -281,50 +213,8 @@
 
 <script>
 const requiredCount = {{ $requiredCount }};
-// Ensure requiredDocuments contains document types (snake_case), not labels
-const requiredDocumentsRaw = @json($requiredDocuments);
+const requiredDocuments = @json($requiredDocuments);
 const uploadedDocuments = @json($uploadedDocuments ? $uploadedDocuments->keys()->toArray() : []);
-
-// Map label to document type if needed (fallback)
-const getDocumentType = (doc) => {
-    // If it's already a valid type (contains underscore or is lowercase single word), use it
-    if (doc.includes('_') || (doc === doc.toLowerCase() && !doc.includes(' '))) {
-        return doc;
-    }
-    
-    // Map common labels to types
-    const labelToTypeMap = {
-        'kartu keluarga': 'kartu_keluarga',
-        'ijazah': 'ijazah',
-        'akta kelahiran': 'akta_kelahiran',
-        'pas foto': 'pas_foto',
-        'sku': 'sku',
-        'sertifikat hafiz': 'sertifikat_hafiz',
-        'surat rekomendasi': 'surat_rekomendasi',
-        'dokumen kesehatan': 'dokumen_kesehatan',
-    };
-    
-    // Normalize: lowercase and check
-    const normalized = doc.toLowerCase().trim();
-    
-    // Check for exact match
-    if (labelToTypeMap[normalized]) {
-        return labelToTypeMap[normalized];
-    }
-    
-    // Check for partial match (e.g., "Ijazah SMP" contains "ijazah")
-    for (const [label, type] of Object.entries(labelToTypeMap)) {
-        if (normalized.includes(label) || label.includes(normalized)) {
-            return type;
-        }
-    }
-    
-    // Fallback: convert spaces to underscores and lowercase
-    return normalized.replace(/\s+/g, '_');
-};
-
-// Convert labels to types if needed
-const requiredDocuments = requiredDocumentsRaw.map(doc => getDocumentType(doc));
 
 // Base URLs for routes
 const uploadUrl = '{{ url("/santri/documents/upload") }}';

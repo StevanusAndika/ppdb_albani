@@ -108,6 +108,26 @@
                         @enderror
                     </div>
 
+                    <!-- Perlu Verifikasi Dokumen -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Perlu Verifikasi Dokumen?</label>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="perlu_verifikasi" value="yes" class="text-primary focus:ring-primary"
+                                    {{ old('perlu_verifikasi', $package->perlu_verifikasi ?? 'no') === 'yes' ? 'checked' : '' }}>
+                                <span class="text-sm text-gray-700">Ya, butuh verifikasi khusus</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="perlu_verifikasi" value="no" class="text-primary focus:ring-primary"
+                                    {{ old('perlu_verifikasi', $package->perlu_verifikasi ?? 'no') === 'no' ? 'checked' : '' }}>
+                                <span class="text-sm text-gray-700">Tidak perlu verifikasi khusus</span>
+                            </label>
+                        </div>
+                        @error('perlu_verifikasi')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Informasi Status -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div class="flex items-start">

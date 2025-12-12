@@ -170,7 +170,6 @@
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                                     {{ $registration->package->name }}
                                 </span>
-                                <div class="text-xs text-gray-500 mt-1">{{ $registration->program_unggulan_name }}</div>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center">

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Biodata;
 
 use App\Http\Controllers\Controller;
 use App\Models\Package;
-use App\Models\ProgramUnggulan;
 use App\Models\Registration;
 use App\Services\DocumentRequirementService;
 use Illuminate\Http\Request;
@@ -48,11 +47,6 @@ class BiodataController extends Controller
                 return $package;
             });
 
-        // Ambil data program unggulan dari tabel programs_unggulan
-        $programUnggulan = ProgramUnggulan::active()
-            ->orderBy('nama_program')
-            ->get();
-
         // Data jenjang pendidikan untuk dropdown
         $jenjangPendidikan = [
             'TK/RA',
@@ -71,7 +65,6 @@ class BiodataController extends Controller
         return view('dashboard.calon_santri.biodata.biodata', compact(
             'registration',
             'packages',
-            'programUnggulan',
             'jenjangPendidikan',
             'programPendidikan'
         ));
@@ -225,7 +218,6 @@ class BiodataController extends Controller
     {
         $rules = [
             'package_id' => 'required|exists:packages,id',
-            'program_unggulan_id' => 'required|exists:programs_unggulan,id',
             'program_pendidikan' => 'required|in:MTS Bani Syahid,MA Bani Syahid,Takhassus Al-Quran',
             'nama_lengkap' => 'required|string|max:255',
             'nik' => ['required', 'digits:16', Rule::unique('registrations')->ignore($existingRegistration?->id)],
@@ -295,15 +287,7 @@ class BiodataController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        // Ambil data program unggulan untuk menampilkan detail
-        $programUnggulan = ProgramUnggulan::active()
-            ->orderBy('nama_program')
-            ->get();
-
-        return view('dashboard.calon_santri.biodata.show', compact(
-            'registration',
-            'programUnggulan'
-        ));
+        return view('dashboard.calon_santri.biodata.show', compact('registration'));
     }
 
     /**
@@ -334,11 +318,6 @@ class BiodataController extends Controller
                 return $package;
             });
 
-        // Ambil data program unggulan dari tabel programs_unggulan
-        $programUnggulan = ProgramUnggulan::active()
-            ->orderBy('nama_program')
-            ->get();
-
         // Data jenjang pendidikan untuk dropdown
         $jenjangPendidikan = [
             'TK/RA',
@@ -357,7 +336,6 @@ class BiodataController extends Controller
         return view('dashboard.calon_santri.biodata.edit', compact(
             'registration',
             'packages',
-            'programUnggulan',
             'jenjangPendidikan',
             'programPendidikan'
         ));
