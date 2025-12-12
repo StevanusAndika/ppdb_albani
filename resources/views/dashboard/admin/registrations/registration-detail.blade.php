@@ -192,12 +192,12 @@
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Content  -->
-             
+
         </div>
 
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-3 md:space-y-0">
-            
+
         </div>
 
         <!-- Status & Actions & Requirements -->
@@ -255,13 +255,20 @@
                                     <div class="flex-1">
                                         <p class="font-medium text-gray-800 text-sm">Pembayaran Lunas</p>
                                         <p class="text-xs text-gray-600">Status pembayaran</p>
+
                                     </div>
                                 </div>
                                 <div class="text-right">
                                     <span class="text-sm font-semibold {{ $registration->has_successful_payment ? 'text-green-600' : 'text-red-600' }}">
                                         {{ $registration->has_successful_payment ? 'LUNAS' : 'BELUM' }}
                                     </span>
+                                     <!-- Button Lihat Pembayaran -->
+
+
+
                                 </div>
+
+
                             </div>
 
                             <!-- Status Seleksi -->
@@ -506,7 +513,7 @@
 
                     </table>
                     <div class="info-grid">
-                        
+
                     </div>
                 </div>
 
@@ -527,7 +534,7 @@
                             <td>Pekerjaan Ayah</td><td>: {{ $registration->pekerjaan_ayah }}</td>
                         </tr>
                         <tr>
-                            <td>Penghasilan Ibu</td><td>: 
+                            <td>Penghasilan Ibu</td><td>:
                                 @if($registration->penghasilan_ibu)
                                     Rp {{ number_format($registration->penghasilan_ibu, 0, ',', '.') }}
                                 @else
@@ -536,7 +543,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Penghasilan Ayah</td><td>: 
+                            <td>Penghasilan Ayah</td><td>:
                                 @if($registration->penghasilan_ayah)
                                     Rp {{ number_format($registration->penghasilan_ayah, 0, ',', '.') }}
                                 @else
@@ -599,7 +606,7 @@
                         </tr>
                     </table>
                     <div class="info-grid">
-                        
+
                     </div>
                 </div>
 
@@ -684,156 +691,191 @@
                         </div>
 
                         <!-- Status Pembayaran -->
-                        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm font-medium">Status Pembayaran:</span>
-                                <span class="text-sm font-semibold {{ $registration->has_successful_payment ? 'text-green-600' : 'text-red-600' }}">
-                                    {{ $registration->has_successful_payment ? 'LUNAS' : 'BELUM LUNAS' }}
-                                </span>
-                            </div>
-                            @if($registration->has_successful_payment && $registration->successful_payment)
-                            <div class="text-xs text-gray-500 mt-1">
-                                Payment Code: {{ $registration->successful_payment->payment_code }}
-                            </div>
-                            @endif
-                        </div>
+                      <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-sm font-medium">Status Pembayaran:</span>
+                        <span class="text-sm font-semibold {{ $registration->has_successful_payment ? 'text-green-600' : 'text-red-600' }}">
+                            {{ $registration->has_successful_payment ? 'LUNAS' : 'BELUM LUNAS' }}
+                        </span>
                     </div>
 
-                    <!-- Dokumen -->
-                    <div class="detail-section">
-                        <h2 class="detail-section-title">Dokumen</h2>
-                        <div class="space-y-3">
-                            @php
-                                $documents = [
-                                    'kartu_keluarga' => [
-                                        'name' => 'Kartu Keluarga',
-                                        'path' => $registration->kartu_keluaga_path,
-                                        'icon' => 'fas fa-id-card',
-                                        'field' => 'kartu_keluaga_path'
-                                    ],
-                                    'ijazah' => [
-                                        'name' => 'Ijazah',
-                                        'path' => $registration->ijazah_path,
-                                        'icon' => 'fas fa-graduation-cap',
-                                        'field' => 'ijazah_path'
-                                    ],
-                                    'akta_kelahiran' => [
-                                        'name' => 'Akta Kelahiran',
-                                        'path' => $registration->akta_kelahiran_path,
-                                        'icon' => 'fas fa-birthday-cake',
-                                        'field' => 'akta_kelahiran_path'
-                                    ],
-                                    'pas_foto' => [
-                                        'name' => 'Pas Foto',
-                                        'path' => $registration->pas_foto_path,
-                                        'icon' => 'fas fa-camera',
-                                        'field' => 'pas_foto_path'
-                                    ]
-                                ];
-                            @endphp
+                    @if($registration->has_successful_payment && $registration->successful_payment)
+                        <div class="text-xs text-gray-500 mb-3">
+                            Payment Code: {{ $registration->successful_payment->payment_code }}
+                        </div>
+                    @endif
 
-                            @foreach($documents as $type => $doc)
-                            <div class="document-item">
-                                <div class="flex items-center gap-3">
-                                    <i class="{{ $doc['icon'] }} document-icon {{ $type }}"></i>
-                                    <div class="flex-1">
-                                        <p class="font-medium text-gray-800 text-sm">{{ $doc['name'] }}</p>
-                                        <p class="text-xs text-gray-500 truncate max-w-xs">
-                                            @if($doc['path'])
-                                                {{ basename($doc['path']) }}
-                                            @else
-                                                Belum diunggah
-                                            @endif
-                                        </p>
-                                    </div>
+                    <a href="{{ route('admin.transactions.index') }}"
+                        class="inline-flex items-center justify-center w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-credit-card mr-2"></i>
+                        Lihat Transaksi
+                    </a>
+                </div>
+
+                                    <!-- Dokumen -->
+                                    <div class="detail-section">
+                                        <h2 class="detail-section-title">Dokumen</h2>
+                                        <div class="space-y-3">
+                                            @php
+                                                $documents = [
+                                                    'kartu_keluarga' => [
+                                                        'name' => 'Kartu Keluarga',
+                                                        'path' => $registration->kartu_keluaga_path,
+                                                        'icon' => 'fas fa-id-card',
+                                                        'field' => 'kartu_keluaga_path'
+                                                    ],
+                                                    'ijazah' => [
+                                                        'name' => 'Ijazah',
+                                                        'path' => $registration->ijazah_path,
+                                                        'icon' => 'fas fa-graduation-cap',
+                                                        'field' => 'ijazah_path'
+                                                    ],
+                                                    'akta_kelahiran' => [
+                                                        'name' => 'Akta Kelahiran',
+                                                        'path' => $registration->akta_kelahiran_path,
+                                                        'icon' => 'fas fa-birthday-cake',
+                                                        'field' => 'akta_kelahiran_path'
+                                                    ],
+                                                    'pas_foto' => [
+                                                        'name' => 'Pas Foto',
+                                                        'path' => $registration->pas_foto_path,
+                                                        'icon' => 'fas fa-camera',
+                                                        'field' => 'pas_foto_path'
+                                                    ]
+                                                ];
+                                            @endphp
+
+                                        @foreach($documents as $type => $doc)
+                                <div class="document-item">
                                     <div class="flex items-center gap-3">
-                                        @if($doc['path'])
-                                        <button onclick="showDocumentModal('{{ $type }}', '{{ $doc['name'] }}')"
-                                                class="text-blue-500 hover:text-blue-700"
-                                                title="Lihat Dokumen">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <a href="{{ route('admin.registrations.download-document', [$registration->id, $type]) }}"
-                                        class="text-green-500 hover:text-green-700"
-                                        title="Download Dokumen">
-                                            <i class="fas fa-download"></i>
-                                        </a>
-                                        <span class="document-status uploaded text-xs">
-                                            <i class="fas fa-check mr-1"></i> Terunggah
-                                        </span>
-                                        @else
-                                        <span class="document-status missing text-xs">
-                                            <i class="fas fa-times mr-1"></i> Belum Diunggah
-                                        </span>
-                                        @endif
+                                        <i class="{{ $doc['icon'] }} document-icon {{ $type }}"></i>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-gray-800 text-sm">{{ $doc['name'] }}</p>
+                                            <p class="text-xs text-gray-500 truncate max-w-xs">
+                                                @if($doc['path'])
+
+                                                @else
+                                                    Belum diunggah
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            @if($doc['path'])
+                                            <button onclick="showDocumentModal('{{ $type }}', '{{ $doc['name'] }}')"
+                                                    class="text-blue-500 hover:text-blue-700 transition-colors"
+                                                    title="Lihat Dokumen">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{{ route('admin.registrations.download-document', [$registration->id, $type]) }}"
+                                            class="text-green-500 hover:text-green-700 transition-colors"
+                                            title="Download Dokumen">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+
+                                            <!-- Tooltip Icon untuk Terunggah -->
+                                            <div class="relative group">
+                                                <button class="text-green-600 hover:text-green-800 transition-colors focus:outline-none"
+                                                        title="Status Dokumen">
+                                                    <i class="fas fa-check-circle text-lg"></i>
+                                                </button>
+                                                <!-- Tooltip -->
+                                                <div class="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100
+                                                            transition-all duration-200 bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+                                                    <div class="bg-gray-800 text-white text-xs rounded py-1.5 px-3 whitespace-nowrap">
+                                                        Dokumen Terunggah
+                                                        <div class="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0
+                                                                    border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-gray-800">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @else
+                                            <!-- Tooltip Icon untuk Belum Diunggah -->
+                                            <div class="relative group">
+                                                <button class="text-red-600 hover:text-red-800 transition-colors focus:outline-none"
+                                                        title="Status Dokumen">
+                                                    <i class="fas fa-exclamation-circle text-lg"></i>
+                                                </button>
+                                                <!-- Tooltip -->
+                                                <div class="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100
+                                                            transition-all duration-200 bottom-full left-1/2 transform -translate-x-1/2 mb-2">
+                                                    <div class="bg-gray-800 text-white text-xs rounded py-1.5 px-3 whitespace-nowrap">
+                                                        Belum Diunggah
+                                                        <div class="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0
+                                                                    border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-gray-800">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
+                                @endforeach
+                                        </div>
+                                        <!-- Progress Dokumen -->
+                                        <div class="mt-4">
+                                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                                <span>Kelengkapan Dokumen</span>
+                                                <span>{{ $registration->uploaded_documents_count }}/4 ({{ number_format(($registration->uploaded_documents_count / 4) * 100, 0) }}%)</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-primary h-2 rounded-full transition-all duration-300"
+                                                    style="width: {{ ($registration->uploaded_documents_count / 4) * 100 }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-white rounded-xl shadow-md p-6">
+                                <!-- Informasi Akun -->
+                                <div class="detail-section">
+                                    <h2 class="detail-section-title">Informasi Akun</h2>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <span class="info-label">Email</span>
+                                            <span class="info-value">{{ $registration->user->email }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="info-label">Nomor Telepon</span>
+                                            <span class="info-value">{{ $registration->user->phone_number ?: '-' }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="info-label">Tanggal Daftar Akun</span>
+                                            <span class="info-value">{{ $registration->user->created_at->translatedFormat('d F Y') }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="info-label">Status Akun</span>
+                                            <span class="info-value">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs {{ $registration->user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ $registration->user->is_active ? 'Aktif' : 'Nonaktif' }}
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Catatan Admin -->
+                                <div class="detail-section">
+                                    <h2 class="detail-section-title">Catatan Admin</h2>
+                                    <form id="adminNotesForm">
+                                        @csrf
+                                        <textarea id="adminNotes" name="catatan_admin" rows="4"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                                            placeholder="Tambah catatan untuk pendaftaran ini...">{{ old('catatan_admin', $registration->catatan_admin) }}</textarea>
+                                        <button type="submit"
+                                                class="mt-2 w-full action-btn btn-primary text-sm">
+                                            <i class="fas fa-save"></i>
+                                            <span>Simpan Catatan</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
-                            @endforeach
-                        </div>
-                        <!-- Progress Dokumen -->
-                        <div class="mt-4">
-                            <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                <span>Kelengkapan Dokumen</span>
-                                <span>{{ $registration->uploaded_documents_count }}/4 ({{ number_format(($registration->uploaded_documents_count / 4) * 100, 0) }}%)</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-primary h-2 rounded-full transition-all duration-300"
-                                    style="width: {{ ($registration->uploaded_documents_count / 4) * 100 }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-md p-6">
-                <!-- Informasi Akun -->
-                <div class="detail-section">
-                    <h2 class="detail-section-title">Informasi Akun</h2>
-                    <div class="space-y-3">
-                        <div>
-                            <span class="info-label">Email</span>
-                            <span class="info-value">{{ $registration->user->email }}</span>
-                        </div>
-                        <div>
-                            <span class="info-label">Nomor Telepon</span>
-                            <span class="info-value">{{ $registration->user->phone_number ?: '-' }}</span>
-                        </div>
-                        <div>
-                            <span class="info-label">Tanggal Daftar Akun</span>
-                            <span class="info-value">{{ $registration->user->created_at->translatedFormat('d F Y') }}</span>
-                        </div>
-                        <div>
-                            <span class="info-label">Status Akun</span>
-                            <span class="info-value">
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs {{ $registration->user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $registration->user->is_active ? 'Aktif' : 'Nonaktif' }}
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Catatan Admin -->
-                <div class="detail-section">
-                    <h2 class="detail-section-title">Catatan Admin</h2>
-                    <form id="adminNotesForm">
-                        @csrf
-                        <textarea id="adminNotes" name="catatan_admin" rows="4"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                              placeholder="Tambah catatan untuk pendaftaran ini...">{{ old('catatan_admin', $registration->catatan_admin) }}</textarea>
-                        <button type="submit"
-                                class="mt-2 w-full action-btn btn-primary text-sm">
-                            <i class="fas fa-save"></i>
-                            <span>Simpan Catatan</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            </div>
-            
-        </div>
 
-    </main>
-     @include('layouts.components.admin.footer')
-</div>
+                        </div>
+
+                    </main>
+                    @include('layouts.components.admin.footer')
+                </div>
 
 <!-- Reject Modal dengan Form Dokumen -->
 <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
@@ -911,7 +953,7 @@
                     <textarea id="rejectReason" name="reject_reason" rows="4" required
                               class="rejection-reason w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                               placeholder="Berikan alasan penolakan yang jelas dan informatif...">
-                               
+
                               {{ old('reject_reason', $registration->catatan_admin) }}
                             </textarea>
                 </div>
@@ -1205,12 +1247,12 @@
             // Remove any existing "Dokumen yang perlu diperbaiki:" line
             let lines = currentValue ? currentValue.split('\n') : [];
             lines = lines.filter(l => !l.trim().startsWith('Dokumen yang perlu diperbaiki:'));
-            
+
             // Add the new document list at the beginning if there are checked items
             if (docListText) {
                 lines.unshift(docListText);
             }
-            
+
             rejectEl.value = lines.join('\n').trim();
         }
 
@@ -1220,12 +1262,12 @@
             // Remove any existing "Dokumen yang perlu diperbaiki:" line
             let lines = currentValue ? currentValue.split('\n') : [];
             lines = lines.filter(l => !l.trim().startsWith('Dokumen yang perlu diperbaiki:'));
-            
+
             // Add the new document list at the end if there are checked items
             if (docListText) {
                 lines.push(docListText);
             }
-            
+
             adminEl.value = lines.join('\n').trim();
         }
     }
