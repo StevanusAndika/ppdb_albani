@@ -4,10 +4,8 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans full-width-page w-full">
-    <!-- Navbar Calon Santri -->
     @include('layouts.components.calon_santri.navbar')
 
-    <!-- Header Hero -->
     <header class="py-8 px-4 text-center">
         <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1">Upload Dokumen Persyaratan</h1>
         <p class="text-secondary">Lengkapi dokumen-dokumen berikut untuk menyelesaikan proses pendaftaran Anda</p>
@@ -32,7 +30,6 @@
                 </div>
 
                 <div class="flex gap-3">
-                    <!-- Tombol Selesaikan Pendaftaran -->
                     <div id="completeRegistrationButtonContainer"></div>
                 </div>
             </div>
@@ -57,7 +54,6 @@
             </div>
         @endif
 
-        <!-- Auto Refresh Notice -->
         <div id="autoRefreshNotice" class="hidden mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center">
             <div class="flex items-center justify-center space-x-2">
                 <i class="fas fa-sync-alt animate-spin"></i>
@@ -65,7 +61,6 @@
             </div>
         </div>
 
-        <!-- Success Upload Notification -->
         <div id="successNotification" class="hidden mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
@@ -78,7 +73,6 @@
             </div>
         </div>
 
-        <!-- Progress Bar -->
         <div class="max-w-4xl mx-auto mb-8">
             <div class="flex items-center justify-between mb-2">
                 <h3 class="font-bold text-gray-800">Progress Dokumen</h3>
@@ -93,7 +87,6 @@
             </div>
         </div>
 
-        <!-- Documents Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             @forelse($requiredDocuments as $docTypeRaw)
             @php
@@ -131,6 +124,7 @@
                 }
                 
                 // Get label from controller data (or use original if label not found)
+                $documentLabels = $documentLabels ?? []; // Prevent undefined variable
                 $documentLabel = $documentLabels[$docTypeRaw] ?? $docTypeRaw;
                 
                 // Configuration for icons and colors
@@ -152,7 +146,6 @@
             <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
                 <div class="h-2 bg-{{ $config['color'] }}-500"></div>
                 <div class="p-6">
-                    <!-- Header -->
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
                             <div class="w-12 h-12 bg-{{ $config['color'] }}-100 rounded-lg flex items-center justify-center">
@@ -174,16 +167,17 @@
                         @endif
                     </div>
 
-                    <!-- Upload Area -->
                     <div class="relative">
+                        {{-- FIX: Input diletakkan DI LUAR div dropzone untuk menghindari conflict event --}}
+                        <input type="file" 
+                               class="file-input-{{ $docType }}" 
+                               style="display: none;" 
+                               accept=".pdf,.jpg,.jpeg,.png"
+                               data-document-type="{{ $docType }}">
+
                         <div class="dropzone-{{ $docType }} dropzone rounded-lg border-2 border-dashed border-gray-300 p-6 text-center cursor-pointer hover:border-primary hover:bg-primary-50 transition"
                              data-document-type="{{ $docType }}"
                              style="pointer-events: auto;">
-                            <input type="file" 
-                                   class="file-input-{{ $docType }}" 
-                                   style="display: none;" 
-                                   accept=".pdf,.jpg,.jpeg,.png"
-                                   data-document-type="{{ $docType }}">
                             
                             @if($uploaded)
                                 @php
@@ -205,7 +199,6 @@
                             @endif
                         </div>
 
-                        <!-- Upload Progress -->
                         <div class="upload-progress-{{ $docType }} hidden mt-3">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-gray-700">Uploading...</span>
@@ -217,7 +210,6 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="flex gap-2 mt-4">
                         @if($uploaded)
                             <button type="button" 
@@ -232,7 +224,7 @@
                             </button>
                         @else
                             <button type="button" 
-                                    onclick="event.stopPropagation(); selectFile('{{ $docType }}');"
+                                    onclick="event.preventDefault(); selectFile('{{ $docType }}');"
                                     class="w-full px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition text-sm font-semibold">
                                 <i class="fas fa-upload mr-1"></i>Pilih File
                             </button>
@@ -263,7 +255,6 @@
             </div>
         @endif
 
-        <!-- Action Buttons -->
         <div class="max-w-4xl mx-auto flex gap-3 mb-8">
             <a href="{{ route('santri.biodata.index') }}" 
                class="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-semibold text-center">
@@ -285,7 +276,6 @@
         </div>
     </main>
 
-    <!-- Footer -->
     @include('layouts.components.calon_santri.footer')
 </div>
 
@@ -296,7 +286,6 @@ const requiredDocumentsRaw = @json($requiredDocuments);
 const uploadedDocuments = @json($uploadedDocuments ? $uploadedDocuments->keys()->toArray() : []);
 
 // Map label to document type if needed (fallback)
-// Handle both exact matches and partial matches (e.g., "Ijazah SMP" -> "ijazah")
 const getDocumentType = (doc) => {
     // If it's already a valid type (contains underscore or is lowercase single word), use it
     if (doc.includes('_') || (doc === doc.toLowerCase() && !doc.includes(' '))) {
@@ -337,11 +326,6 @@ const getDocumentType = (doc) => {
 // Convert labels to types if needed
 const requiredDocuments = requiredDocumentsRaw.map(doc => getDocumentType(doc));
 
-// Debug: log the required documents to check format
-console.log('Required documents (raw):', requiredDocumentsRaw);
-console.log('Required documents (types):', requiredDocuments);
-console.log('Uploaded documents (types):', uploadedDocuments);
-
 // Base URLs for routes
 const uploadUrl = '{{ url("/santri/documents/upload") }}';
 const deleteUrl = '{{ url("/santri/documents/delete") }}';
@@ -349,8 +333,6 @@ const downloadUrl = '{{ url("/santri/documents/download") }}';
 
 // Initialize dropzones
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Required documents:', requiredDocuments);
-    
         requiredDocuments.forEach(docType => {
         // docType should be snake_case like 'ijazah', 'kartu_keluarga'
         // Use CSS.escape to safely escape any special characters in the selector
@@ -360,12 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fileInput = document.querySelector(`.file-input-${escapedDocType}`);
         
         if (!dropzone || !fileInput) {
-            console.warn(`Dropzone or file input not found for: ${docType}`, {
-                dropzone: dropzone,
-                fileInput: fileInput,
-                selector: `.dropzone-${escapedDocType}`,
-                allDropzones: document.querySelectorAll('[class*="dropzone-"]')
-            });
+            console.warn(`Dropzone or file input not found for: ${docType}`);
             return;
         }
 
@@ -392,8 +369,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Click to select - hanya jika dokumen belum diunggah
-        dropzone.addEventListener('click', (e) => {
+        // Click to select
+        dropzone.addEventListener('click', function(e) {
             // Skip jika klik pada child element yang bisa diklik (button, link)
             if (e.target.closest('button') || e.target.closest('a')) {
                 return;
@@ -402,9 +379,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (dropzone.querySelector('.fa-check-circle')) {
                 return;
             }
-            // Prevent default dan trigger file input
+            
+            // Prevent default behaviour
             e.preventDefault();
-            e.stopPropagation();
+            
+            // Trigger file input directly (Safe now because input is outside)
             if (fileInput) {
                 fileInput.click();
             }
@@ -421,18 +400,31 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAllDocuments();
 });
 
-// Helper function untuk memilih file
+// Helper function untuk memilih file via tombol button
 function selectFile(docType) {
-    // Escape the docType for CSS selector
-    const escapedDocType = CSS.escape(docType);
-    const fileInput = document.querySelector(`.file-input-${escapedDocType}`);
+    // Try multiple selector approaches
+    let fileInput = null;
+    
+    // First try: CSS.escape with class selector
+    if (typeof CSS !== 'undefined' && CSS.escape) {
+        const escapedDocType = CSS.escape(docType);
+        fileInput = document.querySelector(`input.file-input-${escapedDocType}`);
+    }
+    
+    // Second try: without escaping
+    if (!fileInput) {
+        fileInput = document.querySelector(`input.file-input-${docType}`);
+    }
+    
+    // Third try: with data attribute (most reliable)
+    if (!fileInput) {
+        fileInput = document.querySelector(`input[data-document-type="${docType}"]`);
+    }
+    
     if (fileInput) {
         fileInput.click();
     } else {
-        console.error(`File input not found for: ${docType}`, {
-            selector: `.file-input-${escapedDocType}`,
-            allInputs: document.querySelectorAll('input[type="file"]')
-        });
+        console.error(`File input not found for: ${docType}`);
     }
 }
 
@@ -462,8 +454,6 @@ function uploadDocument(docType, file) {
 
         if (data.success) {
             showSuccessMessage(`${data.document_label} berhasil diunggah`);
-            
-            // Reload documents
             setTimeout(() => {
                 location.reload();
             }, 1000);
