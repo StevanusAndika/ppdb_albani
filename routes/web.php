@@ -26,6 +26,7 @@ use App\Http\Controllers\Announcement\SeleksiAnnoucementController;
 use App\Http\Controllers\CameraTestController;
 use App\Http\Controllers\Admin\QRcodeScannerController;
 use App\Http\Controllers\BeasiswaController;
+use App\Http\Controllers\Admin\LandingContentController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
