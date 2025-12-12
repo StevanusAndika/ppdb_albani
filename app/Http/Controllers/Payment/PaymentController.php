@@ -60,6 +60,13 @@ class PaymentController extends Controller
                 ->with('error', 'Anda belum menyelesaikan pendaftaran. Silakan lengkapi pendaftaran terlebih dahulu.');
         }
 
+        // Jika paket butuh verifikasi admin, pastikan sudah diterima sebelum bayar
+        if (($registration->package->perlu_verifikasi ?? 'no') === 'yes'
+            && $registration->status_pendaftaran !== 'diterima') {
+            return redirect()->route('santri.dashboard')
+                ->with('error', 'Dokumen sedang/harus diverifikasi admin sebelum Anda bisa melakukan pembayaran.');
+        }
+
         // Validasi kelengkapan dokumen
         if (!$registration->hasAllDocuments()) {
             return redirect()->route('santri.dashboard')
@@ -124,6 +131,12 @@ class PaymentController extends Controller
         // Validasi
         if (!$registration || !$registration->hasAllDocuments()) {
             return back()->with('error', 'Anda belum melengkapi semua persyaratan.');
+        }
+
+        // Jika paket butuh verifikasi admin, pastikan sudah diterima sebelum bayar
+        if (($registration->package->perlu_verifikasi ?? 'no') === 'yes'
+            && $registration->status_pendaftaran !== 'diterima') {
+            return back()->with('error', 'Dokumen harus diverifikasi admin terlebih dahulu sebelum pembayaran.');
         }
 
         // Cek apakah sudah ada pembayaran berhasil
