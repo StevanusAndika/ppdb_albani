@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use App\Services\DocumentRequirementService;
 use DNS2D;
 
 class Registration extends Model
@@ -181,6 +182,16 @@ class Registration extends Model
         return $this->belongsTo(Package::class, 'package_id');
     }
 
+    public function programUnggulan()
+    {
+        return $this->belongsTo(ProgramUnggulan::class, 'program_unggulan_id');
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(RegistrationDocument::class, 'id_pendaftaran', 'id_pendaftaran');
+    }
+
     public function getStatusLabelAttribute()
     {
         $statuses = [
@@ -321,12 +332,14 @@ class Registration extends Model
         return false;
     }
 
+    /**
+     * Check if all required documents are uploaded
+     * Uses DocumentRequirementService to check based on package and program unggulan
+     */
     public function hasAllDocuments()
     {
-        return !empty($this->kartu_keluaga_path) &&
-               !empty($this->ijazah_path) &&
-               !empty($this->akta_kelahiran_path) &&
-               !empty($this->pas_foto_path);
+        $service = app(DocumentRequirementService::class);
+        return $service->areAllDocumentsComplete($this);
     }
 
     public function getIsDocumentsCompleteAttribute()
@@ -766,11 +779,6 @@ class Registration extends Model
     public function hasBarcode()
     {
         return $this->hasQrCode();
-    }
-
-    public function programUnggulan()
-    {
-        return $this->belongsTo(ContentSetting::class, 'program_unggulan_id');
     }
 
     /**

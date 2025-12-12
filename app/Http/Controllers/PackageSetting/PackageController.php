@@ -24,8 +24,16 @@ class PackageController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'required_documents' => 'nullable|array',
+            'required_documents.*' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+
+        // Normalize required documents: trim values and drop empty inputs
+        $documents = collect($request->input('required_documents', []))
+            ->map(fn ($doc) => is_string($doc) ? trim($doc) : $doc)
+            ->filter(fn ($doc) => filled($doc));
+        $validated['required_documents'] = $documents->isEmpty() ? null : $documents->values()->all();
 
         try {
             Package::create($validated);
@@ -48,8 +56,16 @@ class PackageController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'required_documents' => 'nullable|array',
+            'required_documents.*' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+
+        // Normalize required documents: trim values and drop empty inputs
+        $documents = collect($request->input('required_documents', []))
+            ->map(fn ($doc) => is_string($doc) ? trim($doc) : $doc)
+            ->filter(fn ($doc) => filled($doc));
+        $validated['required_documents'] = $documents->isEmpty() ? null : $documents->values()->all();
 
         try {
             $package->update($validated);

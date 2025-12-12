@@ -97,10 +97,10 @@
                         <select name="program_unggulan_id" id="program_unggulan_id" required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300">
                             <option value="">Pilih Program Unggulan</option>
-                            @foreach($programUnggulan as $index => $program)
-                                <option value="{{ $program['nama'] }}"
-                                    {{ old('program_unggulan_id', $registration->program_unggulan_id ?? '') == $program['nama'] ? 'selected' : '' }}>
-                                    {{ $program['nama'] }}
+                            @foreach($programUnggulan as $program)
+                                <option value="{{ $program->id }}"
+                                    {{ old('program_unggulan_id', $registration->program_unggulan_id ?? '') == $program->id ? 'selected' : '' }}>
+                                    {{ $program->nama_program }}
                                 </option>
                             @endforeach
                         </select>

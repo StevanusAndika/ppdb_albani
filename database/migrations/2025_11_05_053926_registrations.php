@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('id_pendaftaran')->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
+            $table->foreignId('program_unggulan_id')->nullable()->constrained('programs_unggulan')->onDelete('set null');
 
             // Data Pribadi Santri
             $table->string('nama_lengkap');
@@ -60,10 +61,7 @@ return new class extends Migration
             $table->string('nomor_telpon_wali');
 
             // Path Dokumen
-            $table->string('kartu_keluaga_path')->nullable();
-            $table->string('ijazah_path')->nullable();
-            $table->string('akta_kelahiran_path')->nullable();
-            $table->string('pas_foto_path')->nullable();
+            // Path Dokumen moved to registration_documents table
 
             // Status Pendaftaran
             $table->enum('status_pendaftaran', [
@@ -80,10 +78,25 @@ return new class extends Migration
 
             $table->timestamps();
         });
+
+        // Table for storing registration documents separately
+        Schema::create('registration_documents', function (Blueprint $table) {
+            $table->id();
+            $table->string('id_pendaftaran');
+            $table->string('tipe_dokumen');
+            $table->string('file_path');
+            $table->timestamps();
+
+            $table->foreign('id_pendaftaran')
+                ->references('id_pendaftaran')
+                ->on('registrations')
+                ->onDelete('cascade');
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('registration_documents');
         Schema::dropIfExists('registrations');
     }
 };

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->json('required_documents')->nullable()->comment('Required documents for this package as JSON array');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -19,6 +20,7 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::dropIfExists('programs_unggulan');
         Schema::dropIfExists('packages');
     }
 };

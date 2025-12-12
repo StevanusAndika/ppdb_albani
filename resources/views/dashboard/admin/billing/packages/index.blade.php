@@ -32,6 +32,7 @@
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Paket</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dokumen Diperlukan</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Harga</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -45,6 +46,19 @@
                                 <div class="text-sm font-medium text-gray-900">{{ $package->name }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{{ $package->description ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                @if($package->required_documents && count($package->required_documents) > 0)
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach($package->required_documents as $doc)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ $doc }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                                 {{ $package->formatted_total_amount }}
                             </td>

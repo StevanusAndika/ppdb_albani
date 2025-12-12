@@ -67,6 +67,47 @@
                         @enderror
                     </div>
 
+                    <!-- Keperluan Dokumen -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dokumen Yang Diperlukan</label>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <div class="space-y-3" id="documentsList">
+                                @if($package->required_documents && count($package->required_documents) > 0)
+                                    @foreach($package->required_documents as $doc)
+                                        <div class="flex gap-2 document-row">
+                                            <input type="text" name="required_documents[]" 
+                                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
+                                                placeholder="Contoh: KTP, Ijazah, Sertifikat, dll"
+                                                value="{{ $doc }}">
+                                            <button type="button" onclick="removeDocumentRow(this)" 
+                                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="flex gap-2 document-row">
+                                        <input type="text" name="required_documents[]" 
+                                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
+                                            placeholder="Contoh: KTP, Ijazah, Sertifikat, dll">
+                                        <button type="button" onclick="removeDocumentRow(this)" 
+                                            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                            <button type="button" onclick="addDocumentRow()" 
+                                class="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm flex items-center">
+                                <i class="fas fa-plus mr-2"></i> Tambah Dokumen
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Masukkan jenis-jenis dokumen yang diperlukan untuk paket ini (opsional)</p>
+                        @error('required_documents')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Informasi Status -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <div class="flex items-start">
@@ -122,6 +163,42 @@
 </div>
 
 <script>
+    // Function to add new document row
+    function addDocumentRow() {
+        const documentsList = document.getElementById('documentsList');
+        const newRow = document.createElement('div');
+        newRow.className = 'flex gap-2 document-row';
+        newRow.innerHTML = `
+            <input type="text" name="required_documents[]" 
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition duration-300"
+                placeholder="Contoh: KTP, Ijazah, Sertifikat, dll">
+            <button type="button" onclick="removeDocumentRow(this)" 
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition duration-300">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+        documentsList.appendChild(newRow);
+    }
+
+    // Function to remove document row
+    function removeDocumentRow(button) {
+        const documentsList = document.getElementById('documentsList');
+        const rows = documentsList.querySelectorAll('.document-row');
+        
+        if (rows.length <= 1) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Minimal harus ada satu dokumen',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#ef4444'
+            });
+            return;
+        }
+        
+        button.parentElement.remove();
+    }
+
     // Mobile menu toggle
     document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
         const mobileMenu = document.getElementById('mobile-menu');

@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Document;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\DocumentUploadTrait;
 use App\Models\Registration;
 use App\Models\Package;
+use App\Models\ProgramUnggulan;
 use App\Models\Quota;
+use App\Models\RegistrationDocument;
+use App\Services\DocumentRequirementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -17,20 +21,23 @@ use Intervention\Image\Encoders\PngEncoder;
 
 class DocumentController extends Controller
 {
+    use DocumentUploadTrait;
+
     private $allowedMimes = ['pdf', 'jpeg', 'jpg', 'png'];
     private $maxFileSize = 5120;
     private $imageManager;
 
-    public function __construct()
+    public function __construct(DocumentRequirementService $documentRequirementService)
     {
         $this->imageManager = new ImageManager(new Driver());
+        $this->documentRequirementService = $documentRequirementService;
     }
 
     public function index()
     {
         $user = Auth::user();
 
-        $registration = Registration::with(['package', 'programUnggulan'])
+        $registration = Registration::with(['package', 'programUnggulan', 'documents'])
             ->where('user_id', $user->id)
             ->first();
 
@@ -54,16 +61,42 @@ class DocumentController extends Controller
 
         $programUnggulanName = 'Belum dipilih';
         if ($registration->programUnggulan) {
-            $programUnggulanName = $registration->programUnggulan->name ?? "Program #{$programUnggulanId}";
+            $programUnggulanName = $registration->programUnggulan->nama_program ?? "Program #{$programUnggulanId}";
         } elseif ($programUnggulanId) {
             $programUnggulanName = "Program #{$programUnggulanId}";
         }
 
-        return view('dashboard.calon_santri.dokumen.dokumen', compact(
+        // Get required documents based on package and program
+        $requiredDocuments = $this->documentRequirementService->getRequiredDocuments($registration);
+        $uploadedDocuments = $this->documentRequirementService->getUploadedDocuments($registration);
+        $missingDocuments = $this->documentRequirementService->getMissingDocuments($registration);
+        $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
+        $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
+
+        // Get document labels for all required documents
+        $documentLabels = [];
+        foreach ($requiredDocuments as $docType) {
+            $documentLabels[$docType] = $this->documentRequirementService->getDocumentLabel($docType);
+        }
+
+        // Get labels for missing documents
+        $missingDocumentLabels = [];
+        foreach ($missingDocuments as $docType) {
+            $missingDocumentLabels[$docType] = $this->documentRequirementService->getDocumentLabel($docType);
+        }
+
+        return view('dashboard.calon_santri.dokumen.dokumen-new', compact(
             'registration',
             'totalBiaya',
             'programUnggulanId',
-            'programUnggulanName'
+            'programUnggulanName',
+            'requiredDocuments',
+            'uploadedDocuments',
+            'missingDocuments',
+            'uploadedCount',
+            'requiredCount',
+            'documentLabels',
+            'missingDocumentLabels'
         ));
     }
 
@@ -78,7 +111,7 @@ class DocumentController extends Controller
                 ], 401);
             }
 
-            $registration = Registration::where('user_id', $user->id)->first();
+            $registration = Registration::with('package', 'programUnggulan')->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -94,13 +127,6 @@ class DocumentController extends Controller
                 ], 403);
             }
 
-            if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Jenis dokumen tidak valid.'
-                ], 400);
-            }
-
             $validator = validator($request->all(), [
                 'file' => 'required|file|mimes:' . implode(',', $this->allowedMimes) . '|max:' . $this->maxFileSize
             ]);
@@ -114,17 +140,23 @@ class DocumentController extends Controller
 
             $file = $request->file('file');
 
-            $this->deleteOldFile($registration, $documentType);
+            // Delete old file if exists
+            $oldDocument = RegistrationDocument::byRegistration($registration->id_pendaftaran)
+                ->byDocumentType($documentType)
+                ->first();
+            
+            if ($oldDocument) {
+                $oldDocument->deleteFile();
+            }
 
             $filePath = $this->uploadFile($file, $documentType, $user, $registration);
 
-            $column = $this->getDocumentColumn($documentType);
-            $registration->update([$column => $filePath]);
+            // Save to registration_documents table
+            $this->documentRequirementService->saveDocument($registration->id_pendaftaran, $documentType, $filePath);
 
-            $registration->refresh();
-
-            $allComplete = $this->checkAllDocumentsComplete($registration);
-            $uploadedCount = $this->getUploadedDocumentsCount($registration);
+            $allComplete = $this->documentRequirementService->areAllDocumentsComplete($registration);
+            $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
+            $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
 
             if ($allComplete) {
                 $registration->markAsPending();
@@ -136,9 +168,10 @@ class DocumentController extends Controller
                 'file_path' => $filePath,
                 'file_name' => basename($filePath),
                 'document_type' => $documentType,
+                'document_label' => $this->getDocumentLabel($documentType),
                 'all_documents_complete' => $allComplete,
                 'uploaded_count' => $uploadedCount,
-                'total_documents' => 4,
+                'required_count' => $requiredCount,
                 'refresh_required' => $allComplete
             ]);
 
@@ -157,56 +190,13 @@ class DocumentController extends Controller
     }
 
     /**
-     * Check if all documents are complete
-     */
-    private function checkAllDocumentsComplete($registration)
-    {
-        $requiredDocuments = [
-            'kartu_keluaga_path',
-            'ijazah_path',
-            'akta_kelahiran_path',
-            'pas_foto_path'
-        ];
-
-        foreach ($requiredDocuments as $documentPath) {
-            if (empty($registration->$documentPath)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Get count of uploaded documents
-     */
-    private function getUploadedDocumentsCount($registration)
-    {
-        $requiredDocuments = [
-            'kartu_keluaga_path',
-            'ijazah_path',
-            'akta_kelahiran_path',
-            'pas_foto_path'
-        ];
-
-        $uploadedCount = 0;
-        foreach ($requiredDocuments as $documentPath) {
-            if (!empty($registration->$documentPath)) {
-                $uploadedCount++;
-            }
-        }
-
-        return $uploadedCount;
-    }
-
-    /**
      * Check if all documents are complete via API
      */
     public function checkAllDocumentsCompleteApi()
     {
         try {
             $user = Auth::user();
-            $registration = Registration::where('user_id', $user->id)->first();
+            $registration = Registration::with(['package', 'programUnggulan'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -216,17 +206,25 @@ class DocumentController extends Controller
                 ], 404);
             }
 
-            $allComplete = $this->checkAllDocumentsComplete($registration);
-            $uploadedCount = $this->getUploadedDocumentsCount($registration);
+            $allComplete = $this->documentRequirementService->areAllDocumentsComplete($registration);
+            $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
+            $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
+            $missingDocuments = $this->documentRequirementService->getMissingDocuments($registration);
 
             return response()->json([
                 'success' => true,
                 'all_complete' => $allComplete,
                 'uploaded_count' => $uploadedCount,
-                'total_documents' => 4,
+                'required_count' => $requiredCount,
+                'missing_documents' => array_map(function($doc) {
+                    return [
+                        'type' => $doc,
+                        'label' => $this->getDocumentLabel($doc)
+                    ];
+                }, $missingDocuments),
                 'message' => $allComplete ?
                     'Semua dokumen telah lengkap!' :
-                    "Masih ada " . (4 - $uploadedCount) . " dokumen yang belum diunggah."
+                    "Masih ada " . count($missingDocuments) . " dokumen yang belum diunggah."
             ]);
 
         } catch (\Exception $e) {
@@ -382,7 +380,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::where('user_id', $user->id)->first();
+            $registration = Registration::with(['package', 'programUnggulan'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -398,27 +396,20 @@ class DocumentController extends Controller
                 ], 403);
             }
 
-            if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Jenis dokumen tidak valid.'
-                ], 400);
-            }
+            $this->documentRequirementService->deleteDocument($registration->id_pendaftaran, $documentType);
 
-            $this->deleteOldFile($registration, $documentType);
-
-            $column = $this->getDocumentColumn($documentType);
-            $registration->update([$column => null]);
-
-            $allComplete = $this->checkAllDocumentsComplete($registration);
-            $uploadedCount = $this->getUploadedDocumentsCount($registration);
+            $allComplete = $this->documentRequirementService->areAllDocumentsComplete($registration);
+            $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
+            $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Dokumen berhasil dihapus.',
                 'document_type' => $documentType,
+                'document_label' => $this->getDocumentLabel($documentType),
                 'all_documents_complete' => $allComplete,
-                'uploaded_count' => $uploadedCount
+                'uploaded_count' => $uploadedCount,
+                'required_count' => $requiredCount
             ]);
 
         } catch (\Exception $e) {
@@ -501,7 +492,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::where('user_id', $user->id)->first();
+            $registration = Registration::with('documents')->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -518,17 +509,10 @@ class DocumentController extends Controller
             }
 
             $deletedDocuments = [];
-            $documentTypes = ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'];
-
-            foreach ($documentTypes as $documentType) {
-                $column = $this->getDocumentColumn($documentType);
-                $filePath = $registration->$column;
-
-                if ($filePath && Storage::disk('public')->exists($filePath)) {
-                    Storage::disk('public')->delete($filePath);
-                    $registration->update([$column => null]);
-                    $deletedDocuments[] = $documentType;
-                }
+            foreach ($registration->documents as $document) {
+                $document->deleteFile();
+                $document->delete();
+                $deletedDocuments[] = $document->tipe_dokumen;
             }
 
             $this->cleanupAllEmptyFolders($registration);
@@ -546,7 +530,6 @@ class DocumentController extends Controller
                 'deleted_documents' => $deletedDocuments,
                 'all_documents_complete' => false,
                 'uploaded_count' => 0,
-                'document_progress' => 0,
                 'refresh_dashboard' => true
             ]);
 
@@ -587,31 +570,38 @@ class DocumentController extends Controller
 
     public function getFile($documentType)
     {
-        $user = Auth::user();
-        $registration = Registration::where('user_id', $user->id)->first();
+        try {
+            $user = Auth::user();
+            $registration = Registration::where('user_id', $user->id)->first();
 
-        if (!$registration) {
-            abort(404, 'Data registrasi tidak ditemukan.');
+            if (!$registration) {
+                abort(404, 'Data registrasi tidak ditemukan.');
+            }
+
+            $document = RegistrationDocument::byRegistration($registration->id_pendaftaran)
+                ->byDocumentType($documentType)
+                ->first();
+
+            if (!$document || !Storage::disk('public')->exists($document->file_path)) {
+                abort(404, 'File tidak ditemukan.');
+            }
+
+            $file = Storage::disk('public')->get($document->file_path);
+            $mimeType = Storage::disk('public')->mimeType($document->file_path);
+            $fileName = basename($document->file_path);
+
+            return response($file, 200)
+                ->header('Content-Type', $mimeType)
+                ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
+
+        } catch (\Exception $e) {
+            \Log::error('Get file error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'document_type' => $documentType,
+                'exception' => $e
+            ]);
+            abort(500, 'Gagal mengambil file: ' . $e->getMessage());
         }
-
-        if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
-            abort(404, 'Jenis dokumen tidak valid.');
-        }
-
-        $column = $this->getDocumentColumn($documentType);
-        $filePath = $registration->$column;
-
-        if (!$filePath || !Storage::disk('public')->exists($filePath)) {
-            abort(404, 'File tidak ditemukan.');
-        }
-
-        $file = Storage::disk('public')->get($filePath);
-        $mimeType = Storage::disk('public')->mimeType($filePath);
-        $fileName = basename($filePath);
-
-        return response($file, 200)
-            ->header('Content-Type', $mimeType)
-            ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
     }
 
     /**
@@ -627,19 +617,16 @@ class DocumentController extends Controller
                 return back()->with('error', 'Data registrasi tidak ditemukan.');
             }
 
-            if (!in_array($documentType, ['kartu_keluarga', 'ijazah', 'akta_kelahiran', 'pas_foto'])) {
-                return back()->with('error', 'Jenis dokumen tidak valid.');
-            }
+            $document = RegistrationDocument::byRegistration($registration->id_pendaftaran)
+                ->byDocumentType($documentType)
+                ->first();
 
-            $column = $this->getDocumentColumn($documentType);
-            $filePath = $registration->$column;
-
-            if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+            if (!$document || !Storage::disk('public')->exists($document->file_path)) {
                 return back()->with('error', 'File tidak ditemukan. Silakan upload file terlebih dahulu.');
             }
 
-            $downloadName = $this->getDownloadFileName($documentType, $user->name, $filePath);
-            return Storage::disk('public')->download($filePath, $downloadName);
+            $downloadName = $this->getDownloadFileName($documentType, $user->name, $document->file_path);
+            return Storage::disk('public')->download($document->file_path, $downloadName);
 
         } catch (\Exception $e) {
             \Log::error('Download error: ' . $e->getMessage(), [
@@ -672,7 +659,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::where('user_id', $user->id)->first();
+            $registration = Registration::with(['package', 'programUnggulan', 'documents'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -688,11 +675,12 @@ class DocumentController extends Controller
                 ], 403);
             }
 
-            if (!$this->checkAllDocumentsComplete($registration)) {
-                $uploadedCount = $this->getUploadedDocumentsCount($registration);
+            if (!$this->documentRequirementService->areAllDocumentsComplete($registration)) {
+                $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
+                $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
                 return response()->json([
                     'success' => false,
-                    'message' => "Semua dokumen harus diunggah sebelum menyelesaikan pendaftaran. ({$uploadedCount}/4 dokumen)"
+                    'message' => "Semua dokumen harus diunggah sebelum menyelesaikan pendaftaran. ({$uploadedCount}/{$requiredCount} dokumen)"
                 ], 400);
             }
 
@@ -729,7 +717,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::where('user_id', $user->id)->first();
+            $registration = Registration::with(['package', 'programUnggulan'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -738,15 +726,17 @@ class DocumentController extends Controller
                 ], 404);
             }
 
-            $uploadedCount = $this->getUploadedDocumentsCount($registration);
-            $allComplete = $this->checkAllDocumentsComplete($registration);
+            $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
+            $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
+            $allComplete = $this->documentRequirementService->areAllDocumentsComplete($registration);
+            $percentage = $requiredCount > 0 ? ($uploadedCount / $requiredCount) * 100 : 0;
 
             return response()->json([
                 'success' => true,
                 'progress' => [
                     'uploaded_count' => $uploadedCount,
-                    'total_documents' => 4,
-                    'percentage' => ($uploadedCount / 4) * 100,
+                    'required_count' => $requiredCount,
+                    'percentage' => $percentage,
                     'all_complete' => $allComplete
                 ]
             ]);
@@ -768,7 +758,9 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::where('user_id', $user->id)->first();
+            $registration = Registration::with('documents')
+                ->where('user_id', $user->id)
+                ->first();
 
             if (!$registration) {
                 return response()->json([
@@ -778,14 +770,15 @@ class DocumentController extends Controller
             }
 
             if (!$this->checkAllDocumentsComplete($registration)) {
-                $uploadedCount = $this->getUploadedDocumentsCount($registration);
+                $uploadedCount = $this->documentRequirementService->getUploadedDocumentsCount($registration);
+                $requiredCount = $this->documentRequirementService->getRequiredDocumentsCount($registration);
                 return response()->json([
                     'success' => false,
-                    'message' => "Semua dokumen harus diunggah sebelum dapat didownload. ({$uploadedCount}/4 dokumen)"
+                    'message' => "Semua dokumen harus diunggah sebelum dapat didownload. ({$uploadedCount}/{$requiredCount} dokumen)"
                 ], 400);
             }
 
-            $zipFileName = "Dokumen_Pendaftaran_{$user->name}.zip";
+            $zipFileName = "Dokumen_Pendaftaran_{$user->name}_" . now()->format('Ymd_His') . ".zip";
             $zipPath = storage_path("app/temp/{$zipFileName}");
 
             if (!file_exists(dirname($zipPath))) {
@@ -793,25 +786,23 @@ class DocumentController extends Controller
             }
 
             $zip = new \ZipArchive();
-            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
-                $documents = [
-                    'kartu_keluarga' => $registration->kartu_keluaga_path,
-                    'ijazah' => $registration->ijazah_path,
-                    'akta_kelahiran' => $registration->akta_kelahiran_path,
-                    'pas_foto' => $registration->pas_foto_path
-                ];
-
+            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
                 $documentNames = [
                     'kartu_keluarga' => 'Kartu-Keluarga',
                     'ijazah' => 'Ijazah',
                     'akta_kelahiran' => 'Akta-Kelahiran',
-                    'pas_foto' => 'Pas-Foto'
+                    'pas_foto' => 'Pas-Foto',
+                    'sku' => 'SKU',
+                    'sertifikat_hafiz' => 'Sertifikat-Hafiz',
+                    'surat_rekomendasi' => 'Surat-Rekomendasi',
+                    'dokumen_kesehatan' => 'Dokumen-Kesehatan',
                 ];
 
-                foreach ($documents as $type => $filePath) {
-                    if ($filePath && Storage::disk('public')->exists($filePath)) {
-                        $fileContent = Storage::disk('public')->get($filePath);
-                        $fileName = $documentNames[$type] . '_' . $user->name . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
+                foreach ($registration->documents as $document) {
+                    if (Storage::disk('public')->exists($document->file_path)) {
+                        $fileContent = Storage::disk('public')->get($document->file_path);
+                        $docName = $documentNames[$document->tipe_dokumen] ?? $document->tipe_dokumen;
+                        $fileName = $docName . '_' . $user->name . '.' . pathinfo($document->file_path, PATHINFO_EXTENSION);
                         $zip->addFromString($fileName, $fileContent);
                     }
                 }
@@ -819,25 +810,25 @@ class DocumentController extends Controller
                 $zip->close();
 
                 return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
-
-            } else {
-                throw new \Exception('Gagal membuat file ZIP.');
             }
 
+            throw new \Exception('Gagal membuat file ZIP.');
         } catch (\Exception $e) {
             \Log::error('Download all documents error: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
-                'exception' => $e
+                'exception' => $e,
             ]);
 
-            if (file_exists($zipPath)) {
+            if (isset($zipPath) && file_exists($zipPath)) {
                 unlink($zipPath);
             }
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mendownload semua dokumen: ' . $e->getMessage()
+                'message' => 'Gagal mendownload semua dokumen: ' . $e->getMessage(),
             ], 500);
         }
     }
 }
+
+

@@ -12,11 +12,13 @@ class Package extends Model
     protected $fillable = [
         'name',
         'description',
+        'required_documents',
         'is_active'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
+        'required_documents' => 'array'
     ];
 
     protected $appends = ['formatted_total_amount'];

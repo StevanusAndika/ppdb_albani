@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Biodata;
 
 use App\Http\Controllers\Controller;
 use App\Models\Package;
-use App\Models\Price;
+use App\Models\ProgramUnggulan;
 use App\Models\Registration;
-use App\Models\ContentSetting;
+use App\Services\DocumentRequirementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +16,12 @@ use Illuminate\Validation\ValidationException;
 
 class BiodataController extends Controller
 {
+    protected $documentRequirementService;
+
+    public function __construct(DocumentRequirementService $documentRequirementService)
+    {
+        $this->documentRequirementService = $documentRequirementService;
+    }
     public function index()
     {
         $user = Auth::user();
@@ -42,9 +48,10 @@ class BiodataController extends Controller
                 return $package;
             });
 
-        // Ambil data program unggulan dari ContentSetting
-        $contentSettings = ContentSetting::first();
-        $programUnggulan = $contentSettings ? $contentSettings->program_unggulan : [];
+        // Ambil data program unggulan dari tabel programs_unggulan
+        $programUnggulan = ProgramUnggulan::active()
+            ->orderBy('nama_program')
+            ->get();
 
         // Data jenjang pendidikan untuk dropdown
         $jenjangPendidikan = [
@@ -101,13 +108,24 @@ class BiodataController extends Controller
                 ];
             });
 
+            // Get required documents for this package
+            $requiredDocuments = $package->required_documents ?? [];
+            $documentLabels = array_map(function($doc) {
+                return [
+                    'type' => $doc,
+                    'label' => $this->getDocumentLabel($doc)
+                ];
+            }, $requiredDocuments);
+
             return response()->json([
                 'success' => true,
                 'package_name' => $package->name,
                 'prices' => $formattedPrices,
                 'total' => $total,
                 'formatted_total' => 'Rp ' . number_format($total, 0, ',', '.'),
-                'package_total_amount' => $package->total_amount
+                'package_total_amount' => $package->total_amount,
+                'required_documents' => $requiredDocuments,
+                'required_documents_labels' => $documentLabels
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching package prices: ' . $e->getMessage());
@@ -117,6 +135,25 @@ class BiodataController extends Controller
                 'message' => 'Gagal memuat data harga: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get document label
+     */
+    private function getDocumentLabel($documentType)
+    {
+        $labels = [
+            'kartu_keluarga' => 'Kartu Keluarga',
+            'ijazah' => 'Ijazah',
+            'akta_kelahiran' => 'Akta Kelahiran',
+            'pas_foto' => 'Pas Foto',
+            'sku' => 'SKU (Surat Keterangan Ujian)',
+            'sertifikat_hafiz' => 'Sertifikat Hafiz (jika ada)',
+            'surat_rekomendasi' => 'Surat Rekomendasi',
+            'dokumen_kesehatan' => 'Dokumen Kesehatan'
+        ];
+
+        return $labels[$documentType] ?? $documentType;
     }
 
     public function store(Request $request)
@@ -188,7 +225,7 @@ class BiodataController extends Controller
     {
         $rules = [
             'package_id' => 'required|exists:packages,id',
-            'program_unggulan_id' => 'required|string|max:255',
+            'program_unggulan_id' => 'required|exists:programs_unggulan,id',
             'program_pendidikan' => 'required|in:MTS Bani Syahid,MA Bani Syahid,Takhassus Al-Quran',
             'nama_lengkap' => 'required|string|max:255',
             'nik' => ['required', 'digits:16', Rule::unique('registrations')->ignore($existingRegistration?->id)],
@@ -259,8 +296,9 @@ class BiodataController extends Controller
             ->firstOrFail();
 
         // Ambil data program unggulan untuk menampilkan detail
-        $contentSettings = ContentSetting::first();
-        $programUnggulan = $contentSettings ? $contentSettings->program_unggulan : [];
+        $programUnggulan = ProgramUnggulan::active()
+            ->orderBy('nama_program')
+            ->get();
 
         return view('dashboard.calon_santri.biodata.show', compact(
             'registration',
@@ -296,9 +334,10 @@ class BiodataController extends Controller
                 return $package;
             });
 
-        // Ambil data program unggulan dari ContentSetting
-        $contentSettings = ContentSetting::first();
-        $programUnggulan = $contentSettings ? $contentSettings->program_unggulan : [];
+        // Ambil data program unggulan dari tabel programs_unggulan
+        $programUnggulan = ProgramUnggulan::active()
+            ->orderBy('nama_program')
+            ->get();
 
         // Data jenjang pendidikan untuk dropdown
         $jenjangPendidikan = [

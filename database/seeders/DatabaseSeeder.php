@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             LandingContentSeeder::class,
+            ProgramUnggulanSeeder::class,
         ]);
 
         // Anda juga bisa menambahkan seeder lain di sini jika ada
