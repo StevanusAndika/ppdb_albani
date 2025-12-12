@@ -322,7 +322,6 @@ $message = "Assalamu'alaikum Warahmatullahi Wabarakatuh\n\n"
                             'user',
                             'registration',
                             'registration.package',
-                            'registration.programUnggulan'
                         ])
                         ->firstOrFail();
 

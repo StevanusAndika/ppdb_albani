@@ -36,7 +36,7 @@ class DocumentController extends Controller
     {
         $user = Auth::user();
 
-        $registration = Registration::with(['package', 'programUnggulan', 'documents'])
+        $registration = Registration::with(['package', 'documents'])
             ->where('user_id', $user->id)
             ->first();
 
@@ -100,7 +100,7 @@ class DocumentController extends Controller
                 ], 401);
             }
 
-            $registration = Registration::with('package', 'programUnggulan')->where('user_id', $user->id)->first();
+            $registration = Registration::with('package')->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -185,7 +185,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::with(['package', 'programUnggulan'])->where('user_id', $user->id)->first();
+            $registration = Registration::with(['package'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -369,7 +369,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::with(['package', 'programUnggulan'])->where('user_id', $user->id)->first();
+            $registration = Registration::with(['package'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -648,7 +648,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::with(['package', 'programUnggulan', 'documents'])->where('user_id', $user->id)->first();
+            $registration = Registration::with(['package', 'documents'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([
@@ -706,7 +706,7 @@ class DocumentController extends Controller
     {
         try {
             $user = Auth::user();
-            $registration = Registration::with(['package', 'programUnggulan'])->where('user_id', $user->id)->first();
+            $registration = Registration::with(['package'])->where('user_id', $user->id)->first();
 
             if (!$registration) {
                 return response()->json([

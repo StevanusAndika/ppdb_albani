@@ -461,15 +461,6 @@ class PaymentController extends Controller
                                 if ($newStatus === 'success') {
                                     $fonnte = app('fonnte');
 
-                                    // Ambil data program unggulan
-                                    $programUnggulanName = 'Tidak ada program unggulan';
-                                    if ($payment->registration->program_unggulan_id) {
-                                        $programUnggulan = ContentSetting::find($payment->registration->program_unggulan_id);
-                                        if ($programUnggulan) {
-                                            $programUnggulanName = $programUnggulan->judul ?? 'Program Unggulan';
-                                        }
-                                    }
-
                                     // Kirim bukti pembayaran sukses
                                     $fonnte->sendPaymentSuccess(
                                         $payment->user->getFormattedPhoneNumber(),
@@ -477,7 +468,7 @@ class PaymentController extends Controller
                                         $payment->payment_code,
                                         number_format($payment->amount, 0, ',', '.'),
                                         $payment->registration->package->name ?? 'Paket Pendaftaran',
-                                        $programUnggulanName
+                                        'Paket Pendaftaran'
                                     );
 
                                     $message .= ' - Pembayaran berhasil!';

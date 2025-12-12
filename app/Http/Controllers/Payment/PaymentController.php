@@ -51,7 +51,7 @@ class PaymentController extends Controller
     {
         $user = auth()->user();
         $registration = Registration::where('user_id', $user->id)
-                                   ->with(['package', 'programUnggulan'])
+                                   ->with(['package'])
                                    ->first();
 
         // Validasi status registrasi
@@ -365,7 +365,7 @@ class PaymentController extends Controller
     {
         $user = auth()->user();
         $registration = Registration::where('user_id', $user->id)
-                                   ->with(['package', 'programUnggulan'])
+                                   ->with(['package'])
                                    ->first();
         $latestPayment = $registration ? $registration->payments()->latest()->first() : null;
 
@@ -390,7 +390,6 @@ class PaymentController extends Controller
                             'user',
                             'registration',
                             'registration.package',
-                            'registration.programUnggulan'
                         ])
                         ->firstOrFail();
 
@@ -437,7 +436,6 @@ class PaymentController extends Controller
                              'user',
                              'registration',
                              'registration.package',
-                             'registration.programUnggulan'
                          ])
                          ->firstOrFail();
 
@@ -532,7 +530,7 @@ class PaymentController extends Controller
         ]);
 
         // Cari payment berdasarkan xendit_id atau external_id
-        $payment = Payment::with(['user', 'registration', 'registration.package', 'registration.programUnggulan'])
+        $payment = Payment::with(['user', 'registration', 'registration.package'])
                          ->where('xendit_id', $xenditId)
                          ->orWhere('xendit_external_id', $externalId)
                          ->orWhere('payment_code', $externalId)
