@@ -211,7 +211,7 @@
                     <div class="stats-card">
                         <div class="space-y-3">
                             <!-- Dokumen Lengkap -->
-                            <div class="requirement-item {{ $registration->is_documents_complete ? 'requirement-met' : 'requirement-not-met' }}">
+                            <!-- <div class="requirement-item {{ $registration->is_documents_complete ? 'requirement-met' : 'requirement-not-met' }}">
                                 <div class="flex items-center space-x-3">
                                     <div class="requirement-icon {{ $registration->is_documents_complete ? 'met' : 'not-met' }}">
                                         <i class="fas {{ $registration->is_documents_complete ? 'fa-check-circle' : 'fa-times-circle' }} text-lg"></i>
@@ -226,7 +226,7 @@
                                         {{ $registration->is_documents_complete ? 'LENGKAP' : 'BELUM' }}
                                     </span>
                                 </div>
-                            </div>
+                            </div> -->
 
                             <!-- Biodata Lengkap -->
                             <div class="requirement-item {{ $registration->is_biodata_complete ? 'requirement-met' : 'requirement-not-met' }}">
@@ -241,7 +241,7 @@
                                 </div>
                                 <div class="text-right">
                                     <span class="text-sm font-semibold {{ $registration->is_biodata_complete ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ $registration->is_biodata_complete ? 'LENGKAP' : 'BELUM' }}
+                                        {{ $registration->uploaded_documents_count === $registration->required_documents_count ? 'LENGKAP' : 'BELUM' }}
                                     </span>
                                 </div>
                             </div>
@@ -705,119 +705,62 @@
                     </a>
                 </div>
 
-                                    <!-- Dokumen -->
-                                    <div class="detail-section">
-                                        <h2 class="detail-section-title">Dokumen</h2>
-                                        <div class="space-y-3">
-                                            @php
-                                                $documents = [
-                                                    'kartu_keluarga' => [
-                                                        'name' => 'Kartu Keluarga',
-                                                        'path' => $registration->kartu_keluaga_path,
-                                                        'icon' => 'fas fa-id-card',
-                                                        'field' => 'kartu_keluaga_path'
-                                                    ],
-                                                    'ijazah' => [
-                                                        'name' => 'Ijazah',
-                                                        'path' => $registration->ijazah_path,
-                                                        'icon' => 'fas fa-graduation-cap',
-                                                        'field' => 'ijazah_path'
-                                                    ],
-                                                    'akta_kelahiran' => [
-                                                        'name' => 'Akta Kelahiran',
-                                                        'path' => $registration->akta_kelahiran_path,
-                                                        'icon' => 'fas fa-birthday-cake',
-                                                        'field' => 'akta_kelahiran_path'
-                                                    ],
-                                                    'pas_foto' => [
-                                                        'name' => 'Pas Foto',
-                                                        'path' => $registration->pas_foto_path,
-                                                        'icon' => 'fas fa-camera',
-                                                        'field' => 'pas_foto_path'
-                                                    ]
-                                                ];
-                                            @endphp
-
-                                        @foreach($documents as $type => $doc)
-                                <div class="document-item">
-                                    <div class="flex items-center gap-3">
-                                        <i class="{{ $doc['icon'] }} document-icon {{ $type }}"></i>
-                                        <div class="flex-1">
-                                            <p class="font-medium text-gray-800 text-sm">{{ $doc['name'] }}</p>
-                                            <p class="text-xs text-gray-500 truncate max-w-xs">
-                                                @if($doc['path'])
-
-                                                @else
-                                                    Belum diunggah
-                                                @endif
-                                            </p>
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            @if($doc['path'])
-                                            <button onclick="showDocumentModal('{{ $type }}', '{{ $doc['name'] }}')"
-                                                    class="text-blue-500 hover:text-blue-700 transition-colors"
-                                                    title="Lihat Dokumen">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <a href="{{ route('admin.registrations.download-document', [$registration->id, $type]) }}"
-                                            class="text-green-500 hover:text-green-700 transition-colors"
-                                            title="Download Dokumen">
-                                                <i class="fas fa-download"></i>
-                                            </a>
-
-                                            <!-- Tooltip Icon untuk Terunggah -->
-                                            <div class="relative group">
-                                                <button class="text-green-600 hover:text-green-800 transition-colors focus:outline-none"
-                                                        title="Status Dokumen">
-                                                    <i class="fas fa-check-circle text-lg"></i>
-                                                </button>
-                                                <!-- Tooltip -->
-                                                <div class="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100
-                                                            transition-all duration-200 bottom-full left-1/2 transform -translate-x-1/2 mb-2">
-                                                    <div class="bg-gray-800 text-white text-xs rounded py-1.5 px-3 whitespace-nowrap">
-                                                        Dokumen Terunggah
-                                                        <div class="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0
-                                                                    border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-gray-800">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            @else
-                                            <!-- Tooltip Icon untuk Belum Diunggah -->
-                                            <div class="relative group">
-                                                <button class="text-red-600 hover:text-red-800 transition-colors focus:outline-none"
-                                                        title="Status Dokumen">
-                                                    <i class="fas fa-exclamation-circle text-lg"></i>
-                                                </button>
-                                                <!-- Tooltip -->
-                                                <div class="absolute z-10 invisible group-hover:visible opacity-0 group-hover:opacity-100
-                                                            transition-all duration-200 bottom-full left-1/2 transform -translate-x-1/2 mb-2">
-                                                    <div class="bg-gray-800 text-white text-xs rounded py-1.5 px-3 whitespace-nowrap">
-                                                        Belum Diunggah
-                                                        <div class="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0
-                                                                    border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-gray-800">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            @endif
-                                        </div>
+                <div class="detail-section">
+                    <h2 class="detail-section-title">Dokumen</h2>
+                    <div class="space-y-3">
+                        @php $reqDocs = $requiredDocuments ?? []; @endphp
+                        @forelse($reqDocs as $docType)
+                            @php
+                                $uploaded = $uploadedDocuments[$docType] ?? null;
+                                $label = $documentDefinitions[$docType]['label'] ?? ucwords(str_replace('_',' ', $docType));
+                            @endphp
+                            <div class="flex items-start justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-file text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">{{ $label }}</h4>
+                                        <p class="text-xs text-gray-500">Format: PDF/JPG/PNG</p>
+                                        @if($uploaded)
+                                            <p class="text-xs text-gray-500">Terupload: {{ optional($uploaded->updated_at)->translatedFormat('d F Y H:i') }}</p>
+                                        @endif
                                     </div>
                                 </div>
-                                @endforeach
+                                <div class="text-right">
+                                    <span class="px-2 py-1 rounded text-xs font-medium {{ $uploaded ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        {{ $uploaded ? 'Sudah' : 'Belum' }}
+                                    </span>
+                                    @if($uploaded && $uploaded->file_path)
+                                        <div class="mt-2">
+                                            <a href="{{ asset('storage/'.$uploaded->file_path) }}" target="_blank"
+                                               class="text-blue-600 hover:text-blue-800 text-xs inline-flex items-center gap-1">
+                                                <i class="fas fa-download"></i> Lihat
+                                            </a>
                                         </div>
-                                        <!-- Progress Dokumen -->
-                                        <div class="mt-4">
-                                            <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                                <span>Kelengkapan Dokumen</span>
-                                                <span>{{ $registration->uploaded_documents_count }}/4 ({{ number_format(($registration->uploaded_documents_count / 4) * 100, 0) }}%)</span>
-                                            </div>
-                                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                                <div class="bg-primary h-2 rounded-full transition-all duration-300"
-                                                    style="width: {{ ($registration->uploaded_documents_count / 4) * 100 }}%"></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-gray-600">Tidak ada dokumen yang diperlukan.</p>
+                        @endforelse
+                    </div>
+                    @php
+                        $totalRequired = count($requiredDocuments ?? []);
+                        $uploadedCount = count($uploadedDocuments ?? []);
+                        $progress = $totalRequired > 0 ? ($uploadedCount / $totalRequired) * 100 : 0;
+                    @endphp
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>Kelengkapan Dokumen</span>
+                            <span>{{ $uploadedCount }}/{{ $totalRequired }} ({{ number_format($progress, 0) }}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-primary h-2 rounded-full transition-all duration-300"
+                                 style="width: {{ $progress }}%"></div>
+                        </div>
+                    </div>
+                </div>
                                 </div>
                                 <div class="bg-white rounded-xl shadow-md p-6">
                                 <!-- Informasi Akun -->

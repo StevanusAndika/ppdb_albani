@@ -32,6 +32,11 @@ class RegistrationController extends Controller
     {
         $registration->load(['user', 'package', 'package.prices']);
 
+        $documentRequirementService = app(\App\Services\DocumentRequirementService::class);
+        $documentDefinitions = $documentRequirementService->getDocumentDefinitions($registration);
+        $requiredDocuments = array_keys($documentDefinitions);
+        $uploadedDocuments = $documentRequirementService->getUploadedDocuments($registration);
+
         // AUTO UPDATE: Jika status ditolak tapi data diperbarui, ubah ke perlu_review
         if ($registration->needs_re_review && $registration->status_pendaftaran === 'ditolak') {
             $registration->markAsNeedsReview();
@@ -42,7 +47,12 @@ class RegistrationController extends Controller
             $registration->markAsSeen();
         }
 
-        return view('dashboard.admin.registrations.registration-detail', compact('registration'));
+        return view('dashboard.admin.registrations.registration-detail', compact(
+            'registration',
+            'documentDefinitions',
+            'requiredDocuments',
+            'uploadedDocuments'
+        ));
     }
 
     public function updateStatus(Request $request, Registration $registration)
@@ -285,8 +295,7 @@ $message = "Assalamu'alaikum Warahmatullahi Wabarakatuh\n\n"
                      ->with([
                          'user',
                          'registration',
-                         'registration.package',
-                         'registration.programUnggulan'
+                         'registration.package'
                      ])
                      ->firstOrFail();
 
