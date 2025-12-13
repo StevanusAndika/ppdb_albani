@@ -180,6 +180,24 @@ class LandingContentController extends Controller
             LandingContent::updateOrCreate(['key' => 'persyaratan_dokumen'], ['payload' => $persyaratanData]);
         }
 
+        // 10. Update Brosur
+        $brosurData = [];
+        if ($request->hasFile('brosur_file')) {
+            $path = $request->file('brosur_file')->store('brosur', 'public');
+            $brosurData['file'] = 'storage/' . $path;
+            $brosurData['filename'] = $request->file('brosur_file')->getClientOriginalName();
+        } else {
+            // Pertahankan file lama jika tidak ada upload baru
+            $oldBrosur = LandingContent::where('key', 'brosur')->first();
+            if ($oldBrosur && isset($oldBrosur->payload['file'])) {
+                $brosurData['file'] = $oldBrosur->payload['file'];
+                $brosurData['filename'] = $oldBrosur->payload['filename'] ?? 'brosur.pdf';
+            }
+        }
+        if (!empty($brosurData)) {
+            LandingContent::updateOrCreate(['key' => 'brosur'], ['payload' => $brosurData]);
+        }
+
         return redirect()->back()->with('success', 'Konten berhasil diperbarui!');
     }
 }

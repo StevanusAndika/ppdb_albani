@@ -6,10 +6,10 @@
             <p class="text-gray-600 max-w-2xl mx-auto">Komitmen kami membentuk generasi Qur'ani yang cerdas, berakhlak, dan berdedikasi.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        <div class="grid grid-cols-1 gap-8 items-center justify-center">
             <!-- Visi Card -->
-            <div class="col-span-1 md:col-span-1">
-                <div class="bg-white rounded-2xl shadow-md p-6 h-full border border-primary/10">
+            <div class="col-span-1 mx-auto w-full">
+                <div class="bg-white rounded-2xl shadow-md p-6 h-full border border-primary/10 w-full">
                     <div class="flex items-center mb-4">
                         <div class="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center mr-4">
                             <i class="fas fa-eye"></i>

@@ -203,6 +203,12 @@
             {{ $hero['tagline'] ?? $contentSettings->tagline ?? 'Pesantren AI-Our\'an Bani Syahid 2025' }}
         </h2>
 
+        <!-- hero image -->
+        <div class="mb-8 w-full h-auto rounded-xl shadow-md mx-auto max-w-2xl">
+            <img src="{{ asset($hero['image']) }}" alt="{{ $hero['title'] }}" class="w-full h-auto rounded-xl shadow-md">
+        </div>
+
+
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
             <p class="text-secondary text-lg mb-4">
                 {{ $hero['description'] ?? $contentSettings->deskripsi ?? 'Sistem Penerimaan Peserta Didik Baru yang modern, mudah, dan terpercaya. Untuk Masa Depan Yang Lebih Baik' }}
@@ -210,28 +216,42 @@
 
             @auth
                 <!-- Jika user sudah login -->
-                @if(auth()->user()->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}">
-                        <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
-                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Admin
-                        </button>
-                    </a>
-                @elseif(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
-                    <a href="{{ route('santri.dashboard') }}">
-                        <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
-                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Santri
-                        </button>
-                    </a>
-                @else
-                    <!-- Untuk role lainnya -->
-                    <a href="{{ route('dashboard') }}">
-                        <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 max-w-xs mx-auto my-3 font-semibold">
-                            <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
-                        </button>
-                    </a>
-                @endif
+                <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                    @if(!empty($brosur['file']))
+                        <a href="{{ asset($brosur['file']) }}" download="{{ $brosur['filename'] ?? 'brosur.pdf' }}" class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
+                            <i class="fas fa-download mr-2"></i>Download Brosur
+                        </a>
+                    @endif
+                    
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}">
+                            <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Admin
+                            </button>
+                        </a>
+                    @elseif(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
+                        <a href="{{ route('santri.dashboard') }}">
+                            <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Santri
+                            </button>
+                        </a>
+                    @else
+                        <!-- Untuk role lainnya -->
+                        <a href="{{ route('dashboard') }}">
+                            <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </button>
+                        </a>
+                    @endif
+                </div>
             @else
                 <!-- Jika user belum login -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                    @if(!empty($brosur['file']))
+                        <a href="{{ asset($brosur['file']) }}" download="{{ $brosur['filename'] ?? 'brosur.pdf' }}" class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
+                            <i class="fas fa-download mr-2"></i>Download Brosur
+                        </a>
+                    @endif
 
                     <a href="https://wa.me/6287748115931?text=Halo,%20saya%20ingin%20mendaftar"
                     class="bg-green-600 text-white px-6 py-2.5 rounded-full hover:bg-green-700 transition duration-300 font-semibold inline-flex items-center">

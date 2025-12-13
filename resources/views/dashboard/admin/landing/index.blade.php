@@ -48,6 +48,9 @@
                         <li class="me-2" role="presentation">
                             <button id="persyaratan-tab" data-tabs-target="#persyaratan-admin" type="button" role="tab" aria-controls="persyaratan-admin" aria-selected="false" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Persyaratan</button>
                         </li>
+                        <li class="me-2" role="presentation">
+                            <button id="brosur-tab" data-tabs-target="#brosur-admin" type="button" role="tab" aria-controls="brosur-admin" aria-selected="false" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Brosur</button>
+                        </li>
                     </ul>
                 </div>
 
@@ -345,6 +348,57 @@
                             @endforeach
                         </div>
                         <div class="text-center"><button type="button" onclick="addPersyaratan()" class="btn border-2 border-primary bg-white text-primary hover:bg-primary hover:text-white px-6 py-2 rounded-full">+ Tambah Persyaratan</button></div>
+                    </div>
+
+                    <!-- Brosur Admin -->
+                    <div id="brosur-admin" role="tabpanel" aria-labelledby="brosur-tab" class="hidden tab-pane max-w-4xl mx-auto mt-8">
+                        <div class="mb-6 p-6 bg-blue-50 border-l-4 border-primary rounded">
+                            <h3 class="text-lg font-bold text-primary mb-2">📄 Upload Brosur</h3>
+                            <p class="text-gray-700 text-sm">Upload file brosur dalam format PDF yang akan ditampilkan di halaman utama untuk diunduh oleh pengunjung.</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2" for="brosur-file">
+                                File Brosur (PDF) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="file" id="brosur-file" name="brosur_file" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-primary" accept=".pdf,application/pdf">
+                            <small class="text-gray-500 mt-1 block">💡 Format yang didukung: PDF (Maksimal 10MB)</small>
+                        </div>
+
+                        @php
+                            $brosur = $contents['brosur'] ?? null;
+                        @endphp
+                        
+                        @if(!empty($brosur['file']))
+                            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-green-800 font-semibold mb-1">
+                                            <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+                                            File Brosur Saat Ini
+                                        </p>
+                                        <p class="text-gray-600 text-sm">
+                                            {{ $brosur['filename'] ?? 'brosur.pdf' }}
+                                        </p>
+                                        <p class="text-gray-500 text-xs mt-1">
+                                            Path: {{ $brosur['file'] ?? '' }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ asset($brosur['file']) }}" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300 inline-flex items-center">
+                                            <i class="fas fa-eye mr-2"></i> Lihat
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p class="text-yellow-800">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    Belum ada file brosur yang diupload.
+                                </p>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

@@ -19,12 +19,32 @@
             @endphp
 
             @foreach($displayPersyaratan as $item)
+                @php
+                    // Normalize image path
+                    $imgPath = null;
+                    if (!empty($item['img'])) {
+                        // Handle path yang sudah ada di database
+                        // Jika path sudah dimulai dengan 'storage/', gunakan langsung
+                        // Jika path dimulai dengan 'public/', ganti menjadi 'storage/'
+                        $imgPath = $item['img'];
+                        if (str_starts_with($imgPath, 'public/')) {
+                            $imgPath = str_replace('public/', 'storage/', $imgPath);
+                        } elseif (!str_starts_with($imgPath, 'storage/') && !str_starts_with($imgPath, 'http')) {
+                            // Jika path tidak dimulai dengan 'storage/' atau 'http', tambahkan 'storage/'
+                            $imgPath = 'storage/' . ltrim($imgPath, '/');
+                        }
+                    } elseif (!empty($item['key']) && method_exists($contentSettings, 'getFilePath')) {
+                        $imgPath = $contentSettings->getFilePath($item['key']);
+                    }
+                    // Fallback ke default image berdasarkan key
+                    $fallbackImg = !empty($item['key']) ? 'images/default/' . $item['key'] . '.png' : 'images/default/document.png';
+                @endphp
                 <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
                     <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                        @if(!empty($item['img']))
-                            <img src="{{ asset($item['img']) }}" alt="{{ $item['title'] ?? 'Dokumen' }}" class="w-12 h-12 object-contain" onerror="this.onerror=null; this.src='{{ asset('images/default/' . ($item['key'] ?? 'document') . '.png') }}';">
-                        @elseif(!empty($item['key']) && method_exists($contentSettings, 'getFilePath'))
-                            <img src="{{ asset($contentSettings->getFilePath($item['key'])) }}" alt="{{ $item['title'] ?? 'Dokumen' }}" class="w-12 h-12 object-contain">
+                        @if($imgPath)
+                            <img src="{{ asset($imgPath) }}" alt="{{ $item['title'] ?? 'Dokumen' }}" class="w-12 h-12 object-contain" onerror="this.onerror=null; this.src='{{ asset($fallbackImg) }}';">
+                        @else
+                            <img src="{{ asset($fallbackImg) }}" alt="{{ $item['title'] ?? 'Dokumen' }}" class="w-12 h-12 object-contain">
                         @endif
                     </div>
                     <h3 class="text-lg font-semibold text-primary mb-2 text-center">{{ $item['title'] ?? 'Dokumen' }}</h3>
