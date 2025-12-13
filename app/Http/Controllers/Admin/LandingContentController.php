@@ -14,7 +14,7 @@ class LandingContentController extends Controller
         // Ambil semua data dan jadikan key sebagai index array agar mudah dipanggil di view
         // Contoh hasil: $contents['hero']['title']
         $contents = LandingContent::all()->pluck('payload', 'key');
-        
+
         return view('dashboard.admin.landing.index', compact('contents'));
     }
 
@@ -22,7 +22,7 @@ class LandingContentController extends Controller
     {
         // 1. Update Hero Section
         $heroData = $request->input('hero');
-        
+
         // Handle Upload Gambar Hero (Jika ada)
         if ($request->hasFile('hero_image')) {
             $path = $request->file('hero_image')->store('public/hero');
@@ -48,14 +48,14 @@ class LandingContentController extends Controller
         $programsInput = $request->input('programs', []);
         $oldPrograms = LandingContent::where('key', 'programs')->first();
         $oldProgramsData = $oldPrograms ? $oldPrograms->payload : [];
-        
+
         $programsData = [];
         $fileIndex = 0;
 
         foreach($programsInput as $key => $p) {
             // Simpan atau update gambar program
             $imageUrl = null;
-            
+
             // Cek apakah ada file yang diupload
             if ($request->hasFile("programs.$key.image")) {
                 $path = $request->file("programs.$key.image")->store('public/programs');
@@ -74,7 +74,7 @@ class LandingContentController extends Controller
                 'advantages' => isset($p['advantages']) ? array_map('trim', explode(',', $p['advantages'])) : [],
                 'image' => $imageUrl,
             ];
-            
+
             $fileIndex++;
         }
 
