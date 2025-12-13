@@ -21,6 +21,11 @@
                 <!-- Profile Card -->
                 @include('layouts.components.calon_santri.dashboard.profile-card')
 
+                <!-- Aksi cepat mobile -->
+                <div class="lg:hidden">
+                    @include('layouts.components.calon_santri.dashboard.mobile-quick-actions')
+                </div>
+
                 <!-- Quick Menu Card -->
                 @include('layouts.components.calon_santri.dashboard.quick-menu')
 
@@ -46,7 +51,7 @@
                 @include('layouts.components.calon_santri.dashboard.barcode-section')
 
                 <!-- Dokumen Section -->
-                @include('layouts.components.calon_santri.dashboard.documents-section')
+                <!--  -->
 
                 <!-- Status Pembayaran -->
                 @include('layouts.components.calon_santri.dashboard.payment-status')
