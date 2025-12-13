@@ -63,7 +63,7 @@ return [
             ]) : [],
         ],
 
-        
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
@@ -157,9 +157,12 @@ return [
             'url' => env('REDIS_URL'),
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
+            'password' => env('REDIS_PASSWORD',null),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
+            'scheme' => env('REDIS_SCHEME', 'tcp'),
+            'path' => env('REDIS_PATH', null),
+             'database' => env('REDIS_DB', '0'),
             'max_retries' => env('REDIS_MAX_RETRIES', 3),
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
@@ -167,17 +170,37 @@ return [
         ],
 
         'cache' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_CACHE_DB', '1'),
+             'url' => env('REDIS_URL'),
+             'host' => env('REDIS_HOST', '127.0.0.1'),
+             'username' => env('REDIS_USERNAME'),
+             'password' => env('REDIS_PASSWORD', null),
+             'port' => env('REDIS_PORT', '6379'),
+             'database' => env('REDIS_CACHE_DB', '1'),
+             'scheme' => env('REDIS_SCHEME', 'tcp'),
+             'path' => env('REDIS_PATH', ''),
+             'database' => env('REDIS_SESSION_DB', '2'), // Gunakan DB 2 untuk session
             'max_retries' => env('REDIS_MAX_RETRIES', 3),
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
         ],
+
+         // TAMBAHKAN KONEKSI INI UNTUK SESSION
+        // 'session' => [
+        //     'url' => env('REDIS_URL'),
+        //     'host' => env('REDIS_HOST', '127.0.0.1'),
+        //     'username' => env('REDIS_USERNAME'),
+        //     'password' => env('REDIS_PASSWORD', null),
+        //     'port' => env('REDIS_PORT', '6379'),
+        //     'database' => env('REDIS_SESSION_DB', '2'), // Gunakan DB 2 untuk session
+        //     'scheme' => env('REDIS_SCHEME', 'tcp'),
+        //     'path' => env('REDIS_PATH', null),
+        //     'max_retries' => env('REDIS_MAX_RETRIES', 3),
+        //     'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+        //     'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+        //     'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+        // ],
+
 
     ],
 
