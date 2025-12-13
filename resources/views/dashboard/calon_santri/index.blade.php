@@ -33,14 +33,14 @@
                 <!-- Status Summary Cards -->
                 @include('layouts.components.calon_santri.dashboard.status-summary-cards')
 
-                <!-- Informasi Kuota Pendaftaran -->
-                @include('layouts.components.calon_santri.dashboard.quota-info')
-
                 <!-- Status Pendaftaran Detail -->
                 @include('layouts.components.calon_santri.dashboard.registration-status')
-
+                
                 <!-- Progress Pendaftaran -->
                 @include('layouts.components.calon_santri.dashboard.registration-progress')
+
+                <!-- Informasi Kuota Pendaftaran -->
+                @include('layouts.components.calon_santri.dashboard.quota-info')
 
                 <!-- Barcode Section -->
                 @include('layouts.components.calon_santri.dashboard.barcode-section')

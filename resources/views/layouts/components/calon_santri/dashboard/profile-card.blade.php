@@ -25,13 +25,41 @@
     </div>
 
     <div class="mt-6 flex gap-3">
+        <!-- Action Button -->
         @if($registration)
+            @if($registration->status_pendaftaran == 'belum_mendaftar')
+            <!-- button untuk mulai pendaftaran -->
+            <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
+                Mulai Pendaftaran
+            </a>
+            @elseif($registration->status_pendaftaran == 'telah_mengisi')
+
+            <!-- button untuk edit biodata -->
+            <a href="{{ route('santri.biodata.index') }}" class="w-full text-center border-2 border-primary text-primary py-2 rounded-full hover:bg-primary hover:text-white transition duration-300">
+                Edit Biodata
+            </a>
+
+            <!-- button untuk upload dokumen -->
+            <a href="{{ route('santri.documents.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
+                Upload Dokumen
+            </a>
+            @elseif($registration->status_pendaftaran == 'menunggu_diverifikasi')
+            <!-- Button untuk perbaiki data -->
             <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
                 Edit Biodata
             </a>
+            <!-- perbaiki dokumen -->
+            <a href="{{ route('santri.documents.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
+                Edit Dokumen
+            </a>
+            <!-- button untuk bayar -->
+            <a href="{{ route('santri.payments.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
+                Pembayaran
+            </a>
+            @endif
         @else
             <a href="{{ route('santri.biodata.index') }}" class="w-full text-center bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
-                Isi Biodata
+                Mulai Pendaftaran
             </a>
         @endif
     </div>
