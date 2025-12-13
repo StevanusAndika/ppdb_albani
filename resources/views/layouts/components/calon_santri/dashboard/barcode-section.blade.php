@@ -1,5 +1,5 @@
 @if($registration && $barcodeUrl)
-<div class="bg-white rounded-xl shadow-md p-6">
+<div class="bg-white rounded-xl shadow-md p-6 mb-6">
     <div class="flex justify-between items-center mb-4">
         <h3 class="text-xl font-bold text-primary">QR Code Pendaftaran</h3>
         <div class="flex gap-2">

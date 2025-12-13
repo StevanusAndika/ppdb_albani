@@ -1,4 +1,4 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<div class="grid hidden sm:hidden md:grid-cols-2 lg:grid-cols-4 gap-3">
     <!-- Biodata Card -->
     <div class="bg-white rounded-xl shadow-md p-3 flex items-center">
         <div class="flex items-center space-x-4 w-full">

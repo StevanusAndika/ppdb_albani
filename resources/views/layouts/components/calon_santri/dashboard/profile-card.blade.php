@@ -22,9 +22,31 @@
             <span class="font-medium text-primary">{{ $registration->package->name ?? '-' }}</span>
         </div>
         @endif
+
+        <!-- status pendaftaran -->
+        @if($registration)
+        <div class="flex justify-between">
+            <span>Status Pendaftaran</span>
+            <span class="font-medium 
+                @if($registration->status_pendaftaran == 'belum_mendaftar') text-gray-500
+                @elseif($registration->status_pendaftaran == 'telah_mengisi') text-blue-600
+                @elseif($registration->status_pendaftaran == 'menunggu_diverifikasi') text-yellow-600
+                @elseif($registration->status_pendaftaran == 'diterima') text-green-600
+                @elseif($registration->status_pendaftaran == 'ditolak') text-red-600
+                @endif
+            ">
+                @if($registration->status_pendaftaran == 'belum_mendaftar') Belum Mendaftar
+                @elseif($registration->status_pendaftaran == 'telah_mengisi') Telah Mengisi Biodata
+                @elseif($registration->status_pendaftaran == 'menunggu_diverifikasi') Menunggu Diverifikasi
+                @elseif($registration->status_pendaftaran == 'diterima') Diterima
+                @elseif($registration->status_pendaftaran == 'ditolak') Ditolak
+                @endif
+            </span>
+        </div>
+        @endif
     </div>
 
-    <div class="mt-6 flex gap-3">
+    <div class="mt-6 flex gap-3 lg:hidden">
         <!-- Action Button -->
         @if($registration)
             @if($registration->status_pendaftaran == 'belum_mendaftar')

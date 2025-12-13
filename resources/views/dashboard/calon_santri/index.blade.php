@@ -29,7 +29,7 @@
             </div>
 
             <!-- Right: Main Content -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2">
                 <!-- Status Summary Cards -->
                 @include('layouts.components.calon_santri.dashboard.status-summary-cards')
 

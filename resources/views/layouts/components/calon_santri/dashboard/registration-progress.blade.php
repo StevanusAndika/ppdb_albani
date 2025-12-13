@@ -1,4 +1,4 @@
-<div class="bg-white rounded-xl shadow-md p-6">
+<div class="bg-white rounded-xl shadow-md p-6 mb-6">
     <h3 class="text-xl font-bold text-primary mb-4">Progress Pendaftaran</h3>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         <!-- Step 1: Buat Akun -->

@@ -1,4 +1,4 @@
-<div class="bg-white rounded-xl shadow-md p-6">
+<div class="bg-white rounded-xl shadow-md p-6 mb-6">
     <div class="flex justify-between mb-4 w-full flex-col gap-2 mb-4">
         <h3 class="text-xl font-bold text-primary">Status Pendaftaran</h3>
         <!-- <div class="flex justify-center gap-2 mt-4">
