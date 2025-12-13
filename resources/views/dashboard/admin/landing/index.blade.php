@@ -112,7 +112,7 @@
                             <div class="md:w-2/3">
                                 <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-hero-image" type="file" name="hero_image">
                                 @if(!empty($contents['hero']['image']))
-                                    <img src="{{ asset($contents['hero']['image']) }}" width="100" class="mt-2">
+                                    <img src="{{ asset($contents['hero']['image']) }}" width="100" class="mt-2" onerror="this.src='{{ asset('images/default/image-placeholder.png') }}';">
                                 @endif
                             </div>
                         </div>
@@ -201,7 +201,7 @@
                                         <input type="file" id="program-image-{{$index}}" name="programs[{{$index}}][image]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-primary" accept="image/*">
                                         @if(!empty($program['image']))
                                             <div class="mt-2">
-                                                <img src="{{ asset($program['image']) }}" width="150" class="rounded-lg border-2 border-gray-300">
+                                                <img src="{{ asset($program['image']) }}" width="150" class="rounded-lg border-2 border-gray-300" onerror="this.src='{{ asset('images/default/image-placeholder.png') }}';">
                                             </div>
                                         @endif
                                     </div>
@@ -340,7 +340,7 @@
                                     <div class="mb-4"><label class="block text-sm font-semibold mb-1">Judul</label><input type="text" name="persyaratan[{{ $i }}][title]" class="w-full px-3 py-2 border rounded" value="{{ $it['title'] ?? '' }}"></div>
                                     <div class="mb-4"><label class="block text-sm font-semibold mb-1">Catatan (opsional)</label><input type="text" name="persyaratan[{{ $i }}][note]" class="w-full px-3 py-2 border rounded" value="{{ $it['note'] ?? '' }}"></div>
                                     <div class="mb-4"><label class="block text-sm font-semibold mb-1">Gambar (opsional)</label><input type="file" name="persyaratan[{{ $i }}][image]" class="w-full px-3 py-2 border rounded"></div>
-                                    @if(!empty($it['img']))<div class="mt-2"><img src="{{ asset($it['img']) }}" width="150" class="rounded-lg border"></div>@endif
+                                    @if(!empty($it['img']))<div class="mt-2"><img src="{{ asset($it['img']) }}" width="150" class="rounded-lg border" onerror="this.src='{{ asset('images/default/image-placeholder.png') }}';"></div>@endif
                                 </div>
                             @endforeach
                         </div>

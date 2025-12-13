@@ -25,8 +25,8 @@ class LandingContentController extends Controller
 
         // Handle Upload Gambar Hero (Jika ada)
         if ($request->hasFile('hero_image')) {
-            $path = $request->file('hero_image')->store('public/hero');
-            $heroData['image'] = str_replace('public/', 'storage/', $path);
+            $path = $request->file('hero_image')->store('hero', 'public');
+            $heroData['image'] = 'storage/' . $path;
         } else {
             // Pertahankan gambar lama jika tidak ada upload baru
             $oldHero = LandingContent::where('key', 'hero')->first();
@@ -58,8 +58,8 @@ class LandingContentController extends Controller
 
             // Cek apakah ada file yang diupload
             if ($request->hasFile("programs.$key.image")) {
-                $path = $request->file("programs.$key.image")->store('public/programs');
-                $imageUrl = str_replace('public/', 'storage/', $path);
+                $path = $request->file("programs.$key.image")->store('programs', 'public');
+                $imageUrl = 'storage/' . $path;
             } else {
                 // Pertahankan gambar lama jika tidak ada upload baru
                 if (isset($oldProgramsData[$fileIndex]['image'])) {
@@ -162,8 +162,8 @@ class LandingContentController extends Controller
         foreach($persyaratanInput as $idx => $item) {
             $imgUrl = null;
             if ($request->hasFile("persyaratan.$idx.image")) {
-                $path = $request->file("persyaratan.$idx.image")->store('public/persyaratan');
-                $imgUrl = str_replace('public/', 'storage/', $path);
+                $path = $request->file("persyaratan.$idx.image")->store('persyaratan', 'public');
+                $imgUrl = 'storage/' . $path;
             } else {
                 // preserve old image if exists at same index
                 if (isset($oldPersyaratanData[$idx]['img'])) {

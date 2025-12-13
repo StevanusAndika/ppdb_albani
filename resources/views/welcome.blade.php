@@ -21,7 +21,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:title" content="{{ $contentSettings->judul_og ?? 'PPDB Pesantren AI-Our\'an Bani Syahid 2025' }}">
     <meta property="og:description" content="{{ $contentSettings->og_deskripsi ?? 'Bergabunglah menjadi santri Pesantren AI-Our\'an Bani Syahid. Program Tahfidz dan Pendidikan Islam Terpadu.' }}">
-    <meta property="og:image" content="{{ $contentSettings->og_image ?? '/images/ppdb-og-image.jpg' }}">
+    <meta property="og:image" content="{{ $contentSettings->og_image ? asset($contentSettings->og_image) : asset('images/ppdb-og-image.jpg') }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="PPDB Pesantren AI-Our'an Bani Syahid 2025">

@@ -22,7 +22,9 @@
                 <div class="bg-white rounded-xl shadow-md border border-primary/20 hover:border-primary/40 hover:shadow-lg transition-all duration-300 w-full max-w-xs p-6 flex flex-col items-center">
                     <div class="icon-bg w-20 h-20 rounded-full flex items-center justify-center mb-4">
                         @if(!empty($item['img']))
-                            <img src="{{ $item['img'] }}" alt="{{ $item['title'] ?? 'Dokumen' }}" class="w-12 h-12 object-contain">
+                            <img src="{{ asset($item['img']) }}" alt="{{ $item['title'] ?? 'Dokumen' }}" class="w-12 h-12 object-contain" onerror="this.onerror=null; this.src='{{ asset('images/default/' . ($item['key'] ?? 'document') . '.png') }}';">
+                        @elseif(!empty($item['key']) && method_exists($contentSettings, 'getFilePath'))
+                            <img src="{{ asset($contentSettings->getFilePath($item['key'])) }}" alt="{{ $item['title'] ?? 'Dokumen' }}" class="w-12 h-12 object-contain">
                         @endif
                     </div>
                     <h3 class="text-lg font-semibold text-primary mb-2 text-center">{{ $item['title'] ?? 'Dokumen' }}</h3>
