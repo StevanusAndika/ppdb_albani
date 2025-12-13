@@ -51,6 +51,9 @@
                         <li class="me-2" role="presentation">
                             <button id="brosur-tab" data-tabs-target="#brosur-admin" type="button" role="tab" aria-controls="brosur-admin" aria-selected="false" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Brosur</button>
                         </li>
+                        <li class="me-2" role="presentation">
+                            <button id="general-tab" data-tabs-target="#general-admin" type="button" role="tab" aria-controls="general-admin" aria-selected="false" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300">Pengaturan Umum</button>
+                        </li>
                     </ul>
                 </div>
 
@@ -399,6 +402,142 @@
                                 </p>
                             </div>
                         @endif
+                    </div>
+
+                    <!-- General Settings Admin -->
+                    <div id="general-admin" role="tabpanel" aria-labelledby="general-tab" class="hidden tab-pane max-w-4xl mx-auto mt-8">
+                        <div class="mb-6 p-6 bg-blue-50 border-l-4 border-primary rounded">
+                            <h3 class="text-lg font-bold text-primary mb-2">⚙️ Pengaturan Umum</h3>
+                            <p class="text-gray-700 text-sm">Kelola teks navbar, footer, dan tombol yang tampil di halaman utama.</p>
+                        </div>
+
+                        @php
+                            $general = $contents['general'] ?? [];
+                        @endphp
+
+                        <!-- Navbar Settings -->
+                        <div class="mb-8 p-6 bg-white border-2 border-gray-200 rounded-lg">
+                            <h4 class="text-xl font-bold text-primary mb-4">📱 Navbar</h4>
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Logo Text</label>
+                                <input type="text" name="general[navbar_logo]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['navbar_logo'] ?? '|| Ponpes Bani Sahid' }}" placeholder="|| Ponpes Bani Sahid">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Menu Items (Pisahkan dengan koma)</label>
+                                <input type="text" name="general[navbar_menu]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ isset($general['navbar_menu']) ? implode(', ', $general['navbar_menu']) : 'Beranda, Visi & Misi, Program, Kegiatan, Alur Pendaftaran, Biaya, Persyaratan, FAQ, Kontak' }}" placeholder="Beranda, Visi & Misi, Program, ...">
+                                <small class="text-gray-500 mt-1 block">💡 Pisahkan setiap menu dengan koma (,)</small>
+                            </div>
+                        </div>
+
+                        <!-- Button Settings -->
+                        <div class="mb-8 p-6 bg-white border-2 border-gray-200 rounded-lg">
+                            <h4 class="text-xl font-bold text-primary mb-4">🔘 Tombol</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Download Brosur</label>
+                                    <input type="text" name="general[btn_download_brosur]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['btn_download_brosur'] ?? 'Download Brosur' }}" placeholder="Download Brosur">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Tanya via WhatsApp</label>
+                                    <input type="text" name="general[btn_whatsapp]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['btn_whatsapp'] ?? 'Tanya via WhatsApp' }}" placeholder="Tanya via WhatsApp">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Dashboard Admin</label>
+                                    <input type="text" name="general[btn_dashboard_admin]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['btn_dashboard_admin'] ?? 'Dashboard Admin' }}" placeholder="Dashboard Admin">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Dashboard Santri</label>
+                                    <input type="text" name="general[btn_dashboard_santri]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['btn_dashboard_santri'] ?? 'Dashboard Santri' }}" placeholder="Dashboard Santri">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Login</label>
+                                    <input type="text" name="general[btn_login]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['btn_login'] ?? 'Login' }}" placeholder="Login">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Logout</label>
+                                    <input type="text" name="general[btn_logout]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['btn_logout'] ?? 'Logout' }}" placeholder="Logout">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Settings -->
+                        <div class="mb-8 p-6 bg-white border-2 border-gray-200 rounded-lg">
+                            <h4 class="text-xl font-bold text-primary mb-4">📄 Footer</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Menu 1 - Judul</label>
+                                    <input type="text" name="general[footer_menu1_title]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['footer_menu1_title'] ?? 'Tentang Kami' }}" placeholder="Tentang Kami">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Menu 2 - Judul</label>
+                                    <input type="text" name="general[footer_menu2_title]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['footer_menu2_title'] ?? 'Program' }}" placeholder="Program">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Menu 3 - Judul</label>
+                                    <input type="text" name="general[footer_menu3_title]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['footer_menu3_title'] ?? 'Informasi' }}" placeholder="Informasi">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Menu 4 - Judul</label>
+                                    <input type="text" name="general[footer_menu4_title]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['footer_menu4_title'] ?? 'Kontak' }}" placeholder="Kontak">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Menu 1 - Links (Pisahkan dengan koma)</label>
+                                <input type="text" name="general[footer_menu1_links]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ isset($general['footer_menu1_links']) ? implode(', ', $general['footer_menu1_links']) : 'Visi & Misi, info Beasiswa' }}" placeholder="Visi & Misi, info Beasiswa">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Menu 2 - Links (Pisahkan dengan koma)</label>
+                                <input type="text" name="general[footer_menu2_links]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ isset($general['footer_menu2_links']) ? implode(', ', $general['footer_menu2_links']) : 'Tahfidz Al-Qur\'an' }}" placeholder="Tahfidz Al-Qur'an">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Menu 3 - Links (Pisahkan dengan koma)</label>
+                                <input type="text" name="general[footer_menu3_links]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ isset($general['footer_menu3_links']) ? implode(', ', $general['footer_menu3_links']) : 'Alur Pendaftaran, Biaya Pendidikan, Persyaratan, FAQ' }}" placeholder="Alur Pendaftaran, Biaya Pendidikan, Persyaratan, FAQ">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-semibold mb-2">Menu 4 - Contact Items (Pisahkan dengan koma)</label>
+                                <input type="text" name="general[footer_menu4_links]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ isset($general['footer_menu4_links']) ? implode(', ', $general['footer_menu4_links']) : 'Alamat, WhatsApp Developers, WhatsApp Admin PPDB Putra, WhatsApp Admin PPDB Putri, Sosial Media' }}" placeholder="Alamat, WhatsApp Developers, ...">
+                            </div>
+                        </div>
+
+                        <!-- Contact Info Settings -->
+                        <div class="mb-8 p-6 bg-white border-2 border-gray-200 rounded-lg">
+                            <h4 class="text-xl font-bold text-primary mb-4">📞 Informasi Kontak</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">WhatsApp Number (Developer)</label>
+                                    <input type="text" name="general[wa_developer]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['wa_developer'] ?? '6287748115931' }}" placeholder="6287748115931">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">WhatsApp Number (Admin Putra)</label>
+                                    <input type="text" name="general[wa_admin_putra]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['wa_admin_putra'] ?? '6289510279293' }}" placeholder="6289510279293">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">WhatsApp Number (Admin Putri)</label>
+                                    <input type="text" name="general[wa_admin_putri]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['wa_admin_putri'] ?? '6282183953533' }}" placeholder="6282183953533">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Google Maps URL</label>
+                                    <input type="text" name="general[google_maps_url]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['google_maps_url'] ?? 'https://www.google.com/maps/place/Pondok+Pesantren+Al-Qur\'an+Bani+Syahid/@-6.3676771,106.8696904,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69ed654ce6786b:0x1019880ca4f9403b!8m2!3d-6.3676824!4d106.8722707!16s%2Fg%2F11f6m9qmmr?hl=id' }}" placeholder="https://maps.google.com/...">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Social Media Link</label>
+                                    <input type="text" name="general[social_media_url]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['social_media_url'] ?? 'https://banisyahid.bio.link/' }}" placeholder="https://banisyahid.bio.link/">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-semibold mb-2">Instagram Link</label>
+                                    <input type="text" name="general[instagram_url]" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg" value="{{ $general['instagram_url'] ?? 'https://www.instagram.com/ponpesalquranbanisyahid_/' }}" placeholder="https://instagram.com/...">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

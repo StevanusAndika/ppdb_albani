@@ -198,6 +198,24 @@ class LandingContentController extends Controller
             LandingContent::updateOrCreate(['key' => 'brosur'], ['payload' => $brosurData]);
         }
 
+        // 11. Update General Settings
+        $generalInput = $request->input('general', []);
+        if (!empty($generalInput)) {
+            // Process navbar menu (comma separated to array)
+            if (isset($generalInput['navbar_menu']) && is_string($generalInput['navbar_menu'])) {
+                $generalInput['navbar_menu'] = array_map('trim', explode(',', $generalInput['navbar_menu']));
+            }
+            
+            // Process footer links (comma separated to array)
+            foreach (['footer_menu1_links', 'footer_menu2_links', 'footer_menu3_links', 'footer_menu4_links'] as $key) {
+                if (isset($generalInput[$key]) && is_string($generalInput[$key])) {
+                    $generalInput[$key] = array_map('trim', explode(',', $generalInput[$key]));
+                }
+            }
+            
+            LandingContent::updateOrCreate(['key' => 'general'], ['payload' => $generalInput]);
+        }
+
         return redirect()->back()->with('success', 'Konten berhasil diperbarui!');
     }
 }

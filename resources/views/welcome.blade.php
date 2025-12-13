@@ -121,7 +121,7 @@
 <!-- Navbar -->
 <nav style="white-space: nowrap" class="bg-white shadow-md py-2 px-4 md:py-3 md:px-6 rounded-full mx-2 md:mx-4 mt-2 md:mt-4 sticky top-2 md:top-4 z-50 nav-container nowrap">
     <div class="container mx-auto flex justify-between items-center">
-        <div class="text-lg font-bold text-primary nav-logo" style="white-space: nowrap"><img src="{{ asset('image/SantriFlow_logo.png') }}" alt="SantriFlow Logo" class="inline lg:hidden md:hidden h-8 w-auto"><div class="inline md:hidden lg:inline">|| Ponpes Bani Sahid</div></div>
+        <div class="text-lg font-bold text-primary nav-logo" style="white-space: nowrap"><img src="{{ asset('image/SantriFlow_logo.png') }}" alt="SantriFlow Logo" class="inline lg:hidden md:hidden h-8 w-auto"><div class="inline md:hidden lg:inline">{{ $general['navbar_logo'] ?? '|| Ponpes Bani Sahid' }}</div></div>
 
         <!-- Desktop menu -->
         <div class="hidden md:flex space-x-6 items-center desktop-menu">
@@ -140,14 +140,14 @@
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="bg-red-500 text-white px-4 py-1.5 rounded-full hover:bg-red-600 transition duration-300">
-                        Logout
+                        {{ $general['btn_logout'] ?? 'Logout' }}
                     </button>
                 </form>
             @else
                 <!-- Jika user belum login - hanya tombol login -->
                 <a href="{{ route('login') }}">
                     <button class="bg-primary text-white px-4 py-1.5 rounded-full hover:bg-secondary transition duration-300 ml-2">
-                        Login
+                        {{ $general['btn_login'] ?? 'Login' }}
                     </button>
                 </a>
             @endauth
@@ -179,14 +179,14 @@
                 <form method="POST" action="{{ route('logout') }}" class="mobile-menu-item">
                     @csrf
                     <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-full hover:bg-red-600 transition duration-300">
-                        Logout
+                        {{ $general['btn_logout'] ?? 'Logout' }}
                     </button>
                 </form>
             @else
                 <!-- Jika user belum login (mobile) - hanya tombol login -->
                 <a href="{{ route('login') }}" class="mobile-menu-item">
                     <button class="w-full bg-primary text-white py-2 rounded-full hover:bg-secondary transition duration-300">
-                        Login
+                        {{ $general['btn_login'] ?? 'Login' }}
                     </button>
                 </a>
             @endauth
@@ -204,9 +204,11 @@
         </h2>
 
         <!-- hero image -->
+        @if(!empty($hero['image']))
         <div class="mb-8 w-full h-auto rounded-xl shadow-md mx-auto max-w-2xl">
-            <img src="{{ asset($hero['image']) }}" alt="{{ $hero['title'] }}" class="w-full h-auto rounded-xl shadow-md">
+            <img src="{{ asset($hero['image']) }}" alt="{{ $hero['title'] ?? 'Hero Image' }}" class="w-full h-auto rounded-xl shadow-md">
         </div>
+        @endif
 
 
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
@@ -219,20 +221,20 @@
                 <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
                     @if(!empty($brosur['file']))
                         <a href="{{ asset($brosur['file']) }}" download="{{ $brosur['filename'] ?? 'brosur.pdf' }}" class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
-                            <i class="fas fa-download mr-2"></i>Download Brosur
+                            <i class="fas fa-download mr-2"></i>{{ $general['btn_download_brosur'] ?? 'Download Brosur' }}
                         </a>
                     @endif
                     
                     @if(auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}">
                             <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
-                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Admin
+                                <i class="fas fa-tachometer-alt mr-2"></i>{{ $general['btn_dashboard_admin'] ?? 'Dashboard Admin' }}
                             </button>
                         </a>
                     @elseif(auth()->user()->isCalonSantri() || auth()->user()->role === 'santri')
                         <a href="{{ route('santri.dashboard') }}">
                             <button class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
-                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard Santri
+                                <i class="fas fa-tachometer-alt mr-2"></i>{{ $general['btn_dashboard_santri'] ?? 'Dashboard Santri' }}
                             </button>
                         </a>
                     @else
@@ -249,13 +251,17 @@
                 <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
                     @if(!empty($brosur['file']))
                         <a href="{{ asset($brosur['file']) }}" download="{{ $brosur['filename'] ?? 'brosur.pdf' }}" class="bg-primary text-white px-6 py-2.5 rounded-full hover:bg-secondary transition duration-300 font-semibold inline-flex items-center">
-                            <i class="fas fa-download mr-2"></i>Download Brosur
+                            <i class="fas fa-download mr-2"></i>{{ $general['btn_download_brosur'] ?? 'Download Brosur' }}
                         </a>
                     @endif
 
-                    <a href="https://wa.me/6287748115931?text=Halo,%20saya%20ingin%20mendaftar"
+                    @php
+                        $waNumber = $general['wa_developer'] ?? '6287748115931';
+                        $waText = urlencode('Halo, saya ingin mendaftar');
+                    @endphp
+                    <a href="https://wa.me/{{ $waNumber }}?text={{ $waText }}"
                     class="bg-green-600 text-white px-6 py-2.5 rounded-full hover:bg-green-700 transition duration-300 font-semibold inline-flex items-center">
-                        <i class="fab fa-whatsapp mr-2"></i>Tanya via WhatsApp
+                        <i class="fab fa-whatsapp mr-2"></i>{{ $general['btn_whatsapp'] ?? 'Tanya via WhatsApp' }}
                     </a>
                 </div>
             @endauth
@@ -293,49 +299,80 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <!-- Menu 1 -->
                 <div>
-                    <h3 class="text-xl font-bold mb-4">Tentang Kami</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ $general['footer_menu1_title'] ?? 'Tentang Kami' }}</h3>
                     <ul class="space-y-2">
-                        <li><a href="#visi-misi" class="hover:text-accent transition duration-300">Visi & Misi</a></li>
-                        <li><a href="{{ route('beasiswa') }}" class="hover:text-accent transition duration-300">info Beasiswa</a></li>
-
+                        @php
+                            $menu1Links = $general['footer_menu1_links'] ?? ['Visi & Misi', 'info Beasiswa'];
+                            $menu1Urls = ['#visi-misi'];
+                            // Check if beasiswa route exists
+                            try {
+                                $menu1Urls[] = route('beasiswa');
+                            } catch (\Exception $e) {
+                                $menu1Urls[] = '#';
+                            }
+                        @endphp
+                        @foreach($menu1Links as $index => $link)
+                            <li><a href="{{ $menu1Urls[$index] ?? '#' }}" class="hover:text-accent transition duration-300">{{ $link }}</a></li>
+                        @endforeach
                     </ul>
                 </div>
 
                 <!-- Menu 2 -->
                 <div>
-                    <h3 class="text-xl font-bold mb-4">Program</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ $general['footer_menu2_title'] ?? 'Program' }}</h3>
                     <ul class="space-y-2">
-                        <li><a href="#program" class="hover:text-accent transition duration-300">Tahfidz Al-Qur'an</a></li>
-
+                        @php
+                            $menu2Links = $general['footer_menu2_links'] ?? ['Tahfidz Al-Qur\'an'];
+                            $menu2Urls = ['#program'];
+                        @endphp
+                        @foreach($menu2Links as $index => $link)
+                            <li><a href="{{ $menu2Urls[$index] ?? '#' }}" class="hover:text-accent transition duration-300">{{ $link }}</a></li>
+                        @endforeach
                     </ul>
                 </div>
 
                 <!-- Menu 3 -->
                 <div>
-                    <h3 class="text-xl font-bold mb-4">Informasi</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ $general['footer_menu3_title'] ?? 'Informasi' }}</h3>
                     <ul class="space-y-2">
-                        <li><a href="#alur-pendaftaran" class="hover:text-accent transition duration-300">Alur Pendaftaran</a></li>
-                        <li><a href="#biaya" class="hover:text-accent transition duration-300">Biaya Pendidikan</a></li>
-                        <li><a href="#persyaratan" class="hover:text-accent transition duration-300">Persyaratan</a></li>
-                        <li><a href="#faq" class="hover:text-accent transition duration-300">FAQ</a></li>
+                        @php
+                            $menu3Links = $general['footer_menu3_links'] ?? ['Alur Pendaftaran', 'Biaya Pendidikan', 'Persyaratan', 'FAQ'];
+                            $menu3Urls = ['#alur-pendaftaran', '#biaya', '#persyaratan', '#faq'];
+                        @endphp
+                        @foreach($menu3Links as $index => $link)
+                            <li><a href="{{ $menu3Urls[$index] ?? '#' }}" class="hover:text-accent transition duration-300">{{ $link }}</a></li>
+                        @endforeach
                     </ul>
                 </div>
 
                 <!-- Menu 4 -->
                 <div>
-                    <h3 class="text-xl font-bold mb-4">Kontak</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ $general['footer_menu4_title'] ?? 'Kontak' }}</h3>
                     <ul class="space-y-2">
-                        <a href="https://www.google.com/maps/place/Pondok+Pesantren+Al-Qur'an+Bani+Syahid/@-6.3676771,106.8696904,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69ed654ce6786b:0x1019880ca4f9403b!8m2!3d-6.3676824!4d106.8722707!16s%2Fg%2F11f6m9qmmr?hl=id"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="hover:text-accent transition duration-300">
-                           Alamat
-                        </a>
-                        <li><a href="https://wa.me/6287748115931" class="hover:text-accent transition duration-300">WhatsApp Developers</a></li>
-                        <li><a href="https://wa.me/6289510279293" target="_blank" class="hover:text-accent transition duration-300">WhatsApp Admin PPDB Putra</a></li>
-                        <li><a href="https://wa.me/6282183953533" target="_blank" class="hover:text-accent transition duration-300">WhatsApp Admin PPDB Putri</a></li>
-
-                        <li><a href="https://banisyahid.bio.link/" class="hover:text-accent transition duration-300">Sosial Media</a></li>
+                        @php
+                            $menu4Links = $general['footer_menu4_links'] ?? ['Alamat', 'WhatsApp Developers', 'WhatsApp Admin PPDB Putra', 'WhatsApp Admin PPDB Putri', 'Sosial Media'];
+                            $waDeveloper = $general['wa_developer'] ?? '6287748115931';
+                            $waPutra = $general['wa_admin_putra'] ?? '6289510279293';
+                            $waPutri = $general['wa_admin_putri'] ?? '6282183953533';
+                            $googleMaps = $general['google_maps_url'] ?? 'https://www.google.com/maps/place/Pondok+Pesantren+Al-Qur\'an+Bani+Syahid/@-6.3676771,106.8696904,17z/data=!3m1!4b1!4m6!3m5!1s0x2e69ed654ce6786b:0x1019880ca4f9403b!8m2!3d-6.3676824!4d106.8722707!16s%2Fg%2F11f6m9qmmr?hl=id';
+                            $socialMedia = $general['social_media_url'] ?? 'https://banisyahid.bio.link/';
+                            $menu4Urls = [
+                                $googleMaps,
+                                'https://wa.me/' . $waDeveloper,
+                                'https://wa.me/' . $waPutra,
+                                'https://wa.me/' . $waPutri,
+                                $socialMedia
+                            ];
+                        @endphp
+                        @foreach($menu4Links as $index => $link)
+                            <li>
+                                <a href="{{ $menu4Urls[$index] ?? '#' }}" 
+                                   @if(str_contains($menu4Urls[$index] ?? '', 'http')) target="_blank" rel="noopener noreferrer" @endif
+                                   class="hover:text-accent transition duration-300">
+                                    {{ $link }}
+                                </a>
+                            </li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
@@ -343,7 +380,7 @@
            <div class="border-t border-white/20 mt-8 pt-8 text-center">
             <p>&copy; <?php echo date('Y'); ?>
                 <a
-                    href="https://www.instagram.com/ponpesalquranbanisyahid_/"
+                    href="{{ $general['instagram_url'] ?? 'https://www.instagram.com/ponpesalquranbanisyahid_/' }}"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-white hover:text-yellow-300 underline transition-colors duration-200"

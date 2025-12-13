@@ -77,6 +77,7 @@ class WelcomeController extends Controller
         $biayaInfo = $landingContent['biaya'] ?? [];
         $persyaratan = $landingContent['persyaratan_dokumen'] ?? [];
         $brosur = $landingContent['brosur'] ?? null;
+        $general = $landingContent['general'] ?? [];
 
         return view('welcome', compact(
             'packages',
@@ -94,7 +95,8 @@ class WelcomeController extends Controller
             'alur',
             'biayaInfo',
             'persyaratan',
-            'brosur'
+            'brosur',
+            'general'
         ));
     }
 
